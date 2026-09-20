@@ -51,7 +51,24 @@ Diseñar, implementar y validar un **MVP multiplataforma** de marketplace de ser
 
 ---
 
-## 4. Arquitectura (visión de título)
+## 4. Arquitectura de software
+
+### En una frase
+
+> **Monorepo multiplataforma** con arquitectura **cliente–servidor** sobre **Supabase (BaaS)**. Tres clientes (Flutter, web React/Vite, desktop Tauri) usan el mismo backend (Auth, PostgreSQL, RLS, Edge Functions). En móvil: organización **modular por features** con capas prácticas (UI → servicios → repositorios), inspirada en Clean Architecture de forma pragmática.
+
+### Tipo de arquitectura
+
+| Concepto | Qué es en este proyecto |
+|----------|-------------------------|
+| Cliente–servidor | Datos centralizados en la nube; las apps consultan Supabase |
+| BaaS | Backend como servicio (Auth + Postgres + políticas RLS) |
+| Monorepo | Código de app, web, desktop y `shared/` en un solo árbol (`MyWorksAppProyect/`) |
+| Feature-First | En Flutter, pantallas por funcionalidad + `core/` compartido |
+| Capas pragmáticas | Presentación → aplicación → dominio → infraestructura (repositorios) |
+| Edge / serverless | Webpay y guest-checkout en Edge Functions (no en el dispositivo) |
+
+### Diagrama
 
 ```text
 ┌─────────────────┐   ┌─────────────────┐   ┌──────────────────────┐
@@ -71,18 +88,46 @@ Diseñar, implementar y validar un **MVP multiplataforma** de marketplace de ser
                          Transbank (integración)
 ```
 
-| Componente | Rol en el proyecto de título |
-|------------|------------------------------|
-| `MyWorksAppProyect/myworksapp_app/` | Aplicación móvil Flutter (experiencia principal) |
-| `MyWorksAppProyect/myworksapp_web/` | Canal web para clientes e invitados (urgencia sin sesión) |
-| `MyWorksAppProyect/myworksapp_desktop/` | Panel interno Capstone / operación |
-| `MyWorksAppProyect/shared/` | Contratos y lógica compartida web/desktop |
-| `MyWorksAppProyect/myworksapp_app/supabase/` | Migraciones, Edge Functions y configuración backend |
+| Componente | Rol |
+|------------|-----|
+| `MyWorksAppProyect/myworksapp_app/` | App móvil Flutter |
+| `MyWorksAppProyect/myworksapp_web/` | Canal web (sesión o invitado) |
+| `MyWorksAppProyect/myworksapp_desktop/` | Hub operativo |
+| `MyWorksAppProyect/shared/` | Contratos TS compartidos |
+| `MyWorksAppProyect/myworksapp_app/supabase/` | Migraciones y Edge Functions |
 | `Fase 1/`, `Fase 2/`, `Documentos Guia/` | Expediente académico Capstone |
+
+Diccionario de datos (fácil de explicar): [`MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md`](MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md).
 
 ---
 
-## 5. Criterios de diseño profesional aplicados
+## 5. Metodología de trabajo
+
+### En una frase
+
+> **Desarrollo ágil iterativo e incremental**, orientado a un **MVP**, organizado por las **fases del Capstone APT (Duoc UC)**. Cada ciclo entrega un flujo usable (por ejemplo auth, trabajos, Webpay, liquidación), se prueba y se documenta.
+
+### Cómo trabajamos
+
+| Práctica | En el proyecto |
+|----------|----------------|
+| Ágil / iterativo-incremental | Entregas por dominio: definición → backend/RLS → clientes → pagos → hardening |
+| MVP primero | Primero lo demostrable; pendientes explícitos (MFA, payout automático, prod Transbank) |
+| Fases Capstone | Fase 1 definición APT; Fase 2 y siguientes con evidencias; software en `MyWorksAppProyect/` |
+| Calidad continua | CI, runbooks, diccionario BD, auditorías de seguridad |
+
+**No** es cascada pura ni Scrum ceremonial estricto: priorizamos entregas demostrables y evidencia académica sobre rituales formales.
+
+### Ciclo de una iteración
+
+```text
+Priorizar un flujo → acordar estados en BD → implementar (apps + Edge + SQL)
+→ probar → documentar → commit / CI
+```
+
+---
+
+## 6. Criterios de diseño profesional aplicados
 
 - **Separación de secretos:** claves Transbank y service role solo en servidor (Edge / secrets).
 - **PCI / tarjeta:** el usuario paga en Transbank; la app no captura PAN.
@@ -92,7 +137,7 @@ Diseñar, implementar y validar un **MVP multiplataforma** de marketplace de ser
 
 ---
 
-## 6. Estructura del repositorio
+## 7. Estructura del repositorio
 
 | Ruta | Contenido |
 |------|-----------|
@@ -101,12 +146,12 @@ Diseñar, implementar y validar un **MVP multiplataforma** de marketplace de ser
 | `Documentos Guia/` | Guías e instructivos del programa |
 | `Capstone_Project.mpp` | Planificación del proyecto |
 | **`MyWorksAppProyect/`** | **Monorepo del producto** (app, web, desktop, shared, docs técnicos, CI) |
-| `MyWorksAppProyect/docs/` | Runbooks (Transbank, liquidación) |
+| `MyWorksAppProyect/docs/` | Runbooks (Transbank, liquidación) y diccionario BD |
 | `MyWorksAppProyect/INSTALL.md` | Instalación y demo técnica |
 
 ---
 
-## 7. Cómo ejecutar (resumen)
+## 8. Cómo ejecutar (resumen)
 
 Detalle completo en [`MyWorksAppProyect/INSTALL.md`](MyWorksAppProyect/INSTALL.md).
 
@@ -125,7 +170,7 @@ Configurar variables Supabase según `.env.example` de web/desktop y `--dart-def
 
 ---
 
-## 8. Estado respecto al título y al producto
+## 9. Estado respecto al título y al producto
 
 | Dimensión | Estado actual |
 |-----------|----------------|
@@ -137,7 +182,7 @@ Configurar variables Supabase según `.env.example` de web/desktop y `--dart-def
 
 ---
 
-## 9. Autores
+## 10. Autores
 
 Proyecto de título profesional desarrollado por el equipo indicado arriba, sede **Duoc UC Puerto Montt**, en el marco del Capstone **PTY4614**.
 
