@@ -1,0 +1,26 @@
+{
+  "color": {
+    "brandOrange": "#FF5E03",
+    "brandOrangeVibrant": "#FF7A18",
+    "brandNavy": "#00205B",
+    "bgCanvasDark": "#070B12",
+    "bgCanvasDarkAlt": "#0B1424",
+    "bgDominantDark": "#070B12",
+    "bgSurfaceDark": "#121A2A",
+    "bgElevatedDark": "#172033",
+    "emerald": "#2F9E64",
+    "textMainDark": "#F7F8FA",
+    "textMutedDark": "#A8B2C0",
+    "textMainLight": "#12141A",
+    "textMutedLight": "#5C6370",
+    "bgDominantLight": "#F7F5F2",
+    "crimsonError": "#E23D35"
+  },
+  "radius": {
+    "sm": 10,
+    "md": 14,
+    "lg": 22,
+    "xl": 22,
+    "pill": 9999
+  }
+}
