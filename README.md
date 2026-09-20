@@ -129,11 +129,13 @@ Priorizar un flujo → acordar estados en BD → implementar (apps + Edge + SQL)
 
 ## 6. Criterios de diseño profesional aplicados
 
-- **Separación de secretos:** claves Transbank y service role solo en servidor (Edge / secrets).
-- **PCI / tarjeta:** el usuario paga en Transbank; la app no captura PAN.
-- **Escrow de negocio:** tras el commit Webpay el pago queda **retenido** hasta aprobación / liquidación admin.
-- **Invitado web:** solo en web sin sesión se redirige a Transbank tras capturar datos y dirección; con sesión se evita abandonar el producto (popup/WebView).
-- **Trazabilidad:** liquidaciones manuales registradas (`liquidaciones`) para auditoría académica y operativa.
+- **Separación de secretos:** las claves de Transbank y del servidor solo viven en el backend (Edge / secrets de Supabase). Nadie del equipo las pone en la app que se instala en el celular.
+- **Datos de la tarjeta de crédito/débito (PCI):** el usuario **no escribe el número de su tarjeta en My Works App**. Paga en la página oficial de **Transbank**.  
+  En seguridad de pagos, al número de la tarjeta se le llama **PAN** (*Primary Account Number* = el número largo impreso en la tarjeta).  
+  **En simple:** nosotros nunca pedimos ni guardamos ese número; Transbank lo maneja. Así reducimos el riesgo de fraude y cumplimos con buenas prácticas bancarias.
+- **Escrow de negocio (plata “retenida”):** cuando Transbank confirma el cobro, el pago queda marcado como **retenido** en nuestra base. El profesional **no** recibe el dinero de inmediato: primero se completa el trabajo y un administrador registra la transferencia. Eso da confianza al cliente.
+- **Invitado en la web:** si alguien pide una urgencia **sin** iniciar sesión, completa nombre/correo/teléfono/dirección y luego va a Transbank. Si ya tiene sesión, paga en una ventana controlada **sin** abandonar My Works App.
+- **Trazabilidad:** cada vez que se paga al profesional, queda un registro en la tabla `liquidaciones` (quién liquidó, cuánto, referencia de la transferencia). Sirve para auditoría académica y operativa.
 
 ---
 
