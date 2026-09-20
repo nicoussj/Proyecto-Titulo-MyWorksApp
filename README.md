@@ -104,8 +104,6 @@ Diseñar, implementar y validar un **MVP multiplataforma** de marketplace de ser
 | `docs/RUNBOOK_PAYOUT.md` | Liquidación al profesional (manual → Khipu/Fintoc) |
 | `INSTALL.md`, `DEMO.md`, `ESTADO_DEL_PROYECTO.md` | Instalación, demo y estado técnico |
 
-El desarrollo continuo del producto también se mantiene en el repositorio de lanzamiento: [MyWorksAppProyect](https://github.com/MathiasAlejandr0/MyWorksAppProyect). Este repositorio de título se actualiza con el monorepo para el trabajo y la evaluación Capstone.
-
 ---
 
 ## 7. Cómo ejecutar (resumen)
