@@ -61,7 +61,7 @@ dependencies:
   # Info de app
   package_info_plus: ^10.2.1
   supabase_flutter: ^2.8.4
-  app_links: ^6.3.2
+  app_links: ^7.2.1
   flutter_map: ^6.1.0
   latlong2: ^0.9.1
   video_player: ^2.11.1
