@@ -20,7 +20,7 @@ La solución propuesta es un **ecosistema comercial** (app móvil, web y panel d
 - **pago protegido (escrow de negocio)** mediante Transbank Webpay Plus;
 - seguimiento del trabajo y herramientas operativas para el equipo interno.
 
-El repositorio concentra tanto los **entregables académicos Capstone** como el **monorepo de software** que materializa el producto.
+El repositorio concentra los **entregables académicos Capstone** en la raíz y el **monorepo de software** dentro de [`MyWorksAppProyect/`](MyWorksAppProyect/).
 
 ---
 
@@ -73,12 +73,11 @@ Diseñar, implementar y validar un **MVP multiplataforma** de marketplace de ser
 
 | Componente | Rol en el proyecto de título |
 |------------|------------------------------|
-| `myworksapp_app/` | Aplicación móvil Flutter (experiencia principal) |
-| `myworksapp_web/` | Canal web para clientes e invitados (urgencia sin sesión) |
-| `myworksapp_desktop/` | Panel interno Capstone / operación |
-| `shared/` | Contratos y lógica compartida web/desktop |
-| `myworksapp_app/supabase/` | Migraciones, Edge Functions y configuración backend |
-| `docs/` | Runbooks técnicos (Transbank, liquidación) |
+| `MyWorksAppProyect/myworksapp_app/` | Aplicación móvil Flutter (experiencia principal) |
+| `MyWorksAppProyect/myworksapp_web/` | Canal web para clientes e invitados (urgencia sin sesión) |
+| `MyWorksAppProyect/myworksapp_desktop/` | Panel interno Capstone / operación |
+| `MyWorksAppProyect/shared/` | Contratos y lógica compartida web/desktop |
+| `MyWorksAppProyect/myworksapp_app/supabase/` | Migraciones, Edge Functions y configuración backend |
 | `Fase 1/`, `Fase 2/`, `Documentos Guia/` | Expediente académico Capstone |
 
 ---
@@ -97,28 +96,29 @@ Diseñar, implementar y validar un **MVP multiplataforma** de marketplace de ser
 
 | Ruta | Contenido |
 |------|-----------|
-| `Fase 1/`, `Fase 2/`, `Documentos Guia/` | Entregables y guías del Capstone |
+| `Fase 1/` | Entregables y evidencias de definición APT |
+| `Fase 2/` | Entregables de la siguiente fase Capstone |
+| `Documentos Guia/` | Guías e instructivos del programa |
 | `Capstone_Project.mpp` | Planificación del proyecto |
-| `myworksapp_app/`, `myworksapp_web/`, `myworksapp_desktop/`, `shared/` | Código del producto |
-| `docs/RUNBOOK_TRANSBANK_PRODUCCION.md` | Paso a producción de pagos |
-| `docs/RUNBOOK_PAYOUT.md` | Liquidación al profesional (manual → Khipu/Fintoc) |
-| `INSTALL.md`, `DEMO.md`, `ESTADO_DEL_PROYECTO.md` | Instalación, demo y estado técnico |
+| **`MyWorksAppProyect/`** | **Monorepo del producto** (app, web, desktop, shared, docs técnicos, CI) |
+| `MyWorksAppProyect/docs/` | Runbooks (Transbank, liquidación) |
+| `MyWorksAppProyect/INSTALL.md` | Instalación y demo técnica |
 
 ---
 
 ## 7. Cómo ejecutar (resumen)
 
-Detalle completo en [`INSTALL.md`](INSTALL.md).
+Detalle completo en [`MyWorksAppProyect/INSTALL.md`](MyWorksAppProyect/INSTALL.md).
 
 ```bash
 # Web
-cd myworksapp_web && npm install && npm run dev
+cd MyWorksAppProyect/myworksapp_web && npm install && npm run dev
 
 # Desktop
-cd myworksapp_desktop && npm install && npm run dev
+cd MyWorksAppProyect/myworksapp_desktop && npm install && npm run dev
 
 # App Flutter
-cd myworksapp_app && flutter pub get && flutter run
+cd MyWorksAppProyect/myworksapp_app && flutter pub get && flutter run
 ```
 
 Configurar variables Supabase según `.env.example` de web/desktop y `--dart-define` en Flutter.
@@ -130,7 +130,7 @@ Configurar variables Supabase según `.env.example` de web/desktop y `--dart-def
 | Dimensión | Estado actual |
 |-----------|----------------|
 | Definición / evidencia Fase 1 | Presente en carpetas académicas |
-| MVP técnico multiplataforma | Implementado (monorepo) |
+| MVP técnico multiplataforma | Implementado (`MyWorksAppProyect/`) |
 | Pagos Webpay (integración) | Implementado (Edge + clientes) |
 | Liquidación al profesional | Manual por admin (automatización futura) |
 | Lanzamiento comercial fin de año | Condicionado a empresa, secrets de producción y cierre de pendientes (MFA, E2E vivo, etc.) |
@@ -141,4 +141,4 @@ Configurar variables Supabase según `.env.example` de web/desktop y `--dart-def
 
 Proyecto de título profesional desarrollado por el equipo indicado arriba, sede **Duoc UC Puerto Montt**, en el marco del Capstone **PTY4614**.
 
-Para dudas técnicas del monorepo, ver también [`ESTADO_DEL_PROYECTO.md`](ESTADO_DEL_PROYECTO.md).
+Para el estado técnico del monorepo, ver [`MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`](MyWorksAppProyect/ESTADO_DEL_PROYECTO.md).

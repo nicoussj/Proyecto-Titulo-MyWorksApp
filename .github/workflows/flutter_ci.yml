@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: myworksapp_app
+        working-directory: MyWorksAppProyect/myworksapp_app
 
     steps:
       - uses: actions/checkout@v7
