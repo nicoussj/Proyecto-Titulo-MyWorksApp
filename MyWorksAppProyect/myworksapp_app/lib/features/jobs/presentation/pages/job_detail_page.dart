@@ -29,6 +29,7 @@ import '../widgets/quote_proposals_section.dart';
 import '../widgets/worker_quote_form_dialog.dart';
 import '../../../../core/utils/open_quote_utils.dart';
 import '../../../../core/widgets/escrow_checkout_sheet.dart';
+import '../../../payments/presentation/pages/payment_screen.dart';
 import '../../../../core/utils/app_error.dart';
 import '../../../../core/database/repositories/job_photo_repository.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -413,10 +414,12 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
       return;
     }
 
-    final paid = await EscrowCheckoutSheet.show(
+    final paid = await PaymentScreen.open(
       context,
       jobId: job.id,
-      quote: quote,
+      amount: quote.totalClp.toDouble(),
+      serviceName: job.description,
+      specialistName: _invitedWorkerName,
     );
 
     if (!paid || !mounted) return;

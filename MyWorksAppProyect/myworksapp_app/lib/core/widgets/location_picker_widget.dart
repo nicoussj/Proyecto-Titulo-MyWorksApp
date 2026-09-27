@@ -223,11 +223,13 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (hasCoords && !_hasError) ...[
+            const SizedBox(height: 4),
             JobLocationMap(
               latitude: _latitude!,
               longitude: _longitude!,
-              mode: JobMapDisplayMode.interactive,
+              mode: JobMapDisplayMode.preview,
               height: 120,
+              openOnTap: false,
             ),
             const SizedBox(height: 12),
           ],

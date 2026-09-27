@@ -5,7 +5,7 @@ import '../../domain/pricing_constants.dart';
 /// Estados: pendiente | autorizado | retenido | liberado | reembolsado
 /// Tipos: principal | orden_cambio | horas_extra
 ///
-/// Nota: la pasarela real aún no está integrada; el flujo es simulación de escrow.
+/// Nota: la autorización ocurre en Edge Functions Webpay; el cliente no guarda PAN.
 class PaymentModel {
   final String id;
   final String jobId;

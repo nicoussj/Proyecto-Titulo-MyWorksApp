@@ -372,6 +372,11 @@ class JobBookingService {
     if (job == null) throw AppError.notFound('Trabajo no encontrado');
     if (job.userId != userId) throw AppError.permission('Sin permiso');
 
+    if (job.status == AppConstants.jobStatusAccepted &&
+        PricingConstants.isEscrowSecured(job.paymentStatus)) {
+      return job;
+    }
+
     if (job.status != PricingConstants.jobAwaitingPayment) {
       throw AppError.validation('El trabajo no está pendiente de pago');
     }

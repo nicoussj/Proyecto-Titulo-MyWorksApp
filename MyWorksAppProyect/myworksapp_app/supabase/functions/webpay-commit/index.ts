@@ -1,4 +1,5 @@
 import { corsHeadersFor, jsonResponse } from "../_shared/cors.ts";
+import { persistWebpayOutcome } from "../_shared/escrow.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { tbkCommit } from "../_shared/tbk.ts";
 import { webPostMessageOrigins } from "../_shared/security.ts";
@@ -29,55 +30,13 @@ Deno.serve(async (req) => {
     }
 
     const commit = await tbkCommit(token);
-    const responseCode = Number(commit.response_code ?? -1);
-    const status = String(commit.status || "");
-    const buyOrder = String(commit.buy_order || "");
-    const approved =
-      responseCode === 0 || status.toUpperCase() === "AUTHORIZED";
-
     const admin = serviceClient();
-    let { data: payment } = await admin
-      .from("pagos")
-      .select("id, id_trabajo, monto")
-      .eq("token_tbk", token)
-      .maybeSingle();
-
-    if (!payment && buyOrder) {
-      const fb = await admin
-        .from("pagos")
-        .select("id, id_trabajo, monto")
-        .eq("buy_order", buyOrder)
-        .maybeSingle();
-      payment = fb.data;
-    }
-
-    if (!payment) {
-      // No filtrar payload TBK al cliente
+    const outcome = await persistWebpayOutcome(admin, { token, commit });
+    if (!outcome) {
       return jsonResponse(req, { error: "Pago no encontrado" }, 404);
     }
-
-    // Webpay Plus commit = captura en comercio. Escrow de negocio = retenido.
-    await admin
-      .from("pagos")
-      .update({
-        estado: approved ? "retenido" : "pendiente",
-        autorizado_en: approved ? new Date().toISOString() : null,
-        id_transaccion: String(
-          commit.authorization_code || buyOrder || token,
-        ),
-        actualizado_en: new Date().toISOString(),
-      })
-      .eq("id", payment.id);
-
-    if (approved) {
-      await admin
-        .from("trabajos")
-        .update({
-          estado_pago: "retenido",
-          actualizado_en: new Date().toISOString(),
-        })
-        .eq("id", payment.id_trabajo);
-    }
+    const approved = outcome.approved;
+    const payment = { id: outcome.paymentId, id_trabajo: outcome.jobId };
 
     const webBase =
       Deno.env.get("WEBPAY_WEB_RETURN_URL") || "http://localhost:5173/";

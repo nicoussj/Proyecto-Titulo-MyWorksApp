@@ -71,6 +71,55 @@ export async function verifyHandoffTicket(
   return { ok: true, paymentId };
 }
 
+/**
+ * Destino final de la app tras el commit (deep link o /payment-result).
+ * Rechaza URLs arbitrarias para evitar open-redirect.
+ */
+export function sanitizeClientReturn(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
+
+  if (url.protocol === "myworksapp:" && url.hostname === "payment-result") {
+    return "myworksapp://payment-result";
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  if (!url.pathname.endsWith("/payment-result")) return null;
+
+  const origin = url.origin;
+  const allowed = (Deno.env.get("WEBPAY_ALLOWED_RETURN_ORIGINS") || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const integration =
+    (Deno.env.get("WEBPAY_ENV") || Deno.env.get("TBK_ENV") || "integration") !==
+      "production";
+  const local = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+
+  if (allowed.includes(origin) || (integration && local)) {
+    return `${origin}/payment-result`;
+  }
+  return null;
+}
+
+/** return_url que Transbank llama. El query `cr` lleva el retorno de la app. */
+export function buildCommitReturnUrl(clientReturn: string | null): string {
+  const base =
+    Deno.env.get("WEBPAY_COMMIT_URL") ||
+    `${Deno.env.get("SUPABASE_URL")}/functions/v1/webpay-commit-transaction`;
+  if (!clientReturn) return base;
+  const url = new URL(base);
+  url.searchParams.set("cr", clientReturn);
+  const built = url.toString();
+  if (built.length > 255) return base;
+  return built;
+}
+
 /** return_url de Transbank: solo commit Edge o orígenes allowlist. */
 export function resolveReturnUrl(requested: string | undefined): string {
   const base =

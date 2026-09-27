@@ -102,4 +102,6 @@ class AppConstants {
   static const String routeAdminServices = '/admin/services';
   static const String routeAdminFeatureFlags = '/admin/feature-flags';
   static const String routeAdminDesktopHub = '/admin/desktop-hub';
+  static const String routePayment = '/payment';
+  static const String routePaymentResult = '/payment-result';
 }

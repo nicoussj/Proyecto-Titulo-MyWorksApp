@@ -3,7 +3,8 @@
 ## Estado actual
 
 - Ambiente por defecto: **integration** (`TBK_ENV=integration`).
-- Edge Functions: `webpay-create`, `webpay-handoff`, `webpay-commit`, `webpay-status`, `webpay-refund`, `webpay-release`, `guest-checkout`.
+- Edge Functions: `webpay-create`, `webpay-create-transaction`, `webpay-handoff`, `webpay-commit`, `webpay-commit-transaction`, `webpay-status`, `webpay-refund`, `webpay-release`, `guest-checkout`.
+- Las credenciales de comercio viven solo en secrets (`WEBPAY_COMMERCE_CODE`, `WEBPAY_API_KEY`). El código no trae llaves de integración.
 - Migración: `myworksapp_app/supabase/migrations/20260322000001_webpay_escrow_hardening.sql` (+ reaffirm `20260922`, thermos `20260924`).
 - Clientes **no** capturan PAN.
 - `token_tbk` / `url_tbk` **no** son legibles por `authenticated`/`anon` (solo Edge / service_role).
@@ -31,8 +32,10 @@ npx supabase db push
 ```bash
 cd myworksapp_app
 npx supabase functions deploy webpay-create
+npx supabase functions deploy webpay-create-transaction
 npx supabase functions deploy webpay-handoff
 npx supabase functions deploy webpay-commit
+npx supabase functions deploy webpay-commit-transaction
 npx supabase functions deploy webpay-status
 npx supabase functions deploy webpay-refund
 npx supabase functions deploy webpay-release
@@ -43,7 +46,10 @@ npx supabase functions deploy guest-checkout
 
 ```bash
 npx supabase secrets set TBK_ENV=integration
-# OBLIGATORIO — mínimo 16 caracteres; sin esto handoff/create fallan 503
+npx supabase secrets set WEBPAY_COMMERCE_CODE=<codigo_comercio>
+npx supabase secrets set WEBPAY_API_KEY=<api_key>
+# Alias aceptados por el mismo código: TBK_COMMERCE_CODE / TBK_API_KEY
+# OBLIGATORIO para el handoff web — mínimo 16 caracteres
 npx supabase secrets set WEBPAY_HANDOFF_SECRET=<random-32-chars>
 npx supabase secrets set WEBPAY_RETURN_URL=https://<project>.supabase.co/functions/v1/webpay-commit
 # Orígenes para postMessage del commit (popup autenticado):
@@ -55,12 +61,12 @@ npx supabase secrets set WEBPAY_ALLOWED_RETURN_ORIGINS=https://app.myworksapp.cl
 Cuando Transbank entregue comercio real:
 
 ```bash
-npx supabase secrets set TBK_ENV=production
-npx supabase secrets set TBK_COMMERCE_CODE=<codigo_comercio>
-npx supabase secrets set TBK_API_KEY=<api_key_secreta>
+npx supabase secrets set WEBPAY_ENV=production
+npx supabase secrets set WEBPAY_COMMERCE_CODE=<codigo_comercio>
+npx supabase secrets set WEBPAY_API_KEY=<api_key_secreta>
 npx supabase secrets set WEBPAY_RETURN_URL=https://<project>.supabase.co/functions/v1/webpay-commit
-npx supabase secrets set WEBPAY_WEB_RETURN_URL=https://app.myworksapp.cl/?pago=ok
-npx supabase secrets set WEBPAY_APP_RETURN_URL=myworksapp://pago/retorno
+npx supabase secrets set WEBPAY_WEB_RETURN_URL=https://app.myworksapp.cl/payment-result
+npx supabase secrets set WEBPAY_APP_RETURN_URL=myworksapp://payment-result
 ```
 
 ## 4. Clientes

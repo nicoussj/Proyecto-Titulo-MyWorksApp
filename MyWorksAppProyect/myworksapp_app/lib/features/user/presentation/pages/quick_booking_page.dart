@@ -14,7 +14,7 @@ import '../../../../core/utils/comuna_utils.dart';
 import '../../../../core/design_system/layout_utils.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/widgets/design_system/app_gradient_app_bar.dart';
-import '../../../../core/widgets/escrow_checkout_sheet.dart';
+import '../../../payments/presentation/pages/payment_screen.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/pricing_quote_card.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -119,12 +119,12 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
 
       if (!mounted) return;
 
-      final paid = await EscrowCheckoutSheet.show(
+      final paid = await PaymentScreen.open(
         context,
         jobId: booking.job.id,
-        quote: booking.quote,
-        workerName: _workerUser?.name,
+        amount: booking.quote.totalClp.toDouble(),
         serviceName: _serviceName,
+        specialistName: _workerUser?.name,
       );
 
       if (paid) {

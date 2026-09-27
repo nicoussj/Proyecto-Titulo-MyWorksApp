@@ -29,6 +29,7 @@ class JobLocationMap extends StatelessWidget {
     this.mode = JobMapDisplayMode.preview,
     this.height = 96,
     this.onTap,
+    this.openOnTap = true,
   });
 
   final double latitude;
@@ -38,6 +39,10 @@ class JobLocationMap extends StatelessWidget {
 
   /// Si se define, reemplaza la acción por defecto (selector de navegación).
   final VoidCallback? onTap;
+
+  /// En vista previa, tocar abre el mapa externo. En formularios conviene
+  /// dejarlo en false para que el scroll y el resto de campos sigan respondiendo.
+  final bool openOnTap;
 
   bool get _isPreview => mode == JobMapDisplayMode.preview;
 
@@ -246,7 +251,7 @@ class JobLocationMap extends StatelessWidget {
             ),
           ),
           _emphasisPin(),
-          _previewHint(context),
+          if (openOnTap) _previewHint(context),
         ],
       ),
     );
@@ -274,7 +279,7 @@ class JobLocationMap extends StatelessWidget {
       child: _mapBody(context),
     );
 
-    if (!_isPreview) {
+    if (!_isPreview || !openOnTap) {
       return map;
     }
 

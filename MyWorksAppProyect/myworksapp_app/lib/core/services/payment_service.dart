@@ -1,15 +1,20 @@
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../database/repositories/payment_repository.dart';
 import '../database/repositories/job_repository.dart';
 import '../database/models/payment_model.dart';
+import '../database/supabase_db.dart';
 import '../domain/pricing_constants.dart';
 import '../domain/price_quote.dart';
+import '../domain/webpay_transaction.dart';
 import '../utils/app_logger.dart';
 import '../utils/app_error.dart';
 
 /// Servicio de pagos — escrow vía Webpay (Edge) + RPCs admin.
 ///
-/// Crear intención: Edge `webpay-create` / RPC `crear_intencion_pago`.
-/// Autorizar: `webpay-commit` (servidor).
+/// Crear intención: Edge `webpay-create-transaction`.
+/// Confirmar: Edge `webpay-commit-transaction` (escrow `retenido`).
 /// Liberar/reembolsar: `liberar_escrow` / `reembolsar_escrow` (admin).
 class PaymentService {
   PaymentService({
@@ -255,12 +260,111 @@ class PaymentService {
   Future<bool> hasAuthorizedPrimaryPayment(String jobId) async {
     final payment = await getPrimaryPayment(jobId);
     return payment != null &&
-        payment.status == PricingConstants.paymentAuthorized;
+        PricingConstants.isEscrowSecured(payment.status);
   }
 
   Future<bool> hasPayment(String jobId) async {
     final payment = await getPrimaryPayment(jobId);
     return payment != null;
+  }
+
+  /// Crea la transacción Webpay Plus en la Edge `webpay-create-transaction`.
+  Future<WebpayTransactionResponse> initiateWebpayPayment({
+    required String jobId,
+    required double amount,
+  }) async {
+    if (jobId.trim().isEmpty) {
+      throw AppError.validation('Falta el identificador del trabajo');
+    }
+    if (amount <= 0) {
+      throw AppError.validation('El monto a pagar debe ser mayor a cero');
+    }
+
+    final sessionId = supabase.auth.currentUser?.id;
+    if (sessionId == null || sessionId.isEmpty) {
+      throw AppError.authentication('Debes iniciar sesión para pagar');
+    }
+
+    try {
+      final response = await supabase.functions.invoke(
+        'webpay-create-transaction',
+        body: {
+          'jobId': jobId,
+          'buy_order': jobId,
+          'session_id': sessionId,
+          'amount': amount.round(),
+          'clientReturn': _webpayClientReturn(),
+        },
+      );
+      final data = _asMap(response.data);
+      if (data['error'] != null) {
+        throw AppError.validation(data['error'].toString());
+      }
+      return WebpayTransactionResponse.fromMap(data);
+    } catch (e) {
+      if (e is AppError) rethrow;
+      AppLogger.e('Error iniciando Webpay', e);
+      throw AppError.network(_edgeErrorMessage(e), e);
+    }
+  }
+
+  /// Confirma el `token_ws` en la Edge `webpay-commit-transaction`.
+  Future<WebpayCommitResult> confirmWebpayPayment({
+    required String token,
+  }) async {
+    final tokenWs = token.trim();
+    if (tokenWs.isEmpty) {
+      throw AppError.validation('token_ws ausente');
+    }
+
+    try {
+      final response = await supabase.functions.invoke(
+        'webpay-commit-transaction',
+        body: {'token_ws': tokenWs},
+      );
+      final data = _asMap(response.data);
+      if (data['error'] != null && data['approved'] != true) {
+        return WebpayCommitResult(
+          approved: false,
+          paymentStatus: 'REJECTED',
+          message: data['error'].toString(),
+          responseCode: data['responseCode'] is num
+              ? (data['responseCode'] as num).toInt()
+              : null,
+        );
+      }
+      return WebpayCommitResult.fromMap(data);
+    } catch (e) {
+      if (e is AppError) rethrow;
+      AppLogger.e('Error confirmando Webpay', e);
+      throw AppError.network(_edgeErrorMessage(e), e);
+    }
+  }
+
+  String _webpayClientReturn() {
+    if (kIsWeb) {
+      return '${Uri.base.origin}/payment-result';
+    }
+    return 'myworksapp://payment-result';
+  }
+
+  Map<String, dynamic> _asMap(dynamic data) {
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    throw AppError.validation('Respuesta inválida de Webpay');
+  }
+
+  String _edgeErrorMessage(Object error) {
+    if (error is FunctionException) {
+      final details = error.details;
+      if (details is Map && details['error'] != null) {
+        return details['error'].toString();
+      }
+      if (details is String && details.isNotEmpty) return details;
+      return error.reasonPhrase ?? 'No se pudo contactar a Webpay';
+    }
+    if (error is FormatException) return error.message;
+    return 'No se pudo contactar a Webpay';
   }
 }
 

@@ -27,6 +27,11 @@ class PricingConstants {
   static const String paymentReleased = 'liberado';
   static const String paymentRefunded = 'reembolsado';
 
+  /// Fondos capturados y retenidos en garantía (HOLD / ESCROW de Webpay).
+  static bool isEscrowSecured(String status) {
+    return status == paymentAuthorized || status == paymentHeld;
+  }
+
   static const String paymentTypePrimary = 'principal';
   static const String paymentTypeChangeOrder = 'orden_cambio';
   static const String paymentTypeOvertime = 'horas_extra';

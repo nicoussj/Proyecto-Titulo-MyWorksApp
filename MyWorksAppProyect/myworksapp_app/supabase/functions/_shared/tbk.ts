@@ -3,23 +3,31 @@
 export type TbkEnv = "integration" | "production";
 
 export function tbkConfig() {
-  const env = (Deno.env.get("TBK_ENV") || "integration").toLowerCase() as TbkEnv;
+  const rawEnv = (
+    Deno.env.get("WEBPAY_ENV") ||
+    Deno.env.get("TBK_ENV") ||
+    "integration"
+  ).toLowerCase();
+  const env: TbkEnv = rawEnv === "production" ? "production" : "integration";
   const isProd = env === "production";
-  // Credenciales oficiales de integración Transbank (documentación pública).
-  const commerceCode =
+  const commerceCode = (
+    Deno.env.get("WEBPAY_COMMERCE_CODE") ||
     Deno.env.get("TBK_COMMERCE_CODE") ||
-    (isProd ? "" : "597055555532");
-  const apiKey =
+    ""
+  ).trim();
+  const apiKey = (
+    Deno.env.get("WEBPAY_API_KEY") ||
     Deno.env.get("TBK_API_KEY") ||
-    (isProd
-      ? ""
-      : "579B532A7440BB0C9079DED94D31EA1615BACEB56610332264625D42D0A1428");
+    ""
+  ).trim();
   const host = isProd
     ? "https://webpay3g.transbank.cl"
     : "https://webpay3gint.transbank.cl";
 
   if (!commerceCode || !apiKey) {
-    throw new Error("TBK_COMMERCE_CODE / TBK_API_KEY requeridos en production");
+    throw new Error(
+      "WEBPAY_COMMERCE_CODE y WEBPAY_API_KEY son obligatorios (alias: TBK_COMMERCE_CODE / TBK_API_KEY). No hay credenciales en el código.",
+    );
   }
 
   return { env, commerceCode, apiKey, host };
@@ -79,6 +87,33 @@ export async function tbkCommit(token: string): Promise<Record<string, unknown>>
       typeof data === "object"
         ? JSON.stringify(data)
         : `TBK commit failed ${res.status}`,
+    );
+  }
+  return data as Record<string, unknown>;
+}
+
+/** Consulta de estado (reintento si el commit ya fue consumido). */
+export async function tbkStatus(
+  token: string,
+): Promise<Record<string, unknown>> {
+  const { commerceCode, apiKey, host } = tbkConfig();
+  const res = await fetch(
+    `${host}/rswebpaytransaction/api/webpay/v1.2/transactions/${token}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Tbk-Api-Key-Id": commerceCode,
+        "Tbk-Api-Key-Secret": apiKey,
+      },
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(
+      typeof data === "object"
+        ? JSON.stringify(data)
+        : `TBK status failed ${res.status}`,
     );
   }
   return data as Record<string, unknown>;
