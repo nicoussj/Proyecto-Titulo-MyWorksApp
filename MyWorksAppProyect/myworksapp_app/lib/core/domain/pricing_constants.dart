@@ -25,12 +25,12 @@ class PricingConstants {
   static const String paymentAuthorized = 'autorizado';
   static const String paymentHeld = 'retenido';
   static const String paymentReleased = 'liberado';
-  static const String paymentRefunded = 'reembolsado';
 
-  /// Fondos capturados y retenidos en garantía (HOLD / ESCROW de Webpay).
+  /// Webpay deja el cobro en `retenido`. `autorizado` se conserva por flujos anteriores.
   static bool isEscrowSecured(String status) {
     return status == paymentAuthorized || status == paymentHeld;
   }
+  static const String paymentRefunded = 'reembolsado';
 
   static const String paymentTypePrimary = 'principal';
   static const String paymentTypeChangeOrder = 'orden_cambio';

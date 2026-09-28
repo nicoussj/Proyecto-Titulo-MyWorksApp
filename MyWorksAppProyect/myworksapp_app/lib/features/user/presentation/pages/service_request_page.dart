@@ -22,8 +22,8 @@ import '../widgets/worker_service_option_picker.dart';
 import '../widgets/worker_square_meters_field.dart';
 import '../widgets/open_quote_submitted_dialog.dart';
 import '../widgets/service_request_submitted_dialog.dart';
+import '../../../../core/widgets/escrow_checkout_sheet.dart';
 import '../../../../core/widgets/design_system/myworks_guarantee_badge.dart';
-import '../../../payments/presentation/pages/payment_screen.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/location_picker_widget.dart';
 import '../../../../core/widgets/app_guided_tour.dart' show AppGuidedTour, GuidedTourStep, TourTarget, TourTooltipAlign;
@@ -417,19 +417,10 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
           serviceMetadata: metadata,
         );
         if (!mounted) return;
-        String? serviceName;
-        for (final service in _services) {
-          if (service.id == _selectedServiceId) {
-            serviceName = service.name;
-            break;
-          }
-        }
-        final paid = await PaymentScreen.open(
+        final paid = await EscrowCheckoutSheet.show(
           context,
           jobId: booking.job.id,
-          amount: booking.quote.totalClp.toDouble(),
-          serviceName: serviceName,
-          specialistName: _selectedWorkerUser?.name,
+          quote: booking.quote,
         );
         if (paid) {
           await bookingService.confirmEscrowAndAccept(
@@ -461,19 +452,10 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
           serviceMetadata: metadata,
         );
         if (!mounted) return;
-        String? hourlyServiceName;
-        for (final service in _services) {
-          if (service.id == _selectedServiceId) {
-            hourlyServiceName = service.name;
-            break;
-          }
-        }
-        final paid = await PaymentScreen.open(
+        final paid = await EscrowCheckoutSheet.show(
           context,
           jobId: booking.job.id,
-          amount: booking.quote.totalClp.toDouble(),
-          serviceName: hourlyServiceName,
-          specialistName: _selectedWorkerUser?.name,
+          quote: booking.quote,
         );
         if (paid) {
           await bookingService.confirmEscrowAndAccept(

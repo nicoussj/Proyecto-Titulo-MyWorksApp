@@ -144,31 +144,10 @@ class _AppGuidedTourState extends State<AppGuidedTour>
 
   void _scheduleMeasure() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_visible) return;
-      unawaited(_remeasure());
+      if (_visible) {
+        unawaited(_prepareStep(_step));
+      }
     });
-  }
-
-  /// Actualiza el spotlight sin volver a hacer scroll ni ocultar el tooltip.
-  /// Scroll + ocultar el botón en cada frame deja la pantalla bloqueada.
-  Future<void> _remeasure() async {
-    final index = _step;
-    final hole = _measureTarget(index);
-    if (!mounted || !_visible || _step != index) return;
-    if (_sameHole(hole, _targetRect) && _anchorReady) return;
-    setState(() {
-      _targetRect = hole;
-      _anchorReady = true;
-    });
-  }
-
-  bool _sameHole(Rect? a, Rect? b) {
-    if (identical(a, b)) return true;
-    if (a == null || b == null) return false;
-    return (a.left - b.left).abs() < 1 &&
-        (a.top - b.top).abs() < 1 &&
-        (a.width - b.width).abs() < 1 &&
-        (a.height - b.height).abs() < 1;
   }
 
   Future<void> _prepareStep(int index) async {
@@ -275,26 +254,29 @@ class _AppGuidedTourState extends State<AppGuidedTour>
                   final size = Size(constraints.maxWidth, constraints.maxHeight);
                   final step = widget.steps[_step];
                   final hole = _targetRect;
-                  // Si el objetivo aún no está en pantalla (por ejemplo el botón
-                  // de envío, que aparece después del cuestionario), no tapar
-                  // el formulario: el usuario tiene que poder seguir.
-                  final showTooltip = _anchorReady;
+                  final showTooltip = _anchorReady &&
+                      (step.targetKey == null || hole != null);
 
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      if (hole != null)
-                        IgnorePointer(
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 220),
-                            child: CustomPaint(
-                              key: ValueKey('hole-$_step-${hole.shortHash}'),
-                              size: size,
-                              painter: _SpotlightPainter(hole: hole),
-                            ),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {},
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 220),
+                          child: CustomPaint(
+                            key: ValueKey('hole-$_step-${hole?.shortHash}'),
+                            size: size,
+                            painter: _SpotlightPainter(hole: hole),
                           ),
                         ),
+                      ),
                       if (hole != null) ...[
+                        Positioned.fromRect(
+                          rect: hole,
+                          child: const IgnorePointer(child: SizedBox.expand()),
+                        ),
                         AnimatedBuilder(
                           animation: _pulseController,
                           builder: (context, child) {
@@ -342,7 +324,6 @@ class _AppGuidedTourState extends State<AppGuidedTour>
       ),
     );
   }
-
 }
 
 extension on Rect {
@@ -401,14 +382,9 @@ class _AnimatedTourTooltip extends StatelessWidget {
     const estimatedHeight = 220.0;
 
     if (hole == null || align == TourTooltipAlign.center) {
-      final maxTop = layer.height - margin;
-      final safeMax = maxTop < margin ? margin : maxTop;
-      final top = hole == null && align != TourTooltipAlign.center
-          ? (layer.height - estimatedHeight - margin).clamp(margin, safeMax)
-          : (layer.height - estimatedHeight) / 2;
       return Rect.fromLTWH(
         (layer.width - width) / 2,
-        top.toDouble(),
+        (layer.height - estimatedHeight) / 2,
         width,
         estimatedHeight,
       );
@@ -431,8 +407,7 @@ class _AnimatedTourTooltip extends StatelessWidget {
       }
     }
 
-    final maxTop = layer.height - estimatedHeight - margin;
-    top = top.clamp(margin, maxTop < margin ? margin : maxTop);
+    top = top.clamp(margin, layer.height - estimatedHeight - margin);
     final left = (hole.center.dx - width / 2)
         .clamp(margin, layer.width - width - margin);
 

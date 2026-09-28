@@ -1,4 +1,4 @@
-/// Respuesta de `webpay-create-transaction`.
+/// Respuesta de `webpay-create`.
 class WebpayTransactionResponse {
   const WebpayTransactionResponse({
     required this.token,
@@ -27,7 +27,7 @@ class WebpayTransactionResponse {
     if (buyOrder.isEmpty || (handoff == null && (token.isEmpty || url.isEmpty))) {
       throw FormatException('Respuesta Webpay incompleta');
     }
-    return const WebpayTransactionResponse(
+    return WebpayTransactionResponse(
       token: token,
       url: url,
       buyOrder: buyOrder,

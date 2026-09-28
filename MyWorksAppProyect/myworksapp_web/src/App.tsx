@@ -1,34 +1,30 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  ShieldCheck,
-  LogOut,
-  Play,
-  UserPlus,
-  Search as SearchIcon,
-  Lock,
-  ArrowRight,
-} from 'lucide-react';
 
-import { CategoryCard } from './components/CategoryCard';
-import { BrandLogo } from './components/BrandLogo';
+import { LandingHome } from './views/LandingHome';
 import type { SearchWorker } from './components/SearchResultsView';
 import { useAuth } from './context/AuthContext';
 import { supabase } from './supabaseClient';
 import { queryKeys } from './queryClient';
 import {
   ALL_SERVICE_CATEGORIES,
-  FEATURED_CATEGORIES,
   type ServiceCategory,
 } from './data/serviceCategories';
 import {
+  CATALOG_STALE_MS,
+  chargeSavedCard,
   createGuestWebpayCheckout,
   createPendingJob,
-  createWebpaySession,
+  fetchActiveServices,
+  orderConfirmedMessage,
+  openJobForWorker,
+  parseCheckoutReturn,
   fetchPaymentStatus,
   fetchServiceByCategory,
-  fetchWorkersByCategory,
+  fetchWorkersCatalog,
   toWebWorkerCard,
+  type CatalogCursor,
+  type WorkerWithProfile,
 } from '@myworksapp/shared';
 
 const PaymentCheckoutModal = lazy(() =>
@@ -83,10 +79,6 @@ function ViewFallback() {
 
 type AppView = 'landing' | 'categories' | 'search' | 'tracking' | 'paid';
 
-const U = 'https://images.unsplash.com';
-const img = (id: string) =>
-  `${U}/photo-${id}?auto=format&fit=crop&w=900&h=560&q=80`;
-
 const CategoriesCatalogView = lazy(() =>
   import('./components/CategoriesCatalogView').then((m) => ({
     default: m.CategoriesCatalogView,
@@ -110,6 +102,8 @@ interface ServiceMatch {
   urgency: string;
 
   workers: SearchWorker[];
+
+  nextCursor: CatalogCursor | null;
 
 }
 
@@ -308,8 +302,11 @@ export function App() {
   const [showAuth, setShowAuth] = useState(false);
 
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [loadingMoreWorkers, setLoadingMoreWorkers] = useState(false);
   const [paidVerifying, setPaidVerifying] = useState(false);
   const [paidVerifyError, setPaidVerifyError] = useState<string | null>(null);
+  const [paymentNotice, setPaymentNotice] = useState<string | null>(null);
 
   const [activeNav, setActiveNav] = useState<'servicios' | 'como-funciona'>('servicios');
 
@@ -324,12 +321,20 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const pago = params.get('pago');
-    const paymentId = params.get('paymentId');
-    const jobIdParam = params.get('jobId');
+    void queryClient.prefetchQuery({
+      queryKey: queryKeys.activeServices,
+      queryFn: () => fetchActiveServices(supabase),
+      staleTime: CATALOG_STALE_MS,
+    });
+  }, [queryClient]);
 
-    if (pago === 'ok' || pago === 'retorno') {
+  useEffect(() => {
+    const returned = parseCheckoutReturn(window.location.search);
+    if (returned.kind === 'none') return;
+
+    const restorePending = () => {
+      let workerName = '';
+      let savedAmount = 0;
       try {
         const raw = sessionStorage.getItem('mwa-pending-checkout');
         if (raw) {
@@ -337,9 +342,14 @@ export function App() {
             worker?: SearchWorker;
             serviceTitle?: string;
             jobId?: string;
+            amount?: number;
           };
-          if (saved.worker) setSelectedWorker(saved.worker);
+          if (saved.worker) {
+            setSelectedWorker(saved.worker);
+            workerName = saved.worker.name;
+          }
           if (saved.jobId) setCheckoutJobId(saved.jobId);
+          if (saved.amount) savedAmount = saved.amount;
           if (saved.serviceTitle) {
             setServiceMatch((prev) =>
               prev
@@ -350,8 +360,70 @@ export function App() {
           sessionStorage.removeItem('mwa-pending-checkout');
         }
       } catch {
-        // ignore
+        // el checkout pendiente no es JSON válido
       }
+      return { workerName, savedAmount };
+    };
+
+    if (returned.kind === 'card') {
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
+    if (returned.kind === 'tracked') {
+      const pending = restorePending();
+      const jobIdParam = returned.jobId;
+      const amount = returned.amount || pending.savedAmount;
+      const workerName = pending.workerName;
+      const paymentId = returned.paymentId;
+      if (jobIdParam) setCheckoutJobId(jobIdParam);
+      setBookingError(null);
+      setPaidVerifyError(null);
+      setView('paid');
+      window.history.replaceState({}, '', window.location.pathname);
+      if (!paymentId) {
+        setPaidVerifyError(
+          'Falta referencia de pago. Si ya pagaste, revisa tu correo o inicia sesión.',
+        );
+        return;
+      }
+      setPaidVerifying(true);
+      void fetchPaymentStatus(supabase, paymentId, jobIdParam ?? undefined)
+        .then(async (status) => {
+          if (
+            status &&
+            ['retenido', 'autorizado', 'liberado'].includes(status.estado)
+          ) {
+            if (jobIdParam) {
+              await openJobForWorker(supabase, jobIdParam).catch(() => undefined);
+            }
+            setPaymentNotice(
+              orderConfirmedMessage({
+                amountClp: amount,
+                last4: returned.last4,
+                workerName,
+              }),
+            );
+            setView(workerName ? 'tracking' : 'paid');
+            return;
+          }
+          setPaidVerifyError(
+            'Aún no confirmamos el pago con Transbank. Si ya pagaste, espera un momento y recarga.',
+          );
+        })
+        .catch(() => {
+          setPaidVerifyError(
+            'No se pudo verificar el pago. Si ya pagaste, tu trabajo aparecerá en breve.',
+          );
+        })
+        .finally(() => setPaidVerifying(false));
+      return;
+    }
+
+    if (returned.kind === 'verify') {
+      restorePending();
+      const jobIdParam = returned.jobId;
+      const paymentId = returned.paymentId;
       if (jobIdParam) setCheckoutJobId(jobIdParam);
 
       setView('paid');
@@ -383,8 +455,8 @@ export function App() {
           'Falta referencia de pago. Si ya pagaste, revisa tu correo o inicia sesión.',
         );
       }
-    } else if (pago === 'fail') {
-      setBookingError('El pago no se completó. Puedes reintentar desde la búsqueda.');
+    } else if (returned.kind === 'failed') {
+      setBookingError(returned.message);
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -407,29 +479,33 @@ export function App() {
 
 
 
+    setCatalogError(null);
+
     const meta = resolveCategory(text);
 
 
 
     try {
 
-      const [service, workersRaw] = await Promise.all([
+      const [service, page] = await Promise.all([
 
         queryClient.fetchQuery({
           queryKey: queryKeys.serviceByCategory(meta.category),
           queryFn: () => fetchServiceByCategory(supabase, meta.category),
+          staleTime: CATALOG_STALE_MS,
         }),
 
         queryClient.fetchQuery({
           queryKey: queryKeys.workersByCategory(meta.category),
-          queryFn: () => fetchWorkersByCategory(supabase, meta.category),
+          queryFn: () => fetchWorkersCatalog(supabase, { category: meta.category }),
+          staleTime: CATALOG_STALE_MS,
         }),
 
       ]);
 
       setSelectedServiceId(service?.id ?? null);
 
-      const workers: SearchWorker[] = workersRaw.map((worker) => ({
+      const workers: SearchWorker[] = page.workers.map((worker: WorkerWithProfile) => ({
 
         ...toWebWorkerCard(worker),
 
@@ -439,13 +515,15 @@ export function App() {
 
 
 
-      setServiceMatch({ ...meta, workers });
+      setServiceMatch({ ...meta, workers, nextCursor: page.nextCursor });
 
     } catch {
 
       setSelectedServiceId(null);
 
-      setServiceMatch({ ...meta, workers: [] });
+      setCatalogError('No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.');
+
+      setServiceMatch({ ...meta, workers: [], nextCursor: null });
 
     } finally {
 
@@ -456,6 +534,32 @@ export function App() {
   };
 
 
+
+  const loadMoreWorkers = async () => {
+    const match = serviceMatch;
+    if (!match?.nextCursor || loadingMoreWorkers) return;
+    setLoadingMoreWorkers(true);
+    setCatalogError(null);
+    try {
+      const page = await fetchWorkersCatalog(supabase, {
+        category: match.category,
+        cursor: match.nextCursor,
+      });
+      const extra: SearchWorker[] = page.workers.map((worker: WorkerWithProfile) => ({
+        ...toWebWorkerCard(worker),
+        availableNow: true,
+      }));
+      setServiceMatch({
+        ...match,
+        workers: [...match.workers, ...extra],
+        nextCursor: page.nextCursor,
+      });
+    } catch {
+      setCatalogError('No se pudieron cargar más profesionales. Inténtalo de nuevo.');
+    } finally {
+      setLoadingMoreWorkers(false);
+    }
+  };
 
   const requestWorker = (worker: SearchWorker) => {
     setSelectedWorker(worker);
@@ -470,7 +574,7 @@ export function App() {
     }
     setBookingError(null);
 
-    // Sin sesión: formulario de datos + redirect Transbank (única excepción).
+    // Sin sesión: datos + Webpay. Con sesión: cobro a la tarjeta de la app.
     if (!profile) {
       setShowGuestCheckout(true);
       return;
@@ -500,17 +604,25 @@ export function App() {
 
   const payWithWebpay = async () => {
     if (!checkoutJobId || !selectedWorker) {
-      throw new Error('Falta el trabajo para iniciar Webpay.');
+      throw new Error('Falta el trabajo para confirmar el pedido.');
     }
-    const session = await createWebpaySession(supabase, {
+    sessionStorage.setItem(
+      'mwa-pending-checkout',
+      JSON.stringify({
+        jobId: checkoutJobId,
+        worker: selectedWorker,
+        serviceTitle: serviceMatch?.categoryName,
+        amount: selectedWorker.pricePerVisit,
+      }),
+    );
+    const charged = await chargeSavedCard(supabase, {
       jobId: checkoutJobId,
       amountClp: selectedWorker.pricePerVisit,
     });
-    return {
-      redirectUrl: session.redirectUrl,
-      paymentId: session.paymentId,
-      token: session.token,
-    };
+    if (charged.charged) {
+      await openJobForWorker(supabase, checkoutJobId);
+    }
+    return charged;
   };
 
   const submitGuestCheckout = async (data: {
@@ -588,15 +700,13 @@ export function App() {
 
           serviceTitle={serviceMatch?.categoryName ?? 'Instalación Eléctrica'}
 
-          serviceLocation={`Casa Particular • Las Condes, Santiago`}
+          serviceLocation="La dirección queda guardada en el trabajo"
 
-          orderId="MW-7821"
-
-          etaMinutes={18}
-
-          distanceKm={4.2}
+          orderId={checkoutJobId ?? 'sin-pedido'}
 
           profileName={profile?.name}
+
+          paymentNotice={paymentNotice}
 
           onBack={() => setView('search')}
 
@@ -675,6 +785,9 @@ export function App() {
           }}
 
           onShowAuth={() => setShowAuth(true)}
+          hasMore={Boolean(serviceMatch?.nextCursor)}
+          isLoadingMore={loadingMoreWorkers}
+          onLoadMore={() => void loadMoreWorkers()}
 
         />
 
@@ -718,7 +831,11 @@ export function App() {
 
             onPayWithWebpay={payWithWebpay}
 
-            onSuccess={() => void confirmBooking()}
+            onSuccess={(details) => {
+              sessionStorage.removeItem('mwa-pending-checkout');
+              setPaymentNotice(details.notice);
+              void confirmBooking();
+            }}
 
           />
 
@@ -751,6 +868,12 @@ export function App() {
 
         )}
 
+        {catalogError && (
+          <div className="toast-error" role="alert">
+            {catalogError}
+          </div>
+        )}
+
 
 
         <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
@@ -764,447 +887,18 @@ export function App() {
 
 
   return (
-
-    <div className="min-h-screen app-shell">
-
-      <nav className="glass-nav">
-
-        <div className="container nav-inner">
-
-          <BrandLogo size={36} />
-
-
-
-          <div className="nav-links-center">
-
-            <a
-
-              href="#categorias"
-
-              className={`nav-link${activeNav === 'servicios' ? ' is-active' : ''}`}
-
-              onClick={() => setActiveNav('servicios')}
-
-            >
-
-              Servicios
-
-            </a>
-
-            <a
-
-              href="#como-funciona"
-
-              className={`nav-link${activeNav === 'como-funciona' ? ' is-active' : ''}`}
-
-              onClick={() => setActiveNav('como-funciona')}
-
-            >
-
-              Cómo funciona
-
-            </a>
-
-            {!profile && (
-
-              <button type="button" className="nav-link nav-link-btn" onClick={() => setShowAuth(true)}>
-
-                Ingresar
-
-              </button>
-
-            )}
-
-          </div>
-
-
-
-          <div className="nav-actions">
-
-            {profile ? (
-
-              <>
-
-                <span className="nav-hello">Hola, {profile.name.split(' ')[0]}</span>
-
-                <button type="button" className="btn-ghost" onClick={() => void logout()}>
-
-                  <LogOut size={16} /> Salir
-
-                </button>
-
-              </>
-
-            ) : (
-
-              <button type="button" className="btn-outline-orange" onClick={() => setShowAuth(true)}>
-
-                Registrarse
-
-              </button>
-
-            )}
-
-          </div>
-
-        </div>
-
-      </nav>
-
-
-
-      {authError && (
-
-        <div className="auth-banner container page-fade-in" role="alert">
-
-          <p>{authError}</p>
-
-          <button
-
-            type="button"
-
-            className="btn-ghost"
-
-            onClick={() => {
-
-              clearError();
-
-              setShowAuth(true);
-
-            }}
-
-          >
-
-            Entendido
-
-          </button>
-
-        </div>
-
-      )}
-
-
-
-      <section className="hero-section page-fade-in">
-
-        <div className="container hero-split">
-
-          <div className="hero-rise hero-copy">
-
-            <h1 className="brand-display hero-brand">
-
-              My Works App
-
-              <br />
-
-              <span className="hero-accent">Profesionales de confianza</span>
-
-              <br />
-
-              para tu hogar
-
-            </h1>
-
-            <p className="hero-lead">
-
-              Conectamos tu hogar con técnicos verificados, calificados y cercanos. Rápido, seguro y sin complicaciones.
-
-            </p>
-
-            <div className="hero-cta-row">
-
-              <button type="button" className="btn-primary" onClick={goToCategories}>
-
-                Buscar servicio <ArrowRight size={18} />
-
-              </button>
-
-              <a href="#como-funciona" className="btn-ghost hero-ghost">
-
-                <span className="hero-play" aria-hidden>
-
-                  <Play size={12} fill="currentColor" />
-
-                </span>
-
-                Cómo funciona
-
-              </a>
-
-            </div>
-
-          </div>
-
-
-
-          <div className="hero-visual">
-
-            <img
-
-              className="hero-photo"
-
-              src={img('1621905251189-08b45d6a269e')}
-
-              alt="Técnico profesional en domicilio"
-
-            />
-
-            <div className="hero-float-card hero-float-trust">
-
-              <div className="hero-float-head">
-
-                <ShieldCheck size={16} color="var(--orange-accent)" />
-
-                <span>Confianza verificada</span>
-
-              </div>
-
-              <strong className="hero-float-metric">99.4%</strong>
-
-              <p>Calificación promedio de profesionales</p>
-
-              <div className="hero-progress"><span /></div>
-
-            </div>
-
-            <div className="hero-float-card hero-float-eta">
-
-              <div className="hero-float-head">
-
-                <span>Llegada estimada</span>
-
-              </div>
-
-              <strong className="hero-float-metric white">18 min</strong>
-
-              <p>Técnico en camino</p>
-
-              <div className="hero-mini-map" aria-hidden>
-
-                <div className="hero-mini-route" />
-
-                <div className="hero-mini-pin" />
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      <section id="categorias" className="categories-section section-fade-in">
-
-        <div className="container">
-
-          <div className="section-head section-head--center">
-
-            <p className="section-kicker">CATEGORÍAS POPULARES</p>
-
-          </div>
-
-
-
-          <div className="categories-grid">
-
-            {FEATURED_CATEGORIES.map((cat) => (
-
-              <CategoryCard
-
-                key={cat.id}
-
-                title={cat.title}
-
-                subtitle={cat.subtitle}
-
-                photo={cat.photo}
-
-                onClick={() => openCategory(cat)}
-
-              />
-
-            ))}
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      <section id="como-funciona" className="how-section-v2 section-fade-in">
-
-        <div className="container">
-
-          <div className="how-section-v2-head">
-
-            <div>
-
-              <p className="section-kicker">CÓMO FUNCIONA</p>
-
-              <h2>
-
-                Simple. Seguro. Confiable.
-
-                <br />
-
-                Consigue lo que necesitas.
-
-              </h2>
-
-              <p className="how-section-v2-lead">
-
-                My Works App conecta tu hogar con profesionales verificados, con pago protegido y seguimiento en tiempo real.
-
-              </p>
-
-              <div className="how-trust-row">
-
-                <ShieldCheck size={16} color="var(--orange-accent)" />
-
-                <span>Profesionales verificados • Pago protegido • Tú tienes el control</span>
-
-              </div>
-
-            </div>
-
-
-
-            <div className="how-steps-row">
-
-              {[
-
-                {
-
-                  num: '01',
-
-                  icon: UserPlus,
-
-                  title: 'CREA TU CUENTA',
-
-                  text: 'Regístrate en segundos y accede a profesionales verificados cerca de ti.',
-
-                },
-
-                {
-
-                  num: '02',
-
-                  icon: SearchIcon,
-
-                  title: 'BUSCA Y COMPARA',
-
-                  text: 'Explora técnicos calificados. Revisa valoraciones, precios y disponibilidad.',
-
-                },
-
-                {
-
-                  num: '03',
-
-                  icon: Lock,
-
-                  title: 'RESERVA Y RECIBE',
-
-                  text: 'El pago queda protegido. Sigues el servicio hasta la entrega.',
-
-                },
-
-              ].map((step, i) => {
-
-                const Icon = step.icon;
-
-                return (
-
-                  <div key={step.num} className="how-step-card">
-
-                    {i > 0 && <span className="how-step-arrow" aria-hidden>→</span>}
-
-                    <span className="how-step-num">{step.num}</span>
-
-                    <div className="how-step-icon">
-
-                      <Icon size={22} />
-
-                    </div>
-
-                    <h3>{step.title}</h3>
-
-                    <p>{step.text}</p>
-
-                  </div>
-
-                );
-
-              })}
-
-            </div>
-
-          </div>
-
-
-
-          <div className="categories-v2-header">
-
-            <div>
-
-              <p className="section-kicker">CATEGORÍAS</p>
-
-              <h2>Oficios para tu casa.</h2>
-
-            </div>
-
-            <button type="button" className="categories-v2-link" onClick={goToCategories}>
-
-              VER TODAS LAS CATEGORÍAS <ArrowRight size={14} />
-
-            </button>
-
-          </div>
-
-
-
-          <div className="categories-grid categories-grid--8">
-
-            {ALL_SERVICE_CATEGORIES.slice(0, 8).map((cat) => (
-
-              <CategoryCard
-
-                key={cat.id}
-
-                title={cat.title}
-
-                subtitle={cat.subtitle}
-
-                photo={cat.photo}
-
-                variant="grid"
-
-                onClick={() => openCategory(cat)}
-
-              />
-
-            ))}
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      <Suspense fallback={null}>
-        <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
-      </Suspense>
-
-    </div>
-
+    <LandingHome
+      activeNav={activeNav}
+      setActiveNav={setActiveNav}
+      profile={profile}
+      setShowAuth={setShowAuth}
+      logout={() => void logout()}
+      authError={authError}
+      clearError={clearError}
+      goToCategories={goToCategories}
+      openCategory={openCategory}
+      showAuth={showAuth}
+    />
   );
 
 }

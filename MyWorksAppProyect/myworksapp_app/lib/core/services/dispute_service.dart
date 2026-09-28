@@ -67,12 +67,15 @@ class DisputeService {
 
       await _disputeRepository.createDispute(dispute);
 
-      // 5. Congelar pago si existe
+      // El cobro de Webpay ya está retenido. Si solo quedó autorizado, se retiene.
       final payment = await _paymentService.getPaymentByJobId(jobId);
       if (payment != null &&
           payment.status == PricingConstants.paymentAuthorized) {
         await _paymentService.holdPayment(payment.id);
         AppLogger.i('Pago retenido por disputa: ${payment.id}');
+      } else if (payment != null &&
+          payment.status == PricingConstants.paymentHeld) {
+        AppLogger.i('Disputa abierta; el pago ${payment.id} ya estaba retenido');
       }
 
       AppLogger.i('Disputa abierta: ${dispute.id}');
@@ -130,7 +133,8 @@ class DisputeService {
   Future<bool> hasOpenDispute(String jobId) async {
     try {
       final dispute = await _disputeRepository.getDisputeByJobId(jobId);
-      return dispute != null && dispute.status == 'abierta';
+      return dispute != null &&
+          (dispute.status == 'abierta' || dispute.status == 'en_revision');
     } catch (e) {
       AppLogger.e('Error verificando disputa', e);
       return false;

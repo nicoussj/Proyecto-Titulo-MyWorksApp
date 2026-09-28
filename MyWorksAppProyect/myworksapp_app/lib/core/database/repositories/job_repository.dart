@@ -31,6 +31,7 @@ class JobRepository {
       'obtener_trabajo_sin_direccion',
       params: {'p_id': id},
     );
+    if (pub == null) return null;
     if (pub is! Map) return null;
     return _openListing(Map<String, dynamic>.from(pub));
   }
@@ -201,6 +202,7 @@ class JobRepository {
     );
   }
 
+  /// El cliente recibe conforme: completa el trabajo y libera el pago retenido.
   Future<void> closeOnClientApproval(String jobId) async {
     await supabase.rpc(
       'cerrar_trabajo_conforme',

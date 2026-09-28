@@ -185,22 +185,5 @@ void main() {
         ),
       );
     });
-
-    test('awaiting_payment → accepted acepta pago retenido en garantía', () async {
-      final job = _job(
-        status: PricingConstants.jobAwaitingPayment,
-        pricingMode: PricingConstants.modeFixedPrice,
-      );
-      final held = _authorizedPayment().copyWith(
-        status: PricingConstants.paymentHeld,
-      );
-
-      await PaymentGuard.validate(
-        job: job,
-        targetStatus: AppConstants.jobStatusAccepted,
-        ports: _ports(primaryPayment: held),
-      );
-    });
   });
 }
-

@@ -21,8 +21,6 @@ import '../../features/user/presentation/pages/worker_detail_page.dart';
 import '../../features/user/presentation/pages/quick_booking_page.dart';
 import '../../features/jobs/presentation/pages/job_detail_page.dart';
 import '../../features/jobs/presentation/pages/job_history_page.dart';
-import '../../features/payments/presentation/pages/payment_result_screen.dart';
-import '../../features/payments/presentation/pages/payment_screen.dart';
 import '../../features/ratings/presentation/pages/rating_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
@@ -285,31 +283,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppConstants.routeJobHistory,
         builder: (context, state) => const JobHistoryPage(),
-      ),
-      GoRoute(
-        path: AppConstants.routePayment,
-        builder: (context, state) {
-          final extra = state.extra;
-          final args = extra is Map ? Map<String, dynamic>.from(extra) : null;
-          return PaymentScreen(
-            jobId: args?['jobId'] as String? ?? '',
-            amount: (args?['amount'] as num?)?.toDouble() ?? 0,
-            serviceName: args?['serviceName'] as String?,
-            specialistName: args?['specialistName'] as String?,
-          );
-        },
-      ),
-      GoRoute(
-        path: AppConstants.routePaymentResult,
-        builder: (context, state) {
-          final queryToken = state.uri.queryParameters['token_ws'] ??
-              state.uri.queryParameters['token'] ??
-              '';
-          final extraToken = state.extra is String ? state.extra as String : '';
-          return PaymentResultScreen(
-            token: queryToken.isNotEmpty ? queryToken : extraToken,
-          );
-        },
       ),
       GoRoute(
         path: '${AppConstants.routeRating}/:jobId',

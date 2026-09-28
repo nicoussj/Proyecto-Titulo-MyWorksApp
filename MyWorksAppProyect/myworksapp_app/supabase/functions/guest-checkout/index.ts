@@ -1,4 +1,11 @@
 import { corsHeadersFor, jsonResponse } from "../_shared/cors.ts";
+import { isKillSwitchOn, killSwitchResponse } from "../_shared/kill_switch.ts";
+import {
+  allowRate,
+  clientIp,
+  rateLimitExceededMessage,
+} from "../_shared/rate_limit.ts";
+import { publicErrorMessage } from "../_shared/safe_error.ts";
 import { resolveReturnUrl, signHandoffTicket } from "../_shared/security.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { tbkConfig, tbkCreateTransaction } from "../_shared/tbk.ts";
@@ -23,31 +30,9 @@ function isEmail(v: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
-/** Rate-limit in-memory por IP (Edge isolate; mitiga abuso básico). */
-const guestHits = new Map<string, { count: number; resetAt: number }>();
 const GUEST_WINDOW_MS = 60_000;
-const GUEST_MAX = 8;
-
-function clientIp(req: Request): string {
-  return (
-    req.headers.get("cf-connecting-ip") ||
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
-
-function allowGuest(ip: string): boolean {
-  const now = Date.now();
-  const row = guestHits.get(ip);
-  if (!row || row.resetAt < now) {
-    guestHits.set(ip, { count: 1, resetAt: now + GUEST_WINDOW_MS });
-    return true;
-  }
-  if (row.count >= GUEST_MAX) return false;
-  row.count += 1;
-  return true;
-}
+const GUEST_MAX_IP = 5;
+const GUEST_MAX_EMAIL = 3;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -57,14 +42,15 @@ Deno.serve(async (req) => {
     return jsonResponse(req, { error: "Method not allowed" }, 405);
   }
 
+  let guestUserId: string | null = null;
   try {
+    if (isKillSwitchOn("MWA_READ_ONLY") || isKillSwitchOn("MWA_KILL_GUEST_CHECKOUT")) {
+      return jsonResponse(req, killSwitchResponse(), 503);
+    }
+
     const ip = clientIp(req);
-    if (!allowGuest(ip)) {
-      return jsonResponse(
-        req,
-        { error: "Demasiados intentos. Espera un minuto e inténtalo de nuevo." },
-        429,
-      );
+    if (!allowRate(`guest:ip:${ip}`, GUEST_MAX_IP, GUEST_WINDOW_MS)) {
+      return jsonResponse(req, { error: rateLimitExceededMessage() }, 429);
     }
 
     const body = (await req.json()) as GuestBody;
@@ -84,6 +70,9 @@ Deno.serve(async (req) => {
         400,
       );
     }
+    if (!allowRate(`guest:email:${email}`, GUEST_MAX_EMAIL, GUEST_WINDOW_MS)) {
+      return jsonResponse(req, { error: rateLimitExceededMessage() }, 429);
+    }
     if (!workerId || !serviceId || !Number.isFinite(amountClp) || amountClp <= 0) {
       return jsonResponse(
         req,
@@ -93,6 +82,7 @@ Deno.serve(async (req) => {
     }
 
     const admin = serviceClient();
+    await admin.rpc("limpiar_invitados_sin_pago");
 
     const { data: existingProfile } = await admin
       .from("perfiles")
@@ -101,15 +91,14 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existingProfile) {
-      return jsonResponse(
-        req,
-        {
-          error: "account_exists",
-          message:
-            "Ya existe una cuenta con este correo. Inicia sesión para pagar sin salir de My Works App.",
-        },
-        409,
-      );
+      return jsonResponse(req, {
+        mode: "guest_redirect",
+        needsLogin: true,
+        redirectUrl: "",
+        jobId: "",
+        paymentId: "",
+        buyOrder: "",
+      });
     }
 
     const { data: worker, error: workerErr } = await admin
@@ -140,7 +129,7 @@ Deno.serve(async (req) => {
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
       password: tempPassword,
-      email_confirm: true,
+      email_confirm: false,
       user_metadata: {
         name,
         phone,
@@ -150,14 +139,31 @@ Deno.serve(async (req) => {
     });
 
     if (createErr || !created.user) {
+      const raw = createErr?.message ?? "";
+      const taken = /already|registered|exists/i.test(raw);
+      if (taken) {
+        return jsonResponse(req, {
+          mode: "guest_redirect",
+          needsLogin: true,
+          redirectUrl: "",
+          jobId: "",
+          paymentId: "",
+          buyOrder: "",
+        });
+      }
       return jsonResponse(
         req,
-        { error: createErr?.message || "No se pudo crear la cuenta invitada" },
+        { error: publicErrorMessage(createErr, "No se pudo crear la cuenta invitada") },
         400,
       );
     }
 
     const userId = created.user.id;
+    guestUserId = userId;
+    const discardGuest = async () => {
+      await admin.auth.admin.deleteUser(userId);
+      guestUserId = null;
+    };
     const now = new Date().toISOString();
 
     const { error: profileErr } = await admin.from("perfiles").upsert({
@@ -170,7 +176,8 @@ Deno.serve(async (req) => {
     });
 
     if (profileErr) {
-      return jsonResponse(req, { error: profileErr.message }, 400);
+      await discardGuest();
+      return jsonResponse(req, { error: publicErrorMessage(profileErr, "No se pudo guardar el perfil") }, 400);
     }
 
     const jobId = crypto.randomUUID();
@@ -196,7 +203,8 @@ Deno.serve(async (req) => {
     });
 
     if (jobErr) {
-      return jsonResponse(req, { error: jobErr.message }, 400);
+      await discardGuest();
+      return jsonResponse(req, { error: publicErrorMessage(jobErr, "No se pudo crear el trabajo") }, 400);
     }
 
     const paymentId = crypto.randomUUID();
@@ -231,12 +239,14 @@ Deno.serve(async (req) => {
     });
 
     if (payErr) {
-      return jsonResponse(req, { error: payErr.message }, 400);
+      await discardGuest();
+      return jsonResponse(req, { error: publicErrorMessage(payErr, "No se pudo registrar el pago") }, 400);
     }
 
     const ticket = await signHandoffTicket(paymentId);
     const handoff =
       `${Deno.env.get("SUPABASE_URL")}/functions/v1/webpay-handoff?t=${encodeURIComponent(ticket)}`;
+    guestUserId = null;
 
     // Invitado: redirección completa a Transbank (única excepción de producto).
     return jsonResponse(req, {
@@ -248,12 +258,19 @@ Deno.serve(async (req) => {
       mode: "guest_redirect",
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    const status = msg.includes("WEBPAY_HANDOFF_SECRET")
+    if (guestUserId) {
+      try {
+        await serviceClient().auth.admin.deleteUser(guestUserId);
+      } catch {
+        // El barrido de invitados sin pago cubre lo que no se pudo borrar aquí.
+      }
+    }
+    const raw = e instanceof Error ? e.message : String(e);
+    const status = raw.includes("WEBPAY_HANDOFF_SECRET")
       ? 503
-      : msg.includes("Demasiados")
+      : raw.includes("Demasiados")
         ? 429
         : 500;
-    return jsonResponse(req, { error: msg }, status);
+    return jsonResponse(req, { error: publicErrorMessage(e) }, status);
   }
 });

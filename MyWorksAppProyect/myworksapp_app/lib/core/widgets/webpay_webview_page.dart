@@ -1,68 +1,39 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../theme/app_colors.dart';
 
-/// Resultado de una sesión Webpay embebida.
-class WebpayCheckoutResult {
-  const WebpayCheckoutResult({
-    this.tokenWs,
-    this.approved,
-    this.aborted = false,
-  });
-
-  final String? tokenWs;
-  final bool? approved;
-  final bool aborted;
-}
-
 /// WebView in-app para Webpay: el usuario no sale a Chrome/Safari externo.
 class WebpayWebViewPage extends StatefulWidget {
   const WebpayWebViewPage({
     super.key,
-    required this.paymentUrl,
-    this.tokenWs,
-    this.captureReturn = false,
+    this.paymentUrl,
+    this.html,
     this.title = 'Pago Webpay',
   });
 
-  final String paymentUrl;
-  final String? tokenWs;
-  final bool captureReturn;
+  final String? paymentUrl;
+  final String? html;
   final String title;
 
-  /// Abre la URL de handoff y espera retorno (deep link o post-commit).
-  static Future<bool> open(BuildContext context, {required String paymentUrl}) async {
-    final result = await Navigator.of(context).push<Object?>(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => WebpayWebViewPage(paymentUrl: paymentUrl),
-      ),
-    );
-    if (result is WebpayCheckoutResult) {
-      return result.approved != false && !result.aborted;
-    }
-    return result == true;
-  }
-
-  /// POST `token_ws` al comercio y devuelve el token del retorno.
-  static Future<WebpayCheckoutResult?> openCheckout(
+  /// Abre la URL de handoff, o un HTML propio que hace POST a Transbank.
+  static Future<bool> open(
     BuildContext context, {
-    required String paymentUrl,
-    required String tokenWs,
-  }) {
-    return Navigator.of(context).push<WebpayCheckoutResult>(
+    String? paymentUrl,
+    String? html,
+    String title = 'Pago Webpay',
+  }) async {
+    final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         fullscreenDialog: true,
         builder: (_) => WebpayWebViewPage(
           paymentUrl: paymentUrl,
-          tokenWs: tokenWs,
-          captureReturn: true,
+          html: html,
+          title: title,
         ),
       ),
     );
+    return result == true;
   }
 
   @override
@@ -72,59 +43,27 @@ class WebpayWebViewPage extends StatefulWidget {
 class _WebpayWebViewPageState extends State<WebpayWebViewPage> {
   late final WebViewController _controller;
   var _loading = true;
-  var _closed = false;
 
   bool _isReturnUrl(String url) {
     final lower = url.toLowerCase();
-    if (lower.contains('webpay-commit')) return false;
-    return lower.startsWith('myworksapp://payment-result') ||
-        lower.startsWith('myworksapp://pago') ||
-        lower.contains('/payment-result') ||
+    return lower.startsWith('myworksapp://pago') ||
         lower.contains('pago=ok') ||
         lower.contains('pago=fail') ||
         lower.contains('pago=retorno') ||
+        lower.contains('tarjeta=ok') ||
+        lower.contains('tarjeta=fail') ||
         lower.contains('/pago/retorno');
   }
 
   bool _isApprovedReturn(String url) {
     final lower = url.toLowerCase();
-    if (lower.contains('approved=0') ||
-        lower.contains('ok=0') ||
-        lower.contains('pago=fail')) {
-      return false;
-    }
-    if (lower.contains('approved=1') ||
-        lower.contains('ok=1') ||
-        lower.contains('pago=ok')) {
-      return true;
-    }
+    if (lower.contains('tarjeta=fail')) return false;
+    if (lower.contains('tarjeta=ok')) return true;
+    if (lower.contains('ok=0') || lower.contains('pago=fail')) return false;
+    if (lower.contains('ok=1') || lower.contains('pago=ok')) return true;
+    // Commit HTML embebido: tratamos llegada al commit como pendiente de mensaje;
+    // si la URL es app return sin ok, asumimos éxito solo con ok=1.
     return lower.contains('pago=retorno');
-  }
-
-  String? _tokenFrom(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return null;
-    final token = uri.queryParameters['token_ws'] ?? uri.queryParameters['token'];
-    if (token == null || token.isEmpty) return null;
-    return token;
-  }
-
-  void _finish(String url) {
-    if (!mounted || _closed) return;
-    _closed = true;
-    final approved = _isApprovedReturn(url);
-    if (widget.captureReturn) {
-      Navigator.of(context).pop(
-        WebpayCheckoutResult(
-          tokenWs: _tokenFrom(url) ?? widget.tokenWs,
-          approved: approved,
-          aborted: url.toLowerCase().contains('tbk_token') &&
-              _tokenFrom(url) == null,
-        ),
-      );
-      return;
-    }
-    Navigator.of(context).pop(approved);
   }
 
   @override
@@ -143,7 +82,8 @@ class _WebpayWebViewPageState extends State<WebpayWebViewPage> {
           onNavigationRequest: (request) {
             final url = request.url;
             if (_isReturnUrl(url)) {
-              _finish(url);
+              final ok = _isApprovedReturn(url);
+              if (mounted) Navigator.of(context).pop(ok);
               return NavigationDecision.prevent;
             }
             return NavigationDecision.navigate;
@@ -152,24 +92,20 @@ class _WebpayWebViewPageState extends State<WebpayWebViewPage> {
             final url = change.url;
             if (url == null) return;
             if (_isReturnUrl(url)) {
-              _finish(url);
+              final ok = _isApprovedReturn(url);
+              if (mounted) Navigator.of(context).pop(ok);
             }
           },
         ),
       );
-
-    final token = widget.tokenWs;
-    if (token != null && token.isNotEmpty) {
-      _controller.loadRequest(
-        Uri.parse(widget.paymentUrl),
-        method: LoadRequestMethod.post,
-        headers: const {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: utf8.encode('token_ws=${Uri.encodeQueryComponent(token)}'),
+    final html = widget.html;
+    if (html != null && html.isNotEmpty) {
+      _controller.loadHtmlString(
+        html,
+        baseUrl: 'https://webpay3gint.transbank.cl/',
       );
     } else {
-      _controller.loadRequest(Uri.parse(widget.paymentUrl));
+      _controller.loadRequest(Uri.parse(widget.paymentUrl ?? ''));
     }
   }
 
@@ -183,13 +119,7 @@ class _WebpayWebViewPageState extends State<WebpayWebViewPage> {
         actions: [
           IconButton(
             tooltip: 'Cancelar',
-            onPressed: () {
-              if (widget.captureReturn) {
-                Navigator.of(context).pop(null);
-              } else {
-                Navigator.of(context).pop(false);
-              }
-            },
+            onPressed: () => Navigator.of(context).pop(false),
             icon: const Icon(Icons.close),
           ),
         ],

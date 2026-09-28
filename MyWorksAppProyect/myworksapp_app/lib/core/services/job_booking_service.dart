@@ -364,7 +364,7 @@ class JobBookingService {
     return (job: job, quote: quote);
   }
 
-  /// Tras aprobar evidencia: pago autorizado → trabajo completado.
+  /// El cliente recibe conforme: el servidor completa el trabajo y libera el pago.
   Future<JobModel> confirmCompletionAndPay({
     required String jobId,
     required String userId,
@@ -383,7 +383,7 @@ class JobBookingService {
     return updated;
   }
 
-  /// Tras checkout mock: escrow autorizado → trabajo aceptado.
+  /// Tras el cobro en garantía el trabajo queda pendiente de que el profesional acepte.
   Future<JobModel> confirmEscrowAndAccept({
     required String jobId,
     required String userId,
@@ -392,15 +392,7 @@ class JobBookingService {
     if (job == null) throw AppError.notFound('Trabajo no encontrado');
     if (job.userId != userId) throw AppError.permission('Sin permiso');
 
-    if (job.status == AppConstants.jobStatusPending &&
-        PricingConstants.isEscrowSecured(job.paymentStatus)) {
-      return job;
-    }
-    if (job.status == AppConstants.jobStatusAccepted &&
-        PricingConstants.isEscrowSecured(job.paymentStatus)) {
-      return job;
-    }
-
+    if (job.status == AppConstants.jobStatusPending) return job;
     if (job.status != PricingConstants.jobAwaitingPayment) {
       throw AppError.validation('El trabajo no está pendiente de pago');
     }
