@@ -447,21 +447,12 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
     final auth = ref.read(authProvider).user;
     if (job == null || auth == null) return;
 
-    final quote = JobDetailHelpers.quoteFromJob(job);
-    if (quote == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No hay monto definido para este trabajo')),
-      );
-      return;
-    }
-
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Aprobar finalización'),
+        title: const Text('Recibo conforme'),
         content: const Text(
-          'Al aprobar confirmas que el trabajo fue realizado correctamente y procederás al pago.',
+          'Confirmas que el trabajo quedó bien. Los fondos retenidos se liberan al profesional.',
         ),
         actions: [
           TextButton(
@@ -470,19 +461,12 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Continuar al pago'),
+            child: const Text('Liberar fondos'),
           ),
         ],
       ),
     );
     if (confirm != true || !mounted) return;
-
-    final paid = await EscrowCheckoutSheet.show(
-      context,
-      jobId: job.id,
-      quote: quote,
-    );
-    if (!paid || !mounted) return;
 
     try {
       await JobBookingService.instance.confirmCompletionAndPay(
@@ -505,7 +489,7 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
       await _loadJobDetails();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trabajo aprobado y pago realizado.')),
+        const SnackBar(content: Text('Trabajo recibido conforme. Los fondos quedaron liberados.')),
       );
       context.push('${AppConstants.routeRating}/${widget.jobId}');
     } on AppError catch (e) {
@@ -521,12 +505,17 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
     final auth = ref.read(authProvider).user;
     if (job == null || auth == null) return;
 
+    final descriptionCtrl = TextEditingController();
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Rechazar finalización'),
-        content: const Text(
-          'El trabajo volverá a estado "En curso" para que el profesional pueda corregir o subir nueva evidencia.',
+        title: const Text('No estoy conforme'),
+        content: TextField(
+          controller: descriptionCtrl,
+          decoration: const InputDecoration(
+            labelText: 'Qué no quedó bien',
+          ),
+          maxLines: 4,
         ),
         actions: [
           TextButton(
@@ -536,41 +525,19 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Rechazar'),
+            child: const Text('Abrir ticket'),
           ),
         ],
       ),
     );
-    if (confirm != true) return;
+    final description = descriptionCtrl.text.trim();
+    descriptionCtrl.dispose();
+    if (confirm != true || !mounted) return;
 
-    try {
-      await _stateMachine.transitionTo(
-        jobId: widget.jobId,
-        newStatus: AppConstants.jobStatusInProgress,
-        userId: auth.id,
-      );
-
-      if (job.workerId != null) {
-        await NotificationService.instance.showNotification(
-          title: 'Finalización rechazada',
-          body: 'El cliente solicitó revisar el trabajo. Sube nueva evidencia cuando esté listo.',
-          userId: job.workerId!,
-          type: 'job_completion_rejected',
-          relatedId: job.id,
-        );
-      }
-
-      await _loadJobDetails();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Finalización rechazada. El trabajo sigue en curso.')),
-      );
-    } on AppError catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: AppColors.error),
-      );
-    }
+    await _openDispute(
+      AppConstants.disputeReasonQuality,
+      description.isEmpty ? 'El cliente no recibió conforme el trabajo.' : description,
+    );
   }
 
   Future<void> _requestChangeOrder() async {

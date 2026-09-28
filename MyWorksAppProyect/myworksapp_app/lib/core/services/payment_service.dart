@@ -14,7 +14,7 @@ import '../utils/app_error.dart';
 /// Servicio de pagos — escrow vía Webpay (Edge) + RPCs admin.
 ///
 /// Crear intención: Edge `webpay-create-transaction`.
-/// Confirmar: Edge `webpay-commit-transaction` (escrow `retenido`).
+/// Confirmar: Edge `webpay-commit` (escrow `retenido`).
 /// Liberar/reembolsar: `liberar_escrow` / `reembolsar_escrow` (admin).
 class PaymentService {
   PaymentService({
@@ -101,6 +101,56 @@ class PaymentService {
       if (e is AppError) rethrow;
       AppLogger.e('Error reteniendo pago', e);
       throw AppError.database('Error al retener pago: ${e.toString()}');
+    }
+  }
+
+  /// Atención al cliente cierra la disputa liberando el pago o devolviéndolo a la tarjeta.
+  Future<void> resolveDisputeFunds({
+    required String disputeId,
+    required String decision,
+    required String resolution,
+  }) async {
+    try {
+      final response = await supabase.functions.invoke(
+        'webpay-resolve-dispute',
+        body: {
+          'disputeId': disputeId,
+          'decision': decision,
+          'resolution': resolution,
+        },
+      );
+      final data = _asMap(response.data);
+      if (data['error'] != null) {
+        throw AppError.validation(data['error'].toString());
+      }
+    } catch (e) {
+      if (e is AppError) rethrow;
+      AppLogger.e('Error cerrando disputa', e);
+      throw AppError.network(_edgeErrorMessage(e), e);
+    }
+  }
+
+  /// El profesional rechaza un pendiente con pago retenido: vuelve a la tarjeta.
+  Future<void> refundBecauseWorkerRejected({
+    required String jobId,
+    required Map<String, dynamic> metadata,
+  }) async {
+    try {
+      final response = await supabase.functions.invoke(
+        'webpay-refund-rejection',
+        body: {
+          'jobId': jobId,
+          'metadata': metadata,
+        },
+      );
+      final data = _asMap(response.data);
+      if (data['error'] != null) {
+        throw AppError.validation(data['error'].toString());
+      }
+    } catch (e) {
+      if (e is AppError) rethrow;
+      AppLogger.e('Error reembolsando rechazo', e);
+      throw AppError.network(_edgeErrorMessage(e), e);
     }
   }
 
@@ -243,17 +293,22 @@ class PaymentService {
     if (payment == null) return;
     if ([PricingConstants.paymentAuthorized, PricingConstants.paymentHeld]
         .contains(payment.status)) {
-      await refundPayment(payment.id);
+      final response = await supabase.functions.invoke(
+        'webpay-refund-cancellation',
+        body: {'jobId': jobId},
+      );
+      final data = _asMap(response.data);
+      if (data['error'] != null) {
+        throw AppError.validation(data['error'].toString());
+      }
+      if (data['skipped'] == true) return;
       await _syncJobPaymentStatus(jobId, PricingConstants.paymentRefunded);
     }
   }
 
   Future<void> _syncJobPaymentStatus(String jobId, String paymentStatus) async {
-    final job = await _jobRepository.getJobById(jobId);
-    if (job == null) return;
-    await _jobRepository.updateJob(
-      job.copyWith(paymentStatus: paymentStatus, updatedAt: DateTime.now()),
-    );
+    if (paymentStatus.isEmpty) return;
+    await _jobRepository.syncPaymentStatusFromLedger(jobId);
   }
 
   /// Verifica si un job tiene pago principal autorizado (garantía).
@@ -287,13 +342,11 @@ class PaymentService {
 
     try {
       final response = await supabase.functions.invoke(
-        'webpay-create-transaction',
+        'webpay-create',
         body: {
           'jobId': jobId,
-          'buy_order': jobId,
-          'session_id': sessionId,
-          'amount': amount.round(),
-          'clientReturn': _webpayClientReturn(),
+          'amountClp': amount.round(),
+          'returnUrl': _webpayClientReturn(),
         },
       );
       final data = _asMap(response.data);
@@ -308,7 +361,7 @@ class PaymentService {
     }
   }
 
-  /// Confirma el `token_ws` en la Edge `webpay-commit-transaction`.
+  /// Confirma el `token_ws` en la Edge `webpay-commit`.
   Future<WebpayCommitResult> confirmWebpayPayment({
     required String token,
   }) async {
@@ -319,7 +372,7 @@ class PaymentService {
 
     try {
       final response = await supabase.functions.invoke(
-        'webpay-commit-transaction',
+        'webpay-commit',
         body: {'token_ws': tokenWs},
       );
       final data = _asMap(response.data);

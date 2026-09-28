@@ -111,7 +111,7 @@ export function sanitizeClientReturn(raw: string | undefined | null): string | n
 export function buildCommitReturnUrl(clientReturn: string | null): string {
   const base =
     Deno.env.get("WEBPAY_COMMIT_URL") ||
-    `${Deno.env.get("SUPABASE_URL")}/functions/v1/webpay-commit-transaction`;
+    `${Deno.env.get("SUPABASE_URL")}/functions/v1/webpay-commit`;
   if (!clientReturn) return base;
   const url = new URL(base);
   url.searchParams.set("cr", clientReturn);

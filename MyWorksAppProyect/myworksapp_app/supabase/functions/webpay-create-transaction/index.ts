@@ -1,4 +1,11 @@
 import { corsHeadersFor, jsonResponse } from "../_shared/cors.ts";
+import { isKillSwitchOn, killSwitchResponse } from "../_shared/kill_switch.ts";
+import {
+  allowRate,
+  clientIp,
+  rateLimitExceededMessage,
+} from "../_shared/rate_limit.ts";
+import { publicErrorMessage } from "../_shared/safe_error.ts";
 import {
   buildCommitReturnUrl,
   sanitizeClientReturn,
@@ -20,6 +27,12 @@ Deno.serve(async (req) => {
   }
   if (req.method !== "POST") {
     return jsonResponse(req, { error: "Method not allowed" }, 405);
+  }
+  if (isKillSwitchOn("MWA_READ_ONLY") || isKillSwitchOn("MWA_KILL_WEBPAY")) {
+    return jsonResponse(req, killSwitchResponse(), 503);
+  }
+  if (!allowRate(`webpay-create-tx:${clientIp(req)}`, 20, 60_000)) {
+    return jsonResponse(req, { error: rateLimitExceededMessage() }, 429);
   }
 
   try {
@@ -65,13 +78,13 @@ Deno.serve(async (req) => {
     if (payErr || !payment) {
       return jsonResponse(
         req,
-        { error: payErr?.message || "No se pudo crear la intención de pago" },
+        { error: publicErrorMessage(payErr, "No se pudo crear la intención de pago") },
         400,
       );
     }
 
     const paymentId = String(payment.id);
-    const buyOrder = `MWA${paymentId.replace(/-/g, "").slice(0, 23)}`;
+    const buyOrder = `MWA${paymentId.replace(/-/g, "").slice(0, 20)}`;
     const clientReturn = sanitizeClientReturn(
       typeof body.clientReturn === "string" ? body.clientReturn : undefined,
     );
@@ -101,25 +114,25 @@ Deno.serve(async (req) => {
       return jsonResponse(req, { error: updErr.message }, 500);
     }
 
-    let redirectUrl: string | undefined;
+    let redirectUrl: string;
     try {
       const ticket = await signHandoffTicket(paymentId);
       const base = Deno.env.get("SUPABASE_URL");
-      if (base) {
-        redirectUrl =
-          `${base}/functions/v1/webpay-handoff?t=${encodeURIComponent(ticket)}`;
+      if (!base) {
+        return jsonResponse(req, { error: "SUPABASE_URL ausente" }, 503);
       }
-    } catch {
-      redirectUrl = undefined;
+      redirectUrl =
+        `${base}/functions/v1/webpay-handoff?t=${encodeURIComponent(ticket)}`;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return jsonResponse(req, { error: msg }, 503);
     }
 
     return jsonResponse(req, {
-      token,
-      url,
       buyOrder,
       paymentId,
       ambiente: env,
-      ...(redirectUrl ? { redirectUrl } : {}),
+      redirectUrl,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

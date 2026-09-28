@@ -69,6 +69,10 @@ class JobStateMachine {
         updatedAt: DateTime.now(),
       );
 
+      if (newStatus == AppConstants.jobStatusCancelled) {
+        await PaymentService.instance.refundPrimaryOnCancellation(jobId);
+      }
+
       await _jobRepository.updateJob(updatedJob);
 
       if (newStatus == AppConstants.jobStatusCompleted) {
@@ -77,7 +81,7 @@ class JobStateMachine {
           'Trabajo $jobId completado; pago sigue retenido hasta liquidación admin',
         );
       } else if (newStatus == AppConstants.jobStatusCancelled) {
-        await PaymentService.instance.refundPrimaryOnCancellation(jobId);
+        AppLogger.i('Trabajo $jobId cancelado; reembolso pedido antes del cambio de estado');
       }
 
       AppLogger.i(
@@ -113,6 +117,7 @@ class JobStateMachine {
       const clientActions = [
         PricingConstants.jobQuoteSelected,
         PricingConstants.jobAwaitingPayment,
+        AppConstants.jobStatusPending,
         AppConstants.jobStatusAccepted,
         AppConstants.jobStatusCompleted,
         AppConstants.jobStatusInProgress,

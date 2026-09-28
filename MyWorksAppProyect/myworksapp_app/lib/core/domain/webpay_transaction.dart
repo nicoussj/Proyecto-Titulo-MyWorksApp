@@ -22,21 +22,22 @@ class WebpayTransactionResponse {
     final buyOrder = map['buyOrder']?.toString() ??
         map['buy_order']?.toString() ??
         '';
-    if (token.isEmpty || url.isEmpty || buyOrder.isEmpty) {
+    final redirect = map['redirectUrl']?.toString();
+    final handoff = redirect != null && redirect.isNotEmpty ? redirect : null;
+    if (buyOrder.isEmpty || (handoff == null && (token.isEmpty || url.isEmpty))) {
       throw FormatException('Respuesta Webpay incompleta');
     }
-    final redirect = map['redirectUrl']?.toString();
-    return WebpayTransactionResponse(
+    return const WebpayTransactionResponse(
       token: token,
       url: url,
       buyOrder: buyOrder,
       paymentId: map['paymentId']?.toString(),
-      redirectUrl: redirect != null && redirect.isNotEmpty ? redirect : null,
+      redirectUrl: handoff,
     );
   }
 }
 
-/// Resultado de `webpay-commit-transaction`.
+/// Resultado de `webpay-commit`.
 class WebpayCommitResult {
   const WebpayCommitResult({
     required this.approved,

@@ -338,7 +338,28 @@ class JobBookingService {
       createdAt: now,
       updatedAt: now,
     );
-    await _jobs.createJob(job);
+    final draft = JobModel(
+      id: job.id,
+      userId: job.userId,
+      serviceId: job.serviceId,
+      status: job.status,
+      address: job.address,
+      description: job.description,
+      latitude: job.latitude,
+      longitude: job.longitude,
+      scheduledDate: job.scheduledDate,
+      serviceMetadata: job.serviceMetadata,
+      pricingMode: job.pricingMode,
+      paymentStatus: job.paymentStatus,
+      comunaId: job.comunaId,
+      pricingSnapshot: job.pricingSnapshot,
+      serviceSkuId: job.serviceSkuId,
+      hourlyBlockHours: job.hourlyBlockHours,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    );
+    await _jobs.createJob(draft);
+    await _jobs.requestWorker(jobId: job.id, workerId: workerId);
     AppLogger.i('Job escrow $pricingMode: ${job.id}');
     return (job: job, quote: quote);
   }
@@ -356,11 +377,10 @@ class JobBookingService {
       throw AppError.validation('El trabajo no está pendiente de tu aprobación');
     }
 
-    return _stateMachine.transitionTo(
-      jobId: jobId,
-      newStatus: AppConstants.jobStatusCompleted,
-      userId: userId,
-    );
+    await _jobs.closeOnClientApproval(jobId);
+    final updated = await _jobs.getJobById(jobId);
+    if (updated == null) throw AppError.notFound('Trabajo no encontrado');
+    return updated;
   }
 
   /// Tras checkout mock: escrow autorizado → trabajo aceptado.
@@ -372,6 +392,10 @@ class JobBookingService {
     if (job == null) throw AppError.notFound('Trabajo no encontrado');
     if (job.userId != userId) throw AppError.permission('Sin permiso');
 
+    if (job.status == AppConstants.jobStatusPending &&
+        PricingConstants.isEscrowSecured(job.paymentStatus)) {
+      return job;
+    }
     if (job.status == AppConstants.jobStatusAccepted &&
         PricingConstants.isEscrowSecured(job.paymentStatus)) {
       return job;
@@ -383,7 +407,7 @@ class JobBookingService {
 
     return _stateMachine.transitionTo(
       jobId: jobId,
-      newStatus: AppConstants.jobStatusAccepted,
+      newStatus: AppConstants.jobStatusPending,
       userId: userId,
     );
   }

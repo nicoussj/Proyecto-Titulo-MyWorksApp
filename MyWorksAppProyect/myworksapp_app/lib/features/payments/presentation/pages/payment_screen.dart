@@ -53,7 +53,7 @@ class PaymentScreen extends ConsumerStatefulWidget {
 class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   bool _processing = false;
   String? _error;
-  String? _pendingToken;
+  bool _openedExternal = false;
 
   String get _amountLabel => NumberFormat.currency(
         locale: 'es_CL',
@@ -91,23 +91,30 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           setState(() => _error = 'No se pudo abrir Webpay');
           return;
         }
-        setState(() => _pendingToken = tx.token);
+        setState(() => _openedExternal = true);
         return;
       }
 
+      final target = tx.redirectUrl;
+      if (target == null || target.isEmpty) {
+        setState(() => _error = 'No se pudo abrir Webpay');
+        return;
+      }
       final session = await WebpayWebViewPage.openCheckout(
         context,
-        paymentUrl: tx.url,
-        tokenWs: tx.token,
+        paymentUrl: target,
+        tokenWs: '',
       );
       if (!mounted) return;
       if (session == null || session.aborted) {
         setState(() => _error = 'Pago cancelado en Webpay');
         return;
       }
-      final token = (session.tokenWs != null && session.tokenWs!.isNotEmpty)
-          ? session.tokenWs!
-          : tx.token;
+      final token = session.tokenWs;
+      if (token == null || token.isEmpty) {
+        setState(() => _error = 'Transbank no devolvió el token del pago');
+        return;
+      }
       final approved = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (_) => PaymentResultScreen(token: token),
@@ -124,18 +131,6 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     } finally {
       if (mounted) setState(() => _processing = false);
     }
-  }
-
-  Future<void> _openPendingResult() async {
-    final token = _pendingToken;
-    if (token == null || token.isEmpty) return;
-    final approved = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => PaymentResultScreen(token: token),
-      ),
-    );
-    if (!mounted) return;
-    Navigator.of(context).pop(approved == true);
   }
 
   @override
@@ -211,11 +206,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 : const Icon(Icons.credit_card),
             label: Text(_processing ? 'Conectando…' : 'Pagar con Webpay'),
           ),
-          if (_pendingToken != null) ...[
+          if (_openedExternal) ...[
             const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: _openPendingResult,
-              child: const Text('Ya pagué, ver resultado'),
+            const Text(
+              'Completa el pago en Transbank. El resultado vuelve con el token de esa ventana, no se guarda en la app antes de pagar.',
             ),
           ],
         ],

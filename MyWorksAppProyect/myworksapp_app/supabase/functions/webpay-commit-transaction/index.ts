@@ -1,4 +1,11 @@
 import { corsHeadersFor, jsonResponse } from "../_shared/cors.ts";
+import { isKillSwitchOn, killSwitchResponse } from "../_shared/kill_switch.ts";
+import {
+  allowRate,
+  clientIp,
+  rateLimitExceededMessage,
+} from "../_shared/rate_limit.ts";
+import { publicErrorMessage } from "../_shared/safe_error.ts";
 import { escrowJson, persistWebpayOutcome } from "../_shared/escrow.ts";
 import { sanitizeClientReturn } from "../_shared/security.ts";
 import { serviceClient } from "../_shared/supabase.ts";
@@ -49,6 +56,12 @@ function wantsJson(req: Request): boolean {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeadersFor(req) });
+  }
+  if (isKillSwitchOn("MWA_READ_ONLY") || isKillSwitchOn("MWA_KILL_WEBPAY")) {
+    return jsonResponse(req, killSwitchResponse(), 503);
+  }
+  if (!allowRate(`webpay-commit-tx:${clientIp(req)}`, 30, 60_000)) {
+    return jsonResponse(req, { error: rateLimitExceededMessage() }, 429);
   }
 
   try {
@@ -148,7 +161,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     return jsonResponse(
       req,
-      { error: e instanceof Error ? e.message : String(e) },
+      { error: publicErrorMessage(e) },
       500,
     );
   }

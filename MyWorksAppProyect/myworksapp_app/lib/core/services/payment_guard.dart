@@ -46,11 +46,13 @@ class PaymentGuard {
       }
     }
 
-    if (fromAwaitingPaymentToAccepted(job, targetStatus)) {
+    if (fromAwaitingPaymentToAccepted(job, targetStatus) ||
+        (job.status == PricingConstants.jobAwaitingPayment &&
+            targetStatus == AppConstants.jobStatusPending)) {
       if (payment == null ||
           !PricingConstants.isEscrowSecured(payment.status)) {
         throw AppError.validation(
-          'Confirma el pago antes de aceptar el trabajo',
+          'Confirma el pago antes de dejar el trabajo al profesional',
         );
       }
     }
