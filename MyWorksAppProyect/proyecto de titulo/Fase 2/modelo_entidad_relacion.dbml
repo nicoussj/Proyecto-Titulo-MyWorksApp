@@ -162,9 +162,9 @@ Table trabajadores {
   id_usuario uuid [pk]
   profesion text [not null, default: '']
   descripcion text
-  calificacion numeric(4,2) [not null, default: 0, note: 'Derivada: promedio de calificaciones']
+  calificacion numeric [not null, default: 0, note: 'Derivada: promedio ponderado']
   disponible integer [not null, default: 1]
-  tarifa_visita numeric(12,0) [not null, default: 15000]
+  tarifa_visita numeric [not null, default: 15000]
   categoria_servicio text [not null, default: 'general']
   niveles_precio jsonb [not null, default: '{}', note: 'Escritura. 4NF: trabajador_precios']
   servicios_personalizados jsonb [not null, default: '[]', note: 'Escritura. 4NF: trabajador_servicios_extra']
@@ -179,6 +179,10 @@ Table trabajadores {
   origen_base text
   id_comuna text
   id_region text
+  score_listado numeric [not null, default: 0, note: 'Orden marketplace']
+  prioridad_manual integer [not null, default: 0, note: 'Override admin -50..50']
+  score_desglose jsonb [not null, default: '{}']
+  ranking_actualizado_en timestamptz
 
   Note: 'Ficha 1:1. Oferta 4NF en tablas hijas; JSON solo escritura.'
 }
@@ -186,7 +190,7 @@ Table trabajadores {
 Table trabajador_precios {
   id_usuario uuid [not null]
   codigo text [not null]
-  monto_clp numeric(12,0) [not null]
+  monto_clp numeric [not null]
 
   indexes {
     (id_usuario, codigo) [pk]
@@ -200,7 +204,7 @@ Table trabajador_servicios_extra {
   id_usuario uuid [not null]
   titulo text [not null]
   subtitulo text [not null, default: '']
-  monto_clp numeric(12,0) [not null]
+  monto_clp numeric [not null]
   unidad text [not null, default: 'fijo']
 
   indexes {
@@ -316,8 +320,11 @@ Table calificaciones {
   puntaje integer [not null]
   comentario text
   creado_en text [not null]
+  peso_confianza numeric [not null, default: 1]
+  estado_revision text [not null, default: 'vigente']
+  motivo_revision text
 
-  Note: 'Fuente de trabajadores.calificacion'
+  Note: 'Fuente de trabajadores.calificacion (promedio ponderado)'
 }
 
 Table disputas {
@@ -376,7 +383,7 @@ Table pagos {
   id_trabajo text [not null]
   id_orden_cambio text
   tipo_pago text [not null, default: 'principal']
-  monto numeric(12,0) [not null]
+  monto numeric [not null]
   moneda text [not null, default: 'CLP']
   estado text [not null]
   metodo_pago text
@@ -463,6 +470,59 @@ Table app_config {
   Note: 'demo_modo, admin_requiere_aal2'
 }
 
+Table ranking_config {
+  id text [pk, default: 'default']
+  peso_calificacion numeric [not null, default: 0.32]
+  peso_completados numeric [not null, default: 0.18]
+  peso_rechazos numeric [not null, default: 0.12]
+  peso_verificacion numeric [not null, default: 0.10]
+  peso_impulso numeric [not null, default: 0.08]
+  peso_recencia numeric [not null, default: 0.08]
+  peso_confianza numeric [not null, default: 0.12]
+  prior_bayes numeric [not null, default: 3.80]
+  n_bayes numeric [not null, default: 8]
+  umbral_revision numeric [not null, default: 0.55]
+  umbral_auto_excluir numeric [not null, default: 0.90]
+  aprendizaje_activo integer [not null, default: 1]
+  tasa_aprendizaje numeric [not null, default: 0.15]
+  pesos_senal jsonb [not null]
+  actualizado_en timestamptz [not null]
+
+  Note: 'Una fila default. Pesos del listado.'
+}
+
+Table senales_resena {
+  id text [pk]
+  id_calificacion text [not null]
+  tipo_senal text [not null]
+  puntaje numeric [not null]
+  detalle text
+  estado text [not null, default: 'pendiente']
+  resuelto_por uuid
+  resuelto_en timestamptz
+  creado_en timestamptz [not null]
+
+  Note: 'Cola de reseñas dudosas. Falso positivo baja el peso de la señal.'
+}
+
+Table ranking_aprendizaje {
+  id text [pk]
+  motivo text [not null]
+  pesos_antes jsonb [not null]
+  pesos_despues jsonb [not null]
+  metricas jsonb
+  creado_en timestamptz [not null]
+}
+
+Table eventos_ranking {
+  id text [pk]
+  id_trabajador uuid [not null]
+  id_trabajo text
+  tipo_evento text [not null]
+  factores jsonb [not null]
+  creado_en timestamptz [not null]
+}
+
 // ---------------------------------------------------------------------------
 // Relaciones
 // ---------------------------------------------------------------------------
@@ -535,6 +595,11 @@ Ref: registros_error_app.id_usuario > perfiles.id
 Ref: eventos_analitica.id_usuario > perfiles.id
 Ref: banderas_funcionalidad.id_usuario > perfiles.id
 
+Ref: senales_resena.id_calificacion > calificaciones.id [delete: cascade]
+Ref: senales_resena.resuelto_por > perfiles.id
+Ref: eventos_ranking.id_trabajador > trabajadores.id_usuario
+Ref: eventos_ranking.id_trabajo > trabajos.id
+
 // Grupos para el lienzo de dbdiagram.io
 
 TableGroup identidad {
@@ -587,4 +652,11 @@ TableGroup cobro {
   liquidaciones
   metodos_pago_oneclick
   app_config
+}
+
+TableGroup ranking {
+  ranking_config
+  senales_resena
+  ranking_aprendizaje
+  eventos_ranking
 }

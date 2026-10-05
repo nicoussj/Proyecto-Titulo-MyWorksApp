@@ -4,11 +4,11 @@
 |-------|--------|
 | Proyecto | MyWorksApp |
 | Esquema | PostgreSQL `public` (Supabase) |
-| Tablas | **37** |
+| Tablas | **41** |
 | Convención | español + `snake_case` |
-| Versión | **2.2** — 5 de octubre de 2026 |
+| Versión | **2.3** — 5 de octubre de 2026 |
 | Forma | **4NF** en oferta; catálogo **país → región → comuna**; copias derivadas |
-| Fuente | migraciones ES + liquidaciones + Oneclick + `20261004000001_normalizar_y_optimizar` |
+| Fuente | migraciones ES + ranking `20261010000001` |
 
 Este archivo es el **modelo entidad-relación del título**, en la **misma forma normal que la base**:
 
@@ -72,7 +72,21 @@ Hubs:
 - `trabajos.id` — pedido y expediente.
 - `pagos.id` — escrow (Webpay / Oneclick).
 
-`perfiles.id` coincide con `auth.users.id` (Auth de Supabase, fuera de las 32 tablas `public`).
+`perfiles.id` coincide con `auth.users.id` (Auth de Supabase, fuera de las 41 tablas `public`).
+
+---
+
+## Qué cambió en v2.3
+
+Ranking de marketplace y confianza de reseñas (`20261010000001_ranking_y_resenas.sql`).
+
+| Pieza | Tratamiento |
+|-------|-------------|
+| `trabajadores.score_listado` / `prioridad_manual` | Orden del catálogo. La nota pública no se edita |
+| `ranking_config` | Pesos configurables + umbrales + `pesos_senal` |
+| `eventos_ranking` / `ranking_aprendizaje` | Aprendizaje auditado por cierres vs disputas |
+| `senales_resena` | Cola de reseñas dudosas; falso positivo baja el peso de la señal |
+| `calificaciones.peso_confianza` / `estado_revision` | vigente / en_revision / excluida |
 
 ---
 
@@ -475,7 +489,7 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 
 ---
 
-## Catálogo PK / FK (37 tablas)
+## Catálogo PK / FK (41 tablas)
 
 | Tabla | PK | FK | Apunta a | Null | Cardinalidad |
 |-------|----|----|----------|------|----------------|
@@ -538,10 +552,16 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 | ubicacion_en_vivo | id_trabajo | id_trabajo | trabajos.id | no | 1:1 |
 | ubicacion_en_vivo | id_trabajo | id_trabajador | trabajadores.id_usuario | no | N:1 |
 | app_config | clave | — | — | — | catálogo de producto |
+| ranking_config | id | — | — | — | singleton `default` |
+| senales_resena | id | id_calificacion | calificaciones.id | no | N:1 CASCADE |
+| senales_resena | id | resuelto_por | perfiles.id | sí | N:0..1 |
+| ranking_aprendizaje | id | — | — | — | historial de pesos |
+| eventos_ranking | id | id_trabajador ~ | trabajadores.id_usuario | no | N:1 lógica (SQL sin FK) |
+| eventos_ranking | id | id_trabajo ~ | trabajos.id | sí | N:0..1 lógica (`text`, sin FK) |
 
 ---
 
-## Inventario de las 37 tablas
+## Inventario de las 41 tablas
 
 | # | Tabla | Rol en el modelo |
 |---|--------|------------------|
@@ -582,6 +602,10 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 | 35 | tickets_soporte | Mesa de ayuda |
 | 36 | ubicacion_en_vivo | GPS del pedido (1:1) |
 | 37 | app_config | Interruptores de producto |
+| 38 | ranking_config | Pesos y umbrales del listado |
+| 39 | senales_resena | Señales de reseña dudosa |
+| 40 | ranking_aprendizaje | Historial de pesos aprendidos |
+| 41 | eventos_ranking | Cierres / disputas para el aprendizaje |
 
 ---
 
@@ -590,7 +614,7 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 1. **Dump vs. migraciones.** El dump remoto nombra `profiles` / `workers` / `jobs`. Las apps y este modelo usan los nombres ES.
 2. **JSON vs. 4NF.** En Postgres siguen `niveles_precio` y `servicios_personalizados`. El ER de título consulta `trabajador_precios` y `trabajador_servicios_extra`. El trigger `explotar_oferta_trabajador` mantiene ambas formas.
 3. **Tipo `text` vs. `uuid` en la oferta.** El SQL de modelado usa `uuid` + FK (forma 4NF). La BD viva guarda `id_usuario text` (`::text` en el trigger). El valor es el mismo.
-4. **Siguen en `text` sin FK uuid:** `liquidaciones.id_trabajador`, `metodos_pago_oneclick.id_usuario`.
+4. **Siguen en `text` sin FK uuid:** `liquidaciones.id_trabajador`, `metodos_pago_oneclick.id_usuario`. `eventos_ranking.id_trabajo` es `text` sin FK; `id_trabajador` es `uuid` sin FK declarada (el ER las modela lógicamente).
 5. **FK de trabajador en el dump inglés** apuntaban a `profiles.id`. El negocio las modela contra `trabajadores.id_usuario`.
-6. **Triggers:** `handle_new_user`, `explotar_oferta_trabajador`, `refrescar_calificacion_trabajador`, `copiar_estado_pago_trabajo`, `fijar_liquidacion_desde_pago`, `fijar_correo_codigo`, `fijar_ticket_desde_trabajo`.
+6. **Triggers:** `handle_new_user`, `explotar_oferta_trabajador`, `refrescar_calificacion_trabajador`, `copiar_estado_pago_trabajo`, `fijar_liquidacion_desde_pago`, `fijar_correo_codigo`, `fijar_ticket_desde_trabajo`, `calificaciones_evaluar_resena`, `trabajos_eventos_ranking`, `disputas_eventos_ranking`, `impulsos_refrescar_ranking`, `trabajadores_refrescar_ranking`.
 7. **Columnas secretas.** `pagos.token_tbk`, `pagos.url_tbk` y `metodos_pago_oneclick.tbk_user` no salen al cliente.

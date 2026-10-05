@@ -36,7 +36,7 @@ class WorkerRepository {
         .from(_table)
         .select()
         .eq('categoria_servicio', category)
-        .order('calificacion', ascending: false)
+        .order('score_listado', ascending: false)
         .limit(40);
 
     if (rows.isEmpty) {
@@ -46,7 +46,7 @@ class WorkerRepository {
             .from(_table)
             .select()
             .ilike('categoria_servicio', '%$needle%')
-            .order('calificacion', ascending: false)
+            .order('score_listado', ascending: false)
             .limit(40);
       }
     }
@@ -114,7 +114,7 @@ class WorkerRepository {
         .select()
         .eq('profesion', profession)
         .eq('disponible', 1)
-        .order('calificacion', ascending: false)
+        .order('score_listado', ascending: false)
         .limit(40);
     final workers = rows.map<WorkerModel>((m) => WorkerModel.fromMap(m)).toList();
     WorkerReputationService.instance.sortForListing(workers);
@@ -127,7 +127,7 @@ class WorkerRepository {
         .select()
         .eq('disponible', 1)
         .eq('precios_configurados', 1)
-        .order('calificacion', ascending: false)
+        .order('score_listado', ascending: false)
         .limit(40);
     final workers =
         rows.map<WorkerModel>((m) => WorkerModel.fromMap(m)).toList();
@@ -243,7 +243,7 @@ class WorkerRepository {
         .select()
         .eq('disponible', 1)
         .eq('precios_configurados', 1)
-        .order('calificacion', ascending: false)
+        .order('score_listado', ascending: false)
         .limit(40);
     final allWorkers =
         rows.map<WorkerModel>((m) => WorkerModel.fromMap(m)).toList();

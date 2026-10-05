@@ -221,12 +221,11 @@ class MatchingService {
       // 5. Calcular score
       double score = 0.0;
 
-      // Score por rating ajustado por rechazos ocultos (0-5 → 0-1)
-      final adjustedRating = WorkerReputationService.instance
-          .listingScore(worker)
-          .clamp(0.0, 5.0);
-      final ratingScore = (adjustedRating / 5.0) * _weightRating;
+      // Nota pública 0–5. El ranking de listado (0–100) solo desempata.
+      final ratingScore = (worker.rating.clamp(0.0, 5.0) / 5.0) * _weightRating;
       score += ratingScore;
+      final ranking = WorkerReputationService.instance.listingScore(worker);
+      score += 0.10 * (ranking / 120.0).clamp(0.0, 1.0);
 
       // Score por disponibilidad
       if (worker.isAvailable) {

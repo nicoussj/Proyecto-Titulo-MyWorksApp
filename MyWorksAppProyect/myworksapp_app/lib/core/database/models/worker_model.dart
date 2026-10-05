@@ -19,6 +19,10 @@ class WorkerModel {
   final String? baseOrigin;
   /// Rechazos de invitaciones; penaliza el orden en búsquedas (no se muestra en UI).
   final int rejectionCount;
+  /// Score de marketplace (0–100 + prioridad manual). Lo calcula el servidor.
+  final double? listingScore;
+  /// Override de admin: positivo = aparece antes, negativo = después.
+  final int manualPriority;
 
   WorkerModel({
     required this.userId,
@@ -37,6 +41,8 @@ class WorkerModel {
     this.serviceRadiusKm = 15,
     this.baseOrigin,
     this.rejectionCount = 0,
+    this.listingScore,
+    this.manualPriority = 0,
   })  : pricingTiers = pricingTiers ?? const {},
         customServices = customServices ?? const [];
 
@@ -86,6 +92,8 @@ class WorkerModel {
       serviceRadiusKm: (map['radio_servicio_km'] as num?)?.toDouble() ?? 15,
       baseOrigin: map['origen_base'] as String?,
       rejectionCount: (map['conteo_rechazos'] as num?)?.toInt() ?? 0,
+      listingScore: (map['score_listado'] as num?)?.toDouble(),
+      manualPriority: (map['prioridad_manual'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -106,6 +114,8 @@ class WorkerModel {
     double? serviceRadiusKm,
     String? baseOrigin,
     int? rejectionCount,
+    double? listingScore,
+    int? manualPriority,
   }) {
     return WorkerModel(
       userId: userId ?? this.userId,
@@ -124,6 +134,8 @@ class WorkerModel {
       serviceRadiusKm: serviceRadiusKm ?? this.serviceRadiusKm,
       baseOrigin: baseOrigin ?? this.baseOrigin,
       rejectionCount: rejectionCount ?? this.rejectionCount,
+      listingScore: listingScore ?? this.listingScore,
+      manualPriority: manualPriority ?? this.manualPriority,
     );
   }
 }
