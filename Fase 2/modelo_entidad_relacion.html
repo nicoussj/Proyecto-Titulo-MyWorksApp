@@ -423,11 +423,11 @@
       <p class="brand">MyWorksApp · Fase 2</p>
       <h1>Modelo entidad-relación</h1>
       <div class="meta">
-        <span class="chip"><strong>32</strong> tablas</span>
+        <span class="chip"><strong>37</strong> tablas</span>
         <span class="chip">PostgreSQL <strong>public</strong></span>
         <span class="chip">Supabase</span>
         <span class="chip">español + snake_case</span>
-        <span class="chip">v2.0 · 4 oct 2026</span>
+        <span class="chip">v2.2 · 4NF + geo · 5 oct 2026</span>
       </div>
     </div>
     <div class="tools">
@@ -479,7 +479,7 @@
           {
             title: "Cuenta",
             tables: [
-              { id: "perfiles", pk: "id", role: "Identidad de app = Auth de Supabase", note: "perfiles.id coincide con auth.users.id, fuera de las 32 tablas public.", fks: [] }
+              { id: "perfiles", pk: "id", role: "Identidad de app = Auth de Supabase", note: "perfiles.id coincide con auth.users.id, fuera de las 37 tablas public.", fks: [] }
             ]
           },
           {
@@ -521,13 +521,25 @@
         domain: "catalogo",
         groups: [
           {
-            title: "Profesional",
+            title: "Profesional (4NF)",
             tables: [
-              { id: "trabajadores", pk: "id_usuario", role: "Ficha profesional 1:1", note: "PK = FK a perfiles.id. calificacion numeric(4,2) y tarifa_visita numeric(12,0). El JSON de oferta se explota a filas hijas.", fks: [{ col: "id_usuario", to: "perfiles", toCol: "id", card: "1:1" }] },
-              { id: "trabajador_precios", pk: "(id_usuario, codigo)", role: "Tarifas por código (desde JSON)", note: "id_usuario es text: relación lógica a trabajadores.id_usuario (uuid). La llena el trigger explotar_oferta_trabajador.", fks: [{ col: "id_usuario", to: "trabajadores", toCol: "id_usuario", logical: true, card: "N:1" }] },
-              { id: "trabajador_servicios_extra", pk: "(id_usuario, id)", role: "Extras tarifados (desde JSON)", note: "id_usuario es text: relación lógica. Unidad fijo | por_m2.", fks: [{ col: "id_usuario", to: "trabajadores", toCol: "id_usuario", logical: true, card: "N:1" }] },
+              { id: "trabajadores", pk: "id_usuario", role: "Ficha 1:1. JSON solo escritura.", note: "Oferta 4NF en hijas. calificacion es promedio. id_comuna / id_region son FK al catálogo geográfico. zona_trabajo es texto de UI.", fks: [
+                { col: "id_usuario", to: "perfiles", toCol: "id", card: "1:1" },
+                { col: "id_comuna", to: "comunas", toCol: "id", nullable: true, card: "N:0..1" },
+                { col: "id_region", to: "regiones", toCol: "id", nullable: true, card: "N:0..1" }
+              ] },
+              { id: "trabajador_precios", pk: "(id_usuario, codigo)", role: "4NF · tarifa por código", note: "Forma normal de niveles_precio. FK a trabajadores. En Postgres vivo id_usuario es text; aquí uuid.", fks: [{ col: "id_usuario", to: "trabajadores", toCol: "id_usuario", card: "N:1" }] },
+              { id: "trabajador_servicios_extra", pk: "(id_usuario, id)", role: "4NF · extras tarifados", note: "Forma normal de servicios_personalizados. Unidad fijo | por_m2.", fks: [{ col: "id_usuario", to: "trabajadores", toCol: "id_usuario", card: "N:1" }] },
               { id: "portafolio_trabajador", pk: "id", role: "Galería del profesional", fks: [{ col: "id_trabajador", to: "trabajadores", toCol: "id_usuario", card: "N:1" }] },
               { id: "impulsos", pk: "id", role: "Boost de visibilidad", fks: [{ col: "id_trabajador", to: "trabajadores", toCol: "id_usuario", card: "N:1" }] }
+            ]
+          },
+          {
+            title: "Territorio",
+            tables: [
+              { id: "paises", pk: "id", role: "País operativo", note: "Hoy solo CL.", fks: [] },
+              { id: "regiones", pk: "id", role: "Región chilena", fks: [{ col: "id_pais", to: "paises", toCol: "id", card: "N:1" }] },
+              { id: "comunas", pk: "id", role: "Comuna / ciudad de cobertura", note: "PK slug. Es el destino de trabajos.id_comuna y trabajadores.id_comuna.", fks: [{ col: "id_region", to: "regiones", toCol: "id", card: "N:1" }] }
             ]
           },
           {
@@ -550,10 +562,11 @@
           {
             title: "Hub",
             tables: [
-              { id: "trabajos", pk: "id", role: "Pedido y expediente", fks: [
+              { id: "trabajos", pk: "id", role: "Pedido y expediente", note: "estado_pago es copia del pago principal (trigger), no fuente.", fks: [
                 { col: "id_usuario", to: "perfiles", toCol: "id", card: "N:1" },
                 { col: "id_trabajador", to: "trabajadores", toCol: "id_usuario", nullable: true, card: "N:0..1" },
                 { col: "id_servicio", to: "servicios", toCol: "id", nullable: true, card: "N:0..1" },
+                { col: "id_comuna", to: "comunas", toCol: "id", nullable: true, card: "N:0..1" },
                 { col: "id_cotizacion_seleccionada", to: "propuestas_cotizacion", toCol: "id", nullable: true, card: "N:0..1" }
               ]}
             ]
@@ -567,7 +580,7 @@
                 { col: "id_destinatario", to: "perfiles", toCol: "id", card: "N:1" }
               ]},
               { id: "fotos_trabajo", pk: "id", role: "Evidencia del servicio", fks: [{ col: "id_trabajo", to: "trabajos", toCol: "id", card: "N:1" }] },
-              { id: "calificaciones", pk: "id", role: "Puntaje 1–5 del trabajo", fks: [
+              { id: "calificaciones", pk: "id", role: "Fuente de la nota 1–5", fks: [
                 { col: "id_trabajo", to: "trabajos", toCol: "id", card: "N:1" },
                 { col: "id_usuario", to: "perfiles", toCol: "id", nullable: true, card: "N:0..1" }
               ]},
@@ -580,7 +593,11 @@
                 { col: "id_trabajo", to: "trabajos", toCol: "id", card: "N:1" },
                 { col: "cancelado_por", to: "perfiles", toCol: "id", card: "N:1" }
               ]},
-              { id: "tickets_soporte", pk: "id", role: "Mesa de ayuda", fks: [{ col: "id_trabajo", to: "trabajos", toCol: "id", nullable: true, card: "N:0..1" }] }
+              { id: "tickets_soporte", pk: "id", role: "Mesa de ayuda", fks: [{ col: "id_trabajo", to: "trabajos", toCol: "id", nullable: true, card: "N:0..1" }] },
+              { id: "ubicacion_en_vivo", pk: "id_trabajo", role: "GPS en vivo del pedido", fks: [
+                { col: "id_trabajo", to: "trabajos", toCol: "id", card: "1:1" },
+                { col: "id_trabajador", to: "trabajadores", toCol: "id_usuario", card: "N:1" }
+              ]}
             ]
           }
         ]
@@ -612,7 +629,8 @@
               ]},
               { id: "metodos_pago_oneclick", pk: "id_usuario", role: "Tarjeta inscrita Oneclick", note: "PK text = auth.uid. tbk_user solo service_role. Sin FK física a perfiles.", fks: [
                 { col: "id_usuario", to: "perfiles", toCol: "id", logical: true, card: "1:0..1" }
-              ]}
+              ]},
+              { id: "app_config", pk: "clave", role: "Interruptores de producto", note: "demo_modo, admin_requiere_aal2. Sin FK.", fks: [] }
             ]
           }
         ]
@@ -656,7 +674,9 @@
       propuestas_cotizacion: ["id_trabajador"],
       ordenes_cambio: ["id_trabajador"],
       liquidaciones: ["id_trabajador"],
-      metodos_pago_oneclick: ["id_usuario"]
+      metodos_pago_oneclick: ["id_usuario"],
+      ubicacion_en_vivo: ["id_trabajador"],
+      trabajadores: ["id_region"]
     };
 
     let selected = "trabajos";

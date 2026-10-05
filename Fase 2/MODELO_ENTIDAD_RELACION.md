@@ -4,14 +4,46 @@
 |-------|--------|
 | Proyecto | MyWorksApp |
 | Esquema | PostgreSQL `public` (Supabase) |
-| Tablas | **32** |
+| Tablas | **37** |
 | Convención | español + `snake_case` |
-| Versión | **2.0** — 4 de octubre de 2026 |
-| Fuente | migraciones del repo (rename ES + liquidaciones + Oneclick + normalización 20261004) |
+| Versión | **2.2** — 5 de octubre de 2026 |
+| Forma | **4NF** en oferta; catálogo **país → región → comuna**; copias derivadas |
+| Fuente | migraciones ES + liquidaciones + Oneclick + `20261004000001_normalizar_y_optimizar` |
 
-Este archivo es el **modelo entidad-relación del título**. Cada caja es una tabla; se listan la **clave primaria (PK)** y las **claves foráneas (FK)**.
+Este archivo es el **modelo entidad-relación del título**, en la **misma forma normal que la base**:
 
-El dump `schema_remote_dump.sql` sigue en inglés (`profiles`, `workers`…). **No es el esquema vivo.** El vivo es el de las migraciones en español.
+- La oferta del profesional **no** se consulta como JSON. Vive en `trabajador_precios` y `trabajador_servicios_extra` (4NF).
+- `calificacion` y `estado_pago` son **copias** que rellenan triggers; la fuente son `calificaciones` y `pagos`.
+- El JSON `niveles_precio` / `servicios_personalizados` queda en `trabajadores` solo como formato de **escritura** de la app.
+- `trabajos.id_comuna` y `trabajadores.id_comuna` apuntan a **`comunas`**, no a un texto suelto. País y región son tablas padre.
+
+El dump `schema_remote_dump.sql` sigue en inglés (`profiles`, `workers`…). **No es el esquema vivo.**
+
+---
+
+## Forma normal (migración 20261004)
+
+| Dependencia | Antes | Ahora (como la BD) |
+|-------------|-------|---------------------|
+| Precio por código de tarifa | objeto JSON `niveles_precio` | `trabajador_precios` PK `(id_usuario, codigo)` |
+| Extra tarifado | arreglo JSON `servicios_personalizados` | `trabajador_servicios_extra` PK `(id_usuario, id)` |
+| Oficio del profesional | solo `categoria_servicio` en la ficha | también `trabajador_servicios` (N:M por slug) |
+| Nota pública | columna suelta | promedio de `calificaciones` (trigger) |
+| Estado de cobro del trabajo | columna suelta | copia del pago `principal` (trigger) |
+| Un escrow vivo | varias filas posibles | índice único parcial en `pagos` |
+
+```mermaid
+erDiagram
+  trabajadores ||--o{ trabajador_precios : "1:N  codigo+monto"
+  trabajadores ||--o{ trabajador_servicios_extra : "1:N  extra"
+  trabajadores ||--o{ trabajador_servicios : "N:M  categoria"
+  calificaciones ||--o| trabajadores : "promedio → calificacion"
+  pagos ||--o| trabajos : "estado → estado_pago"
+```
+
+JSON de escritura (no se dibuja como entidad de consulta): `trabajadores.niveles_precio`, `trabajadores.servicios_personalizados`.
+
+---
 
 ## Dónde está cada copia
 
@@ -21,7 +53,7 @@ El dump `schema_remote_dump.sql` sigue en inglés (`profiles`, `workers`…). **
 | **Título (esta)** | `MODELO_ENTIDAD_RELACION.md` | Memoria / Mermaid / catálogo PK-FK |
 | **SQL de importación** | [modelo_entidad_relacion.sql](modelo_entidad_relacion.sql) | pgModeler, DBeaver, DataGrip |
 | **DBML** | [modelo_entidad_relacion.dbml](modelo_entidad_relacion.dbml) | dbdiagram.io / `@dbml/cli` |
-| Diccionario técnico | `docs/DICCIONARIO_BASE_DATOS.md` | Columnas, RLS y consumidores |
+| **Auditoría de IDs** | [AUDITORIA_IDS_Y_GEOGRAFIA.md](AUDITORIA_IDS_Y_GEOGRAFIA.md) | PK/FK, comuna, pendientes |
 
 ---
 
@@ -44,24 +76,79 @@ Hubs:
 
 ---
 
-## Qué cambió respecto de la v1.6 (29 tablas)
+## Qué cambió en v2.2
 
-| Tabla | Alta | Para qué |
-|-------|------|----------|
-| `trabajador_precios` | 20261004 | Precios por código, explotados desde `niveles_precio` |
-| `trabajador_servicios_extra` | 20261004 | Extras desde `servicios_personalizados` |
-| `metodos_pago_oneclick` | 20261002 | Tarjeta inscrita; `tbk_user` no sale al cliente |
-| `liquidaciones` | 20260923 | Ya estaba en el SQL v1.6; faltaba en este Markdown |
+Catálogo geográfico y FKs de localización. `id_comuna` deja de ser un slug huérfano.
 
-Tipos alineados a la BD:
+| Pieza | Tratamiento |
+|-------|-------------|
+| `paises` / `regiones` / `comunas` | Tablas 3NF. Seed Chile + comunas de la app |
+| `trabajos.id_comuna` | FK → `comunas.id` |
+| `trabajadores.id_comuna` / `id_region` | FK; `zona_trabajo` queda como texto de UI |
+| `ubicacion_en_vivo`, `app_config` | Ya existían en migraciones; ahora están en el ER |
 
-- `trabajadores.calificacion` → `numeric(4,2)`
-- `trabajadores.tarifa_visita` y `pagos.monto` → `numeric(12,0)`
-- `pagos`: `reembolso_solicitado_en`, `orden_detalle_oneclick`, `cobro_reclamado_en`
-- `trabajos.id_servicio` es **nullable** (como en Postgres: `ON DELETE SET NULL`)
-- `calificaciones.id_usuario` es **nullable**
-- `cancelaciones_trabajo.id_trabajo` es **UNIQUE** (una cancelación por trabajo)
-- `configuraciones_servicio.id_servicio` es **UNIQUE** (1:0..1 real)
+---
+
+## Qué cambió en v2.1
+
+El modelo deja de tratar el JSON como la oferta. La forma de consulta es 4NF, igual que la BD tras `normalizar_y_optimizar`.
+
+| Pieza | Tratamiento en este ER |
+|-------|------------------------|
+| `trabajador_precios` / `trabajador_servicios_extra` | Entidades 4NF con FK a `trabajadores` |
+| `niveles_precio` / `servicios_personalizados` | Escritura física; no son caja del diagrama lógico |
+| `calificacion` | Atributo derivado |
+| `trabajos.estado_pago` | Atributo derivado |
+| `metodos_pago_oneclick`, `liquidaciones` | Siguen (Oneclick 20261002, liquidaciones 20260923) |
+
+---
+
+## 1b. Territorio — país, región, comuna
+
+`id_comuna` era un slug suelto (`providencia`, `puerto_montt`). Ahora es FK.
+
+```mermaid
+erDiagram
+  paises {
+    text id PK
+    text nombre
+    text iso2
+  }
+
+  regiones {
+    text id PK
+    text id_pais FK
+    text nombre
+  }
+
+  comunas {
+    text id PK
+    text id_region FK
+    text nombre
+  }
+
+  trabajadores {
+    uuid id_usuario PK_FK
+    text id_comuna FK
+    text id_region FK
+    text zona_trabajo
+  }
+
+  trabajos {
+    text id PK
+    text id_comuna FK
+  }
+
+  paises ||--o{ regiones : "id_pais"
+  regiones ||--o{ comunas : "id_region"
+  comunas ||--o{ trabajadores : "id_comuna"
+  regiones ||--o{ trabajadores : "id_region"
+  comunas ||--o{ trabajos : "id_comuna"
+```
+
+`zona_trabajo` sigue como texto de pantalla. El trigger `fijar_geo_trabajador` rellena `id_comuna` / `id_region`. Cobertura “(todas)” no es comuna: solo `id_region`.
+
+Hoy el seed es Chile (`CL`) y las comunas/ciudades que usa la app (`ChileComunas` + slugs de `inferComunaKey`).
 
 ---
 
@@ -160,7 +247,7 @@ erDiagram
 
 ---
 
-## 2. Catálogo y profesional
+## 2. Catálogo y profesional (4NF)
 
 ```mermaid
 erDiagram
@@ -172,8 +259,7 @@ erDiagram
     uuid id_usuario PK_FK
     text profesion
     text categoria_servicio
-    numeric calificacion
-    jsonb niveles_precio
+    numeric calificacion_derivada
   }
 
   servicios {
@@ -188,16 +274,17 @@ erDiagram
   }
 
   trabajador_precios {
-    text id_usuario PK
+    uuid id_usuario PK_FK
     text codigo PK
     numeric monto_clp
   }
 
   trabajador_servicios_extra {
-    text id_usuario PK
+    uuid id_usuario PK_FK
     text id PK
     text titulo
     numeric monto_clp
+    text unidad
   }
 
   portafolio_trabajador {
@@ -218,8 +305,8 @@ erDiagram
   perfiles ||--o| trabajadores : "id_usuario"
   trabajadores ||--o{ trabajador_servicios : "id_trabajador"
   servicios ||--o{ trabajador_servicios : "categoria_servicio ~"
-  trabajadores ||--o{ trabajador_precios : "id_usuario ~"
-  trabajadores ||--o{ trabajador_servicios_extra : "id_usuario ~"
+  trabajadores ||--o{ trabajador_precios : "id_usuario"
+  trabajadores ||--o{ trabajador_servicios_extra : "id_usuario"
   trabajadores ||--o{ portafolio_trabajador : "id_trabajador"
   trabajadores ||--o{ impulsos : "id_trabajador"
   servicios ||--o| configuraciones_servicio : "id_servicio"
@@ -227,9 +314,9 @@ erDiagram
 
 `trabajador_servicios` no tiene `id` surrogate: PK `(id_trabajador, categoria_servicio)`. El cruce a `servicios` es por **slug** `categoria`, no por `servicios.id`.
 
-`trabajador_precios` y `trabajador_servicios_extra` las llena el trigger `explotar_oferta_trabajador` al escribir el JSON en `trabajadores`. `id_usuario` es `text` → relación **lógica**.
+`trabajador_precios` y `trabajador_servicios_extra` son la **forma 4NF**. El trigger `explotar_oferta_trabajador` las llena al escribir el JSON. En el SQL de modelado la FK es `uuid`; en Postgres vivo la columna es `text` (mismo valor, `::text`).
 
-`calificacion` la refresca el trigger `refrescar_calificacion_trabajador` desde `calificaciones`.
+`calificacion` no se edita: la refresca `refrescar_calificacion_trabajador` desde `calificaciones`.
 
 ---
 
@@ -255,6 +342,7 @@ erDiagram
     uuid id_trabajador FK
     text id_servicio FK
     text id_cotizacion_seleccionada FK
+    text estado_pago_derivado
   }
 
   mensajes {
@@ -311,6 +399,8 @@ erDiagram
 ```
 
 Opcionales: `trabajos.id_trabajador`, `trabajos.id_servicio`, `tickets_soporte.id_trabajo`, `disputas.resuelta_por`, `calificaciones.id_usuario`.
+
+`trabajos.estado_pago` es copia del pago `principal` (`copiar_estado_pago_trabajo`). La fuente es `pagos.estado`.
 
 ---
 
@@ -385,23 +475,29 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 
 ---
 
-## Catálogo PK / FK (32 tablas)
+## Catálogo PK / FK (37 tablas)
 
 | Tabla | PK | FK | Apunta a | Null | Cardinalidad |
 |-------|----|----|----------|------|----------------|
 | perfiles | id | — | auth.users.id (fuera de `public`) | no | 1:1 con Auth |
+| paises | id | — | — | — | catálogo raíz |
+| regiones | id | id_pais | paises.id | no | N:1 |
+| comunas | id | id_region | regiones.id | no | N:1 |
 | trabajadores | id_usuario | id_usuario | perfiles.id | no | 1:1 |
+| trabajadores | id_usuario | id_comuna | comunas.id | sí | N:0..1 |
+| trabajadores | id_usuario | id_region | regiones.id | sí | N:0..1 |
 | servicios | id | — | — | — | catálogo raíz |
 | trabajador_servicios | (id_trabajador, categoria_servicio) | id_trabajador | trabajadores.id_usuario | no | N:1 |
 | trabajador_servicios | (id_trabajador, categoria_servicio) | categoria_servicio ~ | servicios.categoria | no | N:M lógica |
-| trabajador_precios | (id_usuario, codigo) | id_usuario ~ | trabajadores.id_usuario | no | N:1 lógica (`text`/`uuid`) |
-| trabajador_servicios_extra | (id_usuario, id) | id_usuario ~ | trabajadores.id_usuario | no | N:1 lógica (`text`/`uuid`) |
+| trabajador_precios | (id_usuario, codigo) | id_usuario | trabajadores.id_usuario | no | N:1 (4NF) |
+| trabajador_servicios_extra | (id_usuario, id) | id_usuario | trabajadores.id_usuario | no | N:1 (4NF) |
 | portafolio_trabajador | id | id_trabajador | trabajadores.id_usuario | no | N:1 |
 | impulsos | id | id_trabajador | trabajadores.id_usuario | no | N:1 |
 | configuraciones_servicio | id | id_servicio | servicios.id | no | 1:0..1 (UNIQUE) |
 | trabajos | id | id_usuario | perfiles.id | no | N:1 |
 | trabajos | id | id_trabajador | trabajadores.id_usuario | sí | N:0..1 |
 | trabajos | id | id_servicio | servicios.id | sí | N:0..1 |
+| trabajos | id | id_comuna | comunas.id | sí | N:0..1 |
 | trabajos | id | id_cotizacion_seleccionada | propuestas_cotizacion.id | sí | N:0..1 |
 | mensajes | id | id_trabajo | trabajos.id | no | N:1 |
 | mensajes | id | id_remitente | perfiles.id | no | N:1 |
@@ -439,52 +535,62 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 | acciones_pendientes | id | id_usuario | perfiles.id | no | N:1 |
 | eventos_analitica | id | id_usuario | perfiles.id | sí | N:0..1 |
 | banderas_funcionalidad | id | id_usuario | perfiles.id | sí | N:0..1 |
+| ubicacion_en_vivo | id_trabajo | id_trabajo | trabajos.id | no | 1:1 |
+| ubicacion_en_vivo | id_trabajo | id_trabajador | trabajadores.id_usuario | no | N:1 |
+| app_config | clave | — | — | — | catálogo de producto |
 
 ---
 
-## Inventario de las 32 tablas
+## Inventario de las 37 tablas
 
 | # | Tabla | Rol en el modelo |
 |---|--------|------------------|
 | 1 | perfiles | Identidad de app = Auth |
-| 2 | trabajadores | Ficha profesional 1:1 |
-| 3 | servicios | Catálogo de oficios |
-| 4 | trabajos | Pedido / ciclo de vida |
-| 5 | pagos | Escrow Webpay / Oneclick |
-| 6 | liquidaciones | Comprobante de pago al profesional |
-| 7 | metodos_pago_oneclick | Tarjeta inscrita (solo servidor) |
-| 8 | mensajes | Chat por trabajo |
-| 9 | disputas | Conflicto sobre un trabajo |
-| 10 | notificaciones | Inbox por usuario |
-| 11 | calificaciones | Puntaje 1–5 del trabajo |
-| 12 | reportes | Denuncia entre usuarios |
-| 13 | propuestas_cotizacion | Presupuesto (cotización abierta) |
-| 14 | ordenes_cambio | Extra / cambio de alcance |
-| 15 | fotos_trabajo | Evidencia del servicio |
-| 16 | portafolio_trabajador | Galería del profesional |
-| 17 | trabajador_servicios | N:M profesional ↔ categoría |
-| 18 | trabajador_precios | Tarifas por código (4NF) |
-| 19 | trabajador_servicios_extra | Extras tarifados (4NF) |
-| 20 | cancelaciones_trabajo | Auditoría de cancelación |
-| 21 | registros_error_app | Telemetría de errores |
-| 22 | eventos_abuso | Antiabuso |
-| 23 | acciones_pendientes | Cola sync offline |
-| 24 | bloqueos_usuario | Bloqueo interpersonal |
-| 25 | consentimientos_usuario | GDPR / términos |
-| 26 | banderas_funcionalidad | Feature flags |
-| 27 | suscripciones | Planes |
-| 28 | impulsos | Boost de visibilidad |
-| 29 | eventos_analitica | Analytics de producto |
-| 30 | configuraciones_servicio | Schema UI por oficio |
-| 31 | codigos_restablecimiento | Reset de clave (app) |
-| 32 | tickets_soporte | Mesa de ayuda |
+| 2 | paises | País (CL) |
+| 3 | regiones | Región administrativa |
+| 4 | comunas | Comuna / ciudad de cobertura |
+| 5 | trabajadores | Ficha 1:1; JSON solo escritura |
+| 6 | servicios | Catálogo de oficios |
+| 7 | trabajos | Pedido / ciclo de vida |
+| 8 | pagos | Escrow Webpay / Oneclick |
+| 9 | liquidaciones | Comprobante de pago al profesional |
+| 10 | metodos_pago_oneclick | Tarjeta inscrita (solo servidor) |
+| 11 | mensajes | Chat por trabajo |
+| 12 | disputas | Conflicto sobre un trabajo |
+| 13 | notificaciones | Inbox por usuario |
+| 14 | calificaciones | Fuente de la nota (1–5) |
+| 15 | reportes | Denuncia entre usuarios |
+| 16 | propuestas_cotizacion | Presupuesto (cotización abierta) |
+| 17 | ordenes_cambio | Extra / cambio de alcance |
+| 18 | fotos_trabajo | Evidencia del servicio |
+| 19 | portafolio_trabajador | Galería del profesional |
+| 20 | trabajador_servicios | N:M profesional ↔ categoría |
+| 21 | trabajador_precios | **4NF** tarifas por código |
+| 22 | trabajador_servicios_extra | **4NF** extras tarifados |
+| 23 | cancelaciones_trabajo | Auditoría de cancelación |
+| 24 | registros_error_app | Telemetría de errores |
+| 25 | eventos_abuso | Antiabuso |
+| 26 | acciones_pendientes | Cola sync offline |
+| 27 | bloqueos_usuario | Bloqueo interpersonal |
+| 28 | consentimientos_usuario | GDPR / términos |
+| 29 | banderas_funcionalidad | Feature flags |
+| 30 | suscripciones | Planes |
+| 31 | impulsos | Boost de visibilidad |
+| 32 | eventos_analitica | Analytics de producto |
+| 33 | configuraciones_servicio | Schema UI por oficio |
+| 34 | codigos_restablecimiento | Reset de clave (app) |
+| 35 | tickets_soporte | Mesa de ayuda |
+| 36 | ubicacion_en_vivo | GPS del pedido (1:1) |
+| 37 | app_config | Interruptores de producto |
 
 ---
 
 ## Notas de fidelidad física
 
-1. **Dump vs. migraciones.** El dump remoto nombra `profiles` / `workers` / `jobs`. Las apps y este modelo usan los nombres ES de `20260914000004_aplicar_rename_es.sql`.
-2. **FK de trabajador al dump.** `jobs.workerId`, `boosts.workerId`, `worker_portfolio.workerId`, `quote_proposals.workerId` apuntaban a `profiles.id`. El negocio (y este SQL) las modela contra `trabajadores.id_usuario`.
-3. **`text` que no puede ser FK `uuid`:** `liquidaciones.id_trabajador`, `trabajador_precios.id_usuario`, `trabajador_servicios_extra.id_usuario`, `metodos_pago_oneclick.id_usuario`. El trigger `fijar_liquidacion_desde_pago` copia el id desde `trabajos`; `explotar_oferta_trabajador` escribe `id_usuario::text`.
-4. **Triggers que el diagrama no dibuja pero sostienen el modelo:** `handle_new_user` (alta de `perfiles`), `explotar_oferta_trabajador`, `refrescar_calificacion_trabajador`, `copiar_estado_pago_trabajo`, `fijar_liquidacion_desde_pago`, `fijar_correo_codigo`, `fijar_ticket_desde_trabajo`.
-5. **Columnas secretas.** `pagos.token_tbk`, `pagos.url_tbk` y `metodos_pago_oneclick.tbk_user` no se leen desde el cliente (REVOKE / solo `service_role`).
+1. **Dump vs. migraciones.** El dump remoto nombra `profiles` / `workers` / `jobs`. Las apps y este modelo usan los nombres ES.
+2. **JSON vs. 4NF.** En Postgres siguen `niveles_precio` y `servicios_personalizados`. El ER de título consulta `trabajador_precios` y `trabajador_servicios_extra`. El trigger `explotar_oferta_trabajador` mantiene ambas formas.
+3. **Tipo `text` vs. `uuid` en la oferta.** El SQL de modelado usa `uuid` + FK (forma 4NF). La BD viva guarda `id_usuario text` (`::text` en el trigger). El valor es el mismo.
+4. **Siguen en `text` sin FK uuid:** `liquidaciones.id_trabajador`, `metodos_pago_oneclick.id_usuario`.
+5. **FK de trabajador en el dump inglés** apuntaban a `profiles.id`. El negocio las modela contra `trabajadores.id_usuario`.
+6. **Triggers:** `handle_new_user`, `explotar_oferta_trabajador`, `refrescar_calificacion_trabajador`, `copiar_estado_pago_trabajo`, `fijar_liquidacion_desde_pago`, `fijar_correo_codigo`, `fijar_ticket_desde_trabajo`.
+7. **Columnas secretas.** `pagos.token_tbk`, `pagos.url_tbk` y `metodos_pago_oneclick.tbk_user` no salen al cliente.

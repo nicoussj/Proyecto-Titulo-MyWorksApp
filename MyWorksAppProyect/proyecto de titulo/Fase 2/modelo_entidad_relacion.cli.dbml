@@ -22,7 +22,7 @@ Table "trabajadores" {
   "precios_configurados" integer [not null, default: 0]
   "zona_trabajo" text
   "conteo_rechazos" integer [not null, default: 0]
-  Note: 'Ficha profesional 1:1 con perfiles. calificacion y tarifa_visita son numeric tras 20261004.'
+  Note: 'Ficha 1:1. Oferta 4NF en tablas hijas; JSON solo escritura.'
 }
 
 Table "servicios" {
@@ -49,19 +49,19 @@ Table "trabajador_servicios" {
 }
 
 Table "trabajador_precios" {
-  "id_usuario" text [not null]
+  "id_usuario" uuid [not null]
   "codigo" text [not null]
   "monto_clp" numeric(12,0) [not null, check: `monto_clp >= 0`]
 
   Indexes {
     (id_usuario, codigo) [pk]
   }
-  Note: 'Filas derivadas del JSON niveles_precio (trigger explotar_oferta_trabajador). id_usuario es text.'
+  Note: '4NF: un monto por código de tarifa. FK lógica a trabajadores.'
 }
 
 Table "trabajador_servicios_extra" {
   "id" text [not null]
-  "id_usuario" text [not null]
+  "id_usuario" uuid [not null]
   "titulo" text [not null]
   "subtitulo" text [not null, default: '']
   "monto_clp" numeric(12,0) [not null, check: `monto_clp >= 0`]
@@ -70,7 +70,7 @@ Table "trabajador_servicios_extra" {
   Indexes {
     (id_usuario, id) [pk]
   }
-  Note: 'Filas derivadas del JSON servicios_personalizados. id_usuario es text.'
+  Note: '4NF: extras tarifados (fijo | por_m2). FK lógica a trabajadores.'
 }
 
 Table "portafolio_trabajador" {
@@ -404,6 +404,10 @@ Table "banderas_funcionalidad" {
 Ref:"perfiles"."id" <? "trabajadores"."id_usuario" [delete: cascade]
 
 Ref:"trabajadores"."id_usuario" <? "trabajador_servicios"."id_trabajador" [delete: cascade]
+
+Ref:"trabajadores"."id_usuario" <? "trabajador_precios"."id_usuario" [delete: cascade]
+
+Ref:"trabajadores"."id_usuario" <? "trabajador_servicios_extra"."id_usuario" [delete: cascade]
 
 Ref:"trabajadores"."id_usuario" <? "portafolio_trabajador"."id_trabajador" [delete: cascade]
 
