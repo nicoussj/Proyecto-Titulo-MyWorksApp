@@ -70,13 +70,19 @@ dependencies:
   latlong2: ^0.9.1
   video_player: ^2.11.1
   video_player_win: ^3.2.2
-  sentry_flutter: ^8.14.2
+  sentry_flutter: ^9.30.1
   webview_flutter: ^4.14.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+
+# geolocator_android con el listener NMEA desactivado (evita el ANR al pedir el
+# GPS en el emulador). Ver third_party/geolocator_android/MYWORKSAPP_PATCH.md.
+dependency_overrides:
+  geolocator_android:
+    path: third_party/geolocator_android
 
 flutter:
   uses-material-design: true
