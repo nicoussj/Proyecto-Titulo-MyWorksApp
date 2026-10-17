@@ -27,6 +27,7 @@ import '../../../../core/domain/worker_service_options_catalog.dart';
 import '../widgets/worker_verification_card.dart';
 import '../widgets/worker_base_location_card.dart';
 import '../../../../core/widgets/design_system/error_state_widget.dart';
+import '../widgets/sii_tax_info_widget.dart';
 import '../widgets/worker_custom_services_editor.dart';
 import '../widgets/worker_work_zone_field.dart';
 import '../widgets/worker_pricing_tiers_editor.dart';
@@ -689,6 +690,8 @@ class _WorkerProfilePageState extends ConsumerState<WorkerProfilePage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+              const SiiTaxInfoWidget(),
               const SizedBox(height: 24),
               // Configuración
               ListTile(

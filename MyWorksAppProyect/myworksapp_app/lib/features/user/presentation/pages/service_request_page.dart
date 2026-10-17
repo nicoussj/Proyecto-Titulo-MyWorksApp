@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/utils/mock_reserved_slots.dart';
+import '../../../../utils/content_filter.dart';
 import '../../../../core/database/repositories/service_repository.dart';
 import '../../../../core/database/repositories/service_config_repository.dart';
 import '../../../../core/database/models/service_model.dart';
@@ -18,6 +20,7 @@ import '../../../../core/utils/sku_utils.dart';
 import '../../../../core/domain/pricing_mode_recommendation.dart';
 import '../../../../core/domain/worker_service_options_catalog.dart';
 import '../widgets/pricing_mode_questionnaire.dart';
+import '../widgets/time_slot_selector.dart';
 import '../widgets/worker_service_option_picker.dart';
 import '../widgets/worker_square_meters_field.dart';
 import '../widgets/open_quote_submitted_dialog.dart';
@@ -256,6 +259,16 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
     if (_selectedAddress.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor selecciona una ubicación en el mapa')),
+      );
+      return;
+    }
+    if (ContentFilter.hasSensitiveData(_descriptionController.text)) {
+      await ContentFilter.showBlockedDialog(context);
+      return;
+    }
+    if (_selectedTime != null && MockReservedSlots.isReserved(_selectedTime!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(MockReservedSlots.reservedMessage)),
       );
       return;
     }
@@ -794,55 +807,37 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
                       validator: Validators.validateDescription,
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ListTile(
-                            leading: const Icon(Icons.calendar_today),
-                            title: Text(
-                              _selectedDate == null
-                                  ? 'Seleccionar fecha'
-                                  : DateFormat('dd/MM/yyyy')
-                                      .format(_selectedDate!),
-                            ),
-                            onTap: () async {
-                              // Sin esto, al cerrar el selector el foco vuelve
-                              // a la descripcion y se reabre el teclado.
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              final date = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime.now()
-                                    .add(const Duration(days: 365)),
-                              );
-                              if (date != null) {
-                                setState(() => _selectedDate = date);
-                              }
-                            },
-                          ),
-                        ),
-                        Expanded(
-                          child: ListTile(
-                            leading: const Icon(Icons.access_time),
-                            title: Text(
-                              _selectedTime == null
-                                  ? 'Seleccionar hora'
-                                  : _selectedTime!.format(context),
-                            ),
-                            onTap: () async {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              final time = await showTimePicker(
-                                context: context,
-                                initialTime: TimeOfDay.now(),
-                              );
-                              if (time != null) {
-                                setState(() => _selectedTime = time);
-                              }
-                            },
-                          ),
-                        ),
-                      ],
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.calendar_today),
+                      title: Text(
+                        _selectedDate == null
+                            ? 'Seleccionar fecha'
+                            : DateFormat('dd/MM/yyyy').format(_selectedDate!),
+                      ),
+                      onTap: () async {
+                        // Sin esto, al cerrar el selector el foco vuelve
+                        // a la descripcion y se reabre el teclado.
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (date != null) {
+                          setState(() => _selectedDate = date);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    TimeSlotSelector(
+                      selected: _selectedTime,
+                      onChanged: (time) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        setState(() => _selectedTime = time);
+                      },
                     ),
                     const SizedBox(height: 20),
                     const MyWorksGuaranteeBadge(),
