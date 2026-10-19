@@ -1,12 +1,23 @@
 import { useState } from 'react';
 import { visitSlotIso } from '@myworksapp/shared';
 import { Calendar, MapPin, X } from 'lucide-react';
+import { LocationPickerMap, type PickedPoint } from './LocationPickerMap';
+
+// Centro por defecto del mapa cuando el profesional no trae coordenadas.
+const DEFAULT_CENTER: PickedPoint = { latitude: -41.4717, longitude: -72.9369 };
 
 interface QuickBookingBarProps {
   workerName: string;
   profession: string;
   pricePerHour: number;
-  onContinue: (scheduledAt: string, address: string) => void;
+  defaultLatitude?: number | null;
+  defaultLongitude?: number | null;
+  onContinue: (
+    scheduledAt: string,
+    address: string,
+    latitude: number,
+    longitude: number,
+  ) => void;
   onClose: () => void;
 }
 
@@ -14,6 +25,8 @@ export function QuickBookingBar({
   workerName,
   profession,
   pricePerHour,
+  defaultLatitude,
+  defaultLongitude,
   onContinue,
   onClose,
 }: QuickBookingBarProps) {
@@ -28,6 +41,11 @@ export function QuickBookingBar({
   });
   const [hour, setHour] = useState<'10' | '14' | '18'>('10');
   const [address, setAddress] = useState('');
+  const [point, setPoint] = useState<PickedPoint>(
+    typeof defaultLatitude === 'number' && typeof defaultLongitude === 'number'
+      ? { latitude: defaultLatitude, longitude: defaultLongitude }
+      : DEFAULT_CENTER,
+  );
   const [error, setError] = useState<string | null>(null);
 
   const handleContinue = () => {
@@ -36,7 +54,7 @@ export function QuickBookingBar({
       return;
     }
     setError(null);
-    onContinue(visitSlotIso(hour), address.trim());
+    onContinue(visitSlotIso(hour), address.trim(), point.latitude, point.longitude);
   };
 
   return (
@@ -83,6 +101,9 @@ export function QuickBookingBar({
             }}
           />
         </div>
+
+        <p className="quick-booking-hint">Arrastra el pin hasta tu domicilio exacto.</p>
+        <LocationPickerMap value={point} onChange={setPoint} />
 
         <div className="quick-booking-worker">
           <strong>{workerName}</strong>

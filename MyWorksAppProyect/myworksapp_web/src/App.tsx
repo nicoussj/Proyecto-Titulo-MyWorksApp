@@ -789,7 +789,12 @@ export function App() {
     setBookingError(null);
   };
 
-  const startCheckout = async (slotIso?: string, address?: string) => {
+  const startCheckout = async (
+    slotIso?: string,
+    address?: string,
+    latitude?: number,
+    longitude?: number,
+  ) => {
     if (!selectedWorker) return;
     if (!selectedServiceId) {
       setBookingError('No hay un servicio activo en Supabase para esta categoría.');
@@ -819,6 +824,8 @@ export function App() {
         serviceId: selectedServiceId,
         description: serviceMatch?.problem ?? query,
         address: where,
+        latitude,
+        longitude,
         pricingMode: 'precio_fijo',
         scheduledAt: when,
       });
@@ -1152,7 +1159,13 @@ export function App() {
 
             pricePerHour={selectedWorker.pricePerVisit}
 
-            onContinue={(slotIso, address) => void startCheckout(slotIso, address)}
+            defaultLatitude={selectedWorker.latitude}
+
+            defaultLongitude={selectedWorker.longitude}
+
+            onContinue={(slotIso, address, latitude, longitude) =>
+              void startCheckout(slotIso, address, latitude, longitude)
+            }
 
             onClose={() => setSelectedWorker(null)}
 
