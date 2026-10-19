@@ -312,6 +312,7 @@ export function App() {
 
   const [checkoutJobId, setCheckoutJobId] = useState<string | null>(null);
   const [scheduledAt, setScheduledAt] = useState<string | null>(null);
+  const [bookingAddress, setBookingAddress] = useState('');
 
   const [showChat, setShowChat] = useState(false);
 
@@ -788,7 +789,12 @@ export function App() {
     setBookingError(null);
   };
 
-  const startCheckout = async (slotIso?: string) => {
+  const startCheckout = async (
+    slotIso?: string,
+    address?: string,
+    latitude?: number,
+    longitude?: number,
+  ) => {
     if (!selectedWorker) return;
     if (!selectedServiceId) {
       setBookingError('No hay un servicio activo en Supabase para esta categoría.');
@@ -796,11 +802,18 @@ export function App() {
     }
     const when = slotIso ?? scheduledAt ?? undefined;
     if (slotIso) setScheduledAt(slotIso);
+    const where = (address ?? bookingAddress).trim();
+    if (address !== undefined) setBookingAddress(where);
     setBookingError(null);
 
     // Sin sesión: datos + Webpay. Con sesión: cobro a la tarjeta de la app.
     if (!profile) {
       setShowGuestCheckout(true);
+      return;
+    }
+
+    if (!where) {
+      setBookingError('Ingresa la dirección donde necesitas el servicio.');
       return;
     }
 
@@ -810,6 +823,9 @@ export function App() {
         workerId: selectedWorker.id,
         serviceId: selectedServiceId,
         description: serviceMatch?.problem ?? query,
+        address: where,
+        latitude,
+        longitude,
         pricingMode: 'precio_fijo',
         scheduledAt: when,
       });
@@ -1143,7 +1159,13 @@ export function App() {
 
             pricePerHour={selectedWorker.pricePerVisit}
 
-            onContinue={(slotIso) => void startCheckout(slotIso)}
+            defaultLatitude={selectedWorker.latitude}
+
+            defaultLongitude={selectedWorker.longitude}
+
+            onContinue={(slotIso, address, latitude, longitude) =>
+              void startCheckout(slotIso, address, latitude, longitude)
+            }
 
             onClose={() => setSelectedWorker(null)}
 
@@ -1187,6 +1209,7 @@ export function App() {
             profession={selectedWorker.profession}
             basePrice={selectedWorker.pricePerVisit}
             serviceDescription={serviceMatch?.problem}
+            initialAddress={bookingAddress}
             onClose={() => setShowGuestCheckout(false)}
             onSubmit={submitGuestCheckout}
             onPreferLogin={() => {

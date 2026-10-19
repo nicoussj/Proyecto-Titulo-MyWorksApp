@@ -172,19 +172,19 @@ Un pago con tarjeta de prueba y la liberación de la garantía ya se probaron de
 |---|---|---|
 | Cliente | `camila.soto@demo.myworksapp.cl` | usuario |
 | Cliente | `andres.pizarro@demo.myworksapp.cl` | usuario |
-| Gasfíter, Providencia | `pedro.rojas@demo.myworksapp.cl` | trabajador verificado |
-| Electricista, Las Condes | `maria.fuentes@demo.myworksapp.cl` | trabajador verificado |
-| Pintor, La Florida | `jose.munoz@demo.myworksapp.cl` | trabajador verificado |
-| Maestro, Maipú | `tomas.herrera@demo.myworksapp.cl` | trabajador verificado |
-| Aseo, Ñuñoa | `ana.vidal@demo.myworksapp.cl` | trabajador verificado |
-| Armado, Santiago centro | `diego.salazar@demo.myworksapp.cl` | trabajador verificado |
-| Gasfitería, San Miguel | `carmen.lagos@demo.myworksapp.cl` | trabajador verificado |
-| Jardinería, La Reina | `felipe.araya@demo.myworksapp.cl` | trabajador verificado |
-| Cerrajería, Estación Central | `rodrigo.pena@demo.myworksapp.cl` | trabajador verificado |
-| Soporte técnico, Providencia | `isabel.campos@demo.myworksapp.cl` | trabajador verificado |
-| Mudanza, Quinta Normal | `hugo.vargas@demo.myworksapp.cl` | trabajador verificado |
-| Climatización, Las Condes | `paula.riquelme@demo.myworksapp.cl` | trabajador verificado |
-| Gasfíter en revisión, Santiago | `luis.contreras@demo.myworksapp.cl` | trabajador, no disponible |
+| Gasfíter, Puerto Montt | `pedro.rojas@demo.myworksapp.cl` | trabajador verificado |
+| Electricista, Puerto Montt | `maria.fuentes@demo.myworksapp.cl` | trabajador verificado |
+| Pintor, Puerto Montt | `jose.munoz@demo.myworksapp.cl` | trabajador verificado |
+| Maestro, Puerto Montt | `tomas.herrera@demo.myworksapp.cl` | trabajador verificado |
+| Aseo, Puerto Montt | `ana.vidal@demo.myworksapp.cl` | trabajador verificado |
+| Armado, Puerto Montt | `diego.salazar@demo.myworksapp.cl` | trabajador verificado |
+| Gasfitería, Puerto Montt | `carmen.lagos@demo.myworksapp.cl` | trabajador verificado |
+| Jardinería, Puerto Montt | `felipe.araya@demo.myworksapp.cl` | trabajador verificado |
+| Cerrajería, Puerto Montt | `rodrigo.pena@demo.myworksapp.cl` | trabajador verificado |
+| Soporte técnico, Puerto Montt | `isabel.campos@demo.myworksapp.cl` | trabajador verificado |
+| Mudanza, Puerto Montt | `hugo.vargas@demo.myworksapp.cl` | trabajador verificado |
+| Climatización, Puerto Montt | `paula.riquelme@demo.myworksapp.cl` | trabajador verificado |
+| Gasfíter en revisión, Puerto Montt | `luis.contreras@demo.myworksapp.cl` | trabajador, no disponible |
 | Admin escritorio | `admin.ops@demo.myworksapp.cl` | administrador |
 
 El escritorio pide un segundo factor la primera vez: escanea el QR con una app de códigos (Authenticator o similar) y guarda ese dispositivo para la demo.

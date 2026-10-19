@@ -16,6 +16,7 @@ interface GuestCheckoutFormProps {
   profession: string;
   basePrice: number;
   serviceDescription?: string;
+  initialAddress?: string;
   onClose: () => void;
   onSubmit: (data: GuestCheckoutPayload) => Promise<void>;
   onPreferLogin: () => void;
@@ -26,6 +27,7 @@ export function GuestCheckoutForm({
   profession,
   basePrice,
   serviceDescription = 'Visita / urgencia a domicilio',
+  initialAddress = '',
   onClose,
   onSubmit,
   onPreferLogin,
@@ -33,7 +35,7 @@ export function GuestCheckoutForm({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(initialAddress);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState('');
