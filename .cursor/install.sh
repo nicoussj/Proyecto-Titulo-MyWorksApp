@@ -37,4 +37,15 @@ done
 echo "==> Resolving Flutter dependencies (flutter pub get)"
 (cd "$APP_ROOT/myworksapp_app" && flutter pub get)
 
+echo "==> Building Flutter web (release, dart2js) so start.sh can serve it statically"
+# Release builds require the Supabase values via --dart-define (see
+# lib/core/config/supabase_config.dart: validateForCurrentBuild throws in
+# kReleaseMode without them). Reuse the same public demo keys as the web app.
+WEB_ENV="$APP_ROOT/myworksapp_web/.env.local"
+SUPA_URL="$(grep -E '^VITE_SUPABASE_URL=' "$WEB_ENV" | cut -d= -f2-)"
+SUPA_KEY="$(grep -E '^VITE_SUPABASE_ANON_KEY=' "$WEB_ENV" | cut -d= -f2-)"
+(cd "$APP_ROOT/myworksapp_app" && flutter build web --release \
+  --dart-define=SUPABASE_URL="$SUPA_URL" \
+  --dart-define=SUPABASE_ANON_KEY="$SUPA_KEY")
+
 echo "==> install.sh complete"
