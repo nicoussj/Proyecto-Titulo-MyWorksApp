@@ -152,19 +152,19 @@ BEGIN
     v.categoria, 1, v.zona, v.verificacion, v.nota, v.lat, v.lng, v.radio, 'mapa'
   FROM (
     VALUES
-      ('pedro.rojas@demo.myworksapp.cl', 'Gasfíter', 'Fugas, llaves y calefont en el sector oriente.', 4.8, 1, 35000, 'plomeria', 'Providencia', 'verificado', 'Cédula revisada para la demo.', -33.4314::float8, -70.6093::float8, 12),
-      ('maria.fuentes@demo.myworksapp.cl', 'Electricista', 'Tableros, enchufes y fallas domiciliarias.', 4.9, 1, 42000, 'electricidad', 'Las Condes', 'verificado', 'Cédula revisada para la demo.', -33.4172, -70.5476, 15),
-      ('jose.munoz@demo.myworksapp.cl', 'Pintor', 'Interiores y fachadas en el sur de Santiago.', 4.6, 1, 28000, 'pintura', 'La Florida', 'verificado', 'Cédula revisada para la demo.', -33.5225, -70.5980, 18),
-      ('tomas.herrera@demo.myworksapp.cl', 'Maestro', 'Obras menores y albañilería.', 4.7, 1, 45000, 'construccion', 'Maipú', 'verificado', 'Cédula revisada para la demo.', -33.5111, -70.7580, 20),
-      ('ana.vidal@demo.myworksapp.cl', 'Aseo hogar', 'Limpieza de departamentos y casas.', 4.9, 1, 25000, 'limpieza', 'Ñuñoa', 'verificado', 'Cédula revisada para la demo.', -33.4569, -70.5978, 10),
-      ('diego.salazar@demo.myworksapp.cl', 'Armador de muebles', 'Armado de muebles y estanterías en Santiago centro.', 4.7, 1, 22000, 'ensamblaje', 'Santiago', 'verificado', 'Cédula revisada para la demo.', -33.4489, -70.6506, 8),
-      ('carmen.lagos@demo.myworksapp.cl', 'Gasfíter', 'Conexiones y revisiones de gas en el sur de Santiago.', 4.8, 1, 33000, 'gasfiteria', 'San Miguel', 'verificado', 'Cédula revisada para la demo.', -33.4969, -70.6514, 12),
-      ('felipe.araya@demo.myworksapp.cl', 'Jardinero', 'Poda, riego y mantención de jardines.', 4.6, 1, 24000, 'jardineria', 'La Reina', 'verificado', 'Cédula revisada para la demo.', -33.4455, -70.5410, 14),
-      ('rodrigo.pena@demo.myworksapp.cl', 'Cerrajero', 'Apertura y cambio de chapas en el poniente.', 4.7, 1, 28000, 'cerrajeria', 'Estación Central', 'verificado', 'Cédula revisada para la demo.', -33.4518, -70.6793, 16),
-      ('isabel.campos@demo.myworksapp.cl', 'Soporte técnico', 'Diagnóstico de PC y redes domiciliarias.', 4.9, 1, 26000, 'soporte_tecnico', 'Providencia', 'verificado', 'Cédula revisada para la demo.', -33.4265, -70.6148, 10),
-      ('hugo.vargas@demo.myworksapp.cl', 'Mudanzas', 'Traslado y embalaje dentro de Santiago.', 4.5, 1, 55000, 'mudanza', 'Quinta Normal', 'verificado', 'Cédula revisada para la demo.', -33.4330, -70.6900, 20),
-      ('paula.riquelme@demo.myworksapp.cl', 'Climatización', 'Mantención de aire acondicionado y calefacción.', 4.8, 1, 38000, 'climatizacion', 'Las Condes', 'verificado', 'Cédula revisada para la demo.', -33.4100, -70.5750, 12),
-      ('luis.contreras@demo.myworksapp.cl', 'Gasfíter', 'En revisión: aún no toma pedidos.', 0, 0, 30000, 'plomeria', 'Santiago', 'en_revision', 'Documento de demo pendiente de aprobación.', -33.4489, -70.6693, 15)
+      ('pedro.rojas@demo.myworksapp.cl', 'Gasfíter', 'Fugas, llaves y calefont en Puerto Montt.', 4.8, 1, 35000, 'plomeria', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4717::float8, -72.9369::float8, 12),
+      ('maria.fuentes@demo.myworksapp.cl', 'Electricista', 'Tableros, enchufes y fallas domiciliarias.', 4.9, 1, 42000, 'electricidad', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4680, -72.9420, 15),
+      ('jose.munoz@demo.myworksapp.cl', 'Pintor', 'Interiores y fachadas en Puerto Montt.', 4.6, 1, 28000, 'pintura', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4800, -72.9300, 18),
+      ('tomas.herrera@demo.myworksapp.cl', 'Maestro', 'Obras menores y albañilería.', 4.7, 1, 45000, 'construccion', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4850, -72.9500, 20),
+      ('ana.vidal@demo.myworksapp.cl', 'Aseo hogar', 'Limpieza de departamentos y casas.', 4.9, 1, 25000, 'limpieza', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4650, -72.9350, 10),
+      ('diego.salazar@demo.myworksapp.cl', 'Armador de muebles', 'Armado de muebles y estanterías en Puerto Montt centro.', 4.7, 1, 22000, 'ensamblaje', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4750, -72.9450, 8),
+      ('carmen.lagos@demo.myworksapp.cl', 'Gasfíter', 'Conexiones y revisiones de gas en Puerto Montt.', 4.8, 1, 33000, 'gasfiteria', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4600, -72.9250, 12),
+      ('felipe.araya@demo.myworksapp.cl', 'Jardinero', 'Poda, riego y mantención de jardines.', 4.6, 1, 24000, 'jardineria', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4900, -72.9400, 14),
+      ('rodrigo.pena@demo.myworksapp.cl', 'Cerrajero', 'Apertura y cambio de chapas en Puerto Montt.', 4.7, 1, 28000, 'cerrajeria', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4550, -72.9500, 16),
+      ('isabel.campos@demo.myworksapp.cl', 'Soporte técnico', 'Diagnóstico de PC y redes domiciliarias.', 4.9, 1, 26000, 'soporte_tecnico', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4700, -72.9200, 10),
+      ('hugo.vargas@demo.myworksapp.cl', 'Mudanzas', 'Traslado y embalaje dentro de Puerto Montt.', 4.5, 1, 55000, 'mudanza', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4950, -72.9550, 20),
+      ('paula.riquelme@demo.myworksapp.cl', 'Climatización', 'Mantención de aire acondicionado y calefacción.', 4.8, 1, 38000, 'climatizacion', 'Puerto Montt', 'verificado', 'Cédula revisada para la demo.', -41.4620, -72.9480, 12),
+      ('luis.contreras@demo.myworksapp.cl', 'Gasfíter', 'En revisión: aún no toma pedidos.', 0, 0, 30000, 'plomeria', 'Puerto Montt', 'en_revision', 'Documento de demo pendiente de aprobación.', -41.4780, -72.9380, 15)
   ) AS v(email, profesion, descripcion, calificacion, disponible, tarifa, categoria, zona, verificacion, nota, lat, lng, radio)
   JOIN demo_cuentas c ON c.email = v.email
   ON CONFLICT (id_usuario) DO UPDATE SET
@@ -258,7 +258,7 @@ BEGIN
         AND t.longitud_base IS NOT NULL
     )
   ) THEN
-    RAISE EXCEPTION 'Falta un profesional demo verificado y disponible en Santiago para alguna categoría.';
+    RAISE EXCEPTION 'Falta un profesional demo verificado y disponible en Puerto Montt para alguna categoría.';
   END IF;
 
   INSERT INTO public.servicios (
@@ -357,13 +357,13 @@ BEGIN
     v_now
   FROM (
     VALUES
-      ('demo-job-pendiente', 'camila.soto@demo.myworksapp.cl', 'pedro.rojas@demo.myworksapp.cl', v_svc_plomeria, 'pendiente', 'Av. Irarrázaval 3456, Ñuñoa', 'Fuga bajo el lavaplatos.', -33.4569::float8, -70.5978::float8),
-      ('demo-job-aceptado', 'andres.pizarro@demo.myworksapp.cl', 'maria.fuentes@demo.myworksapp.cl', v_svc_electricidad, 'aceptado', 'Av. Apoquindo 4500, Las Condes', 'Enchufe del living sin corriente.', -33.4172, -70.5476),
-      ('demo-job-en-camino', 'camila.soto@demo.myworksapp.cl', 'pedro.rojas@demo.myworksapp.cl', v_svc_plomeria, 'en_camino', 'Av. Irarrázaval 2800, Ñuñoa', 'Cambio de llave de cocina.', -33.4540, -70.6010),
-      ('demo-job-en-curso', 'andres.pizarro@demo.myworksapp.cl', 'jose.munoz@demo.myworksapp.cl', COALESCE(v_svc_pintura, v_svc_plomeria), 'en_curso', 'Walker Martínez 1200, La Florida', 'Pintura del dormitorio principal.', -33.5225, -70.5980),
-      ('demo-job-conforme', 'camila.soto@demo.myworksapp.cl', 'ana.vidal@demo.myworksapp.cl', v_svc_limpieza, 'esperando_aprobacion_cliente', 'Pedro de Valdivia 3200, Ñuñoa', 'Limpieza profunda del departamento.', -33.4569, -70.5978),
-      ('demo-job-cerrado', 'andres.pizarro@demo.myworksapp.cl', 'tomas.herrera@demo.myworksapp.cl', COALESCE(v_svc_construccion, v_svc_plomeria), 'completado', 'Av. Pajaritos 2500, Maipú', 'Reparación de muro interior.', -33.5111, -70.7580),
-      ('demo-job-disputa', 'camila.soto@demo.myworksapp.cl', 'maria.fuentes@demo.myworksapp.cl', v_svc_electricidad, 'en_curso', 'Av. Providencia 2100, Providencia', 'El automático salta al encender el horno.', -33.4314, -70.6093)
+      ('demo-job-pendiente', 'camila.soto@demo.myworksapp.cl', 'pedro.rojas@demo.myworksapp.cl', v_svc_plomeria, 'pendiente', 'Av. Diego Portales 1450, Puerto Montt', 'Fuga bajo el lavaplatos.', -41.4717::float8, -72.9369::float8),
+      ('demo-job-aceptado', 'andres.pizarro@demo.myworksapp.cl', 'maria.fuentes@demo.myworksapp.cl', v_svc_electricidad, 'aceptado', 'Urmeneta 500, Puerto Montt', 'Enchufe del living sin corriente.', -41.4680, -72.9420),
+      ('demo-job-en-camino', 'camila.soto@demo.myworksapp.cl', 'pedro.rojas@demo.myworksapp.cl', v_svc_plomeria, 'en_camino', 'Cardonal 1200, Puerto Montt', 'Cambio de llave de cocina.', -41.4740, -72.9400),
+      ('demo-job-en-curso', 'andres.pizarro@demo.myworksapp.cl', 'jose.munoz@demo.myworksapp.cl', COALESCE(v_svc_pintura, v_svc_plomeria), 'en_curso', 'Av. Costanera 2200, Puerto Montt', 'Pintura del dormitorio principal.', -41.4800, -72.9300),
+      ('demo-job-conforme', 'camila.soto@demo.myworksapp.cl', 'ana.vidal@demo.myworksapp.cl', v_svc_limpieza, 'esperando_aprobacion_cliente', 'Benavente 800, Puerto Montt', 'Limpieza profunda del departamento.', -41.4650, -72.9350),
+      ('demo-job-cerrado', 'andres.pizarro@demo.myworksapp.cl', 'tomas.herrera@demo.myworksapp.cl', COALESCE(v_svc_construccion, v_svc_plomeria), 'completado', 'Av. Presidente Ibáñez 600, Puerto Montt', 'Reparación de muro interior.', -41.4850, -72.9500),
+      ('demo-job-disputa', 'camila.soto@demo.myworksapp.cl', 'maria.fuentes@demo.myworksapp.cl', v_svc_electricidad, 'en_curso', 'Guillermo Gallardo 300, Puerto Montt', 'El automático salta al encender el horno.', -41.4690, -72.9410)
   ) AS v(id, cliente, pro, servicio, estado, direccion, descripcion, lat, lng);
 
   UPDATE public.trabajos
@@ -400,8 +400,8 @@ BEGIN
   SELECT
     'demo-job-en-camino',
     (SELECT uid FROM demo_cuentas WHERE email = 'pedro.rojas@demo.myworksapp.cl'),
-    -33.4480,
-    -70.6120,
+    -41.4728,
+    -72.9385,
     18,
     now();
 
@@ -453,18 +453,18 @@ BEGIN
 
   INSERT INTO demo_notas (slug, email, categoria, n_notas, n_cincos, lat, lng)
   VALUES
-    ('pedro', 'pedro.rojas@demo.myworksapp.cl', 'plomeria', 5, 4, -33.4314, -70.6093),
-    ('maria', 'maria.fuentes@demo.myworksapp.cl', 'electricidad', 10, 9, -33.4172, -70.5476),
-    ('jose', 'jose.munoz@demo.myworksapp.cl', 'pintura', 5, 3, -33.5225, -70.5980),
-    ('tomas', 'tomas.herrera@demo.myworksapp.cl', 'construccion', 9, 6, -33.5111, -70.7580),
-    ('ana', 'ana.vidal@demo.myworksapp.cl', 'limpieza', 10, 9, -33.4569, -70.5978),
-    ('diego', 'diego.salazar@demo.myworksapp.cl', 'ensamblaje', 10, 7, -33.4489, -70.6506),
-    ('carmen', 'carmen.lagos@demo.myworksapp.cl', 'gasfiteria', 5, 4, -33.4969, -70.6514),
-    ('felipe', 'felipe.araya@demo.myworksapp.cl', 'jardineria', 5, 3, -33.4455, -70.5410),
-    ('rodrigo', 'rodrigo.pena@demo.myworksapp.cl', 'cerrajeria', 10, 7, -33.4518, -70.6793),
-    ('isabel', 'isabel.campos@demo.myworksapp.cl', 'soporte_tecnico', 10, 9, -33.4265, -70.6148),
-    ('hugo', 'hugo.vargas@demo.myworksapp.cl', 'mudanza', 2, 1, -33.4330, -70.6900),
-    ('paula', 'paula.riquelme@demo.myworksapp.cl', 'climatizacion', 5, 4, -33.4100, -70.5750);
+    ('pedro', 'pedro.rojas@demo.myworksapp.cl', 'plomeria', 5, 4, -41.4717, -72.9369),
+    ('maria', 'maria.fuentes@demo.myworksapp.cl', 'electricidad', 10, 9, -41.4680, -72.9420),
+    ('jose', 'jose.munoz@demo.myworksapp.cl', 'pintura', 5, 3, -41.4800, -72.9300),
+    ('tomas', 'tomas.herrera@demo.myworksapp.cl', 'construccion', 9, 6, -41.4850, -72.9500),
+    ('ana', 'ana.vidal@demo.myworksapp.cl', 'limpieza', 10, 9, -41.4650, -72.9350),
+    ('diego', 'diego.salazar@demo.myworksapp.cl', 'ensamblaje', 10, 7, -41.4750, -72.9450),
+    ('carmen', 'carmen.lagos@demo.myworksapp.cl', 'gasfiteria', 5, 4, -41.4600, -72.9250),
+    ('felipe', 'felipe.araya@demo.myworksapp.cl', 'jardineria', 5, 3, -41.4900, -72.9400),
+    ('rodrigo', 'rodrigo.pena@demo.myworksapp.cl', 'cerrajeria', 10, 7, -41.4550, -72.9500),
+    ('isabel', 'isabel.campos@demo.myworksapp.cl', 'soporte_tecnico', 10, 9, -41.4700, -72.9200),
+    ('hugo', 'hugo.vargas@demo.myworksapp.cl', 'mudanza', 2, 1, -41.4950, -72.9550),
+    ('paula', 'paula.riquelme@demo.myworksapp.cl', 'climatizacion', 5, 4, -41.4620, -72.9480);
 
   INSERT INTO public.trabajos (
     id, id_usuario, id_trabajador, id_servicio, estado, estado_pago, direccion,
@@ -484,7 +484,7 @@ BEGIN
     ),
     'completado',
     'liberado',
-    'Trabajo cerrado de la demo, Santiago',
+    'Trabajo cerrado de la demo, Puerto Montt',
     'Visita cerrada para la calificación publicada.',
     n.lat,
     n.lng,
@@ -596,7 +596,7 @@ BEGIN
     'demo-notif-pedro',
     (SELECT uid FROM demo_cuentas WHERE email = 'pedro.rojas@demo.myworksapp.cl'),
     'Nuevo pedido',
-    'Camila Soto pidió un gasfíter en Ñuñoa.',
+    'Camila Soto pidió un gasfíter en Puerto Montt.',
     'trabajo',
     0,
     'demo-job-pendiente',
