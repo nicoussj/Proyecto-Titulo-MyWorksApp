@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
@@ -32,9 +34,21 @@ class _WorkerBaseLocationCardState extends State<WorkerBaseLocationCard> {
   final _map = MapController();
   late double? _lat = widget.latitude;
   late double? _lng = widget.longitude;
-  late double _radius = widget.radiusKm.clamp(3, 15);
+  late double _radius = _initialRadius(widget.radiusKm);
+  late final double _sliderMax = math.max(
+    _defaultMaxKm,
+    _initialRadius(widget.radiusKm),
+  );
   bool _saving = false;
   String? _error;
+
+  static const _minKm = 3.0;
+  static const _defaultMaxKm = 15.0;
+
+  static double _initialRadius(double radiusKm) {
+    if (radiusKm <= 0) return 7;
+    return math.max(_minKm, radiusKm);
+  }
 
   @override
   void dispose() {
@@ -169,10 +183,10 @@ class _WorkerBaseLocationCardState extends State<WorkerBaseLocationCard> {
               'Radio cercano: ${_radius.round()} km (sin extra de traslado)',
             ),
             Slider(
-              min: 3,
-              max: 15,
-              divisions: 12,
-              value: _radius,
+              min: _minKm,
+              max: _sliderMax,
+              divisions: (_sliderMax - _minKm).round().clamp(1, 40),
+              value: _radius.clamp(_minKm, _sliderMax),
               label: '${_radius.round()} km',
               onChanged: widget.enabled ? (value) => setState(() => _radius = value) : null,
             ),

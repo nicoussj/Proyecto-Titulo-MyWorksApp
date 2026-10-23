@@ -36,6 +36,10 @@ export function withinTravelRange(
   return distanceKm <= MAX_TRAVEL_WITH_SURCHARGE_KM;
 }
 
+export function tooFarToBookCopy(): string {
+  return `Este profesional queda a más de ${MAX_TRAVEL_WITH_SURCHARGE_KM} km. Elige a alguien más cercano.`;
+}
+
 /** Recargo solo por los km fuera del radar. Cero si el trabajo queda cerca. */
 export function transportSurcharge(input: {
   workerLat?: number | null;

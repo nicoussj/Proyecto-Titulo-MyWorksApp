@@ -18,7 +18,7 @@ interface PaymentCheckoutModalProps {
   insideRadar?: boolean | null;
   serviceDescription?: string;
   jobId?: string | null;
-  onUseAddress?: (query: string) => Promise<void>;
+  onUseAddress?: (query: string) => Promise<unknown>;
   locatingAddress?: boolean;
   onClose: () => void;
   /** Cobra la tarjeta guardada. Si no hay, redirige a Webpay Plus. */
@@ -60,6 +60,10 @@ export function PaymentCheckoutModal({
   };
 
   const handlePay = async () => {
+    if (needsManualSite) {
+      setError('Indica la dirección del trabajo o marca el punto en el mapa.');
+      return;
+    }
     setIsProcessing(true);
     setError(null);
     try {
@@ -191,13 +195,15 @@ export function PaymentCheckoutModal({
             <button
               type="button"
               onClick={() => void handlePay()}
-              disabled={isProcessing}
+              disabled={isProcessing || needsManualSite || locatingAddress}
               className="btn-primary checkout-v2-pay"
             >
               <CreditCard size={16} />
               {isProcessing
                 ? 'Confirmando pedido…'
-                : `Confirmar pedido · CLP ${totalAmount.toLocaleString('es-CL')}`}
+                : needsManualSite
+                  ? 'Indica la ubicación del trabajo'
+                  : `Confirmar pedido · CLP ${totalAmount.toLocaleString('es-CL')}`}
             </button>
 
             <div className="checkout-v2-footer">

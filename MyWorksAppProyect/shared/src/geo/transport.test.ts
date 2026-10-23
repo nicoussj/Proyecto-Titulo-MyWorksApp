@@ -40,6 +40,12 @@ describe('recargo de traslado', () => {
     assert.equal(withinTravelRange(quote.distanceKm), true);
   });
 
+  it('no ofrece el viaje a más de 30 km', () => {
+    assert.equal(withinTravelRange(30), true);
+    assert.equal(withinTravelRange(30.1), false);
+    assert.equal(withinTravelRange(null), true);
+  });
+
   it('sin coordenadas no inventa recargo', () => {
     const quote = transportSurcharge({ radiusKm: 7 });
     assert.equal(quote.insideRadar, null);

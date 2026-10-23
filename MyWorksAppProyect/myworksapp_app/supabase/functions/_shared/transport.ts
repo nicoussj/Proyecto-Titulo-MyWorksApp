@@ -37,20 +37,25 @@ export function resolveServiceRadiusKm(radiusKm?: number | null): number {
   return radiusKm;
 }
 
-export function transportExtraClp(input: {
+export function withinTravelRange(distanceKm: number | null | undefined): boolean {
+  if (distanceKm == null || !Number.isFinite(distanceKm)) return true;
+  return distanceKm <= MAX_TRAVEL_WITH_SURCHARGE_KM;
+}
+
+export function transportQuote(input: {
   workerLat?: number | null;
   workerLng?: number | null;
   jobLat?: number | null;
   jobLng?: number | null;
   radiusKm?: number | null;
-}): number {
+}): { distanceKm: number | null; extraClp: number } {
   if (
     !finite(input.workerLat) ||
     !finite(input.workerLng) ||
     !finite(input.jobLat) ||
     !finite(input.jobLng)
   ) {
-    return 0;
+    return { distanceKm: null, extraClp: 0 };
   }
   const radiusKm = resolveServiceRadiusKm(input.radiusKm);
   const distanceKm = haversineKm(
@@ -60,10 +65,23 @@ export function transportExtraClp(input: {
     input.jobLng,
   );
   const extraKm = Math.max(0, distanceKm - radiusKm);
-  if (extraKm <= 0) return 0;
+  if (extraKm <= 0) return { distanceKm, extraClp: 0 };
   const raw = Math.round(extraKm * TRANSPORT_CLP_PER_EXTRA_KM);
-  return Math.min(
-    TRANSPORT_MAX_SURCHARGE_CLP,
-    Math.max(TRANSPORT_MIN_SURCHARGE_CLP, raw),
-  );
+  return {
+    distanceKm,
+    extraClp: Math.min(
+      TRANSPORT_MAX_SURCHARGE_CLP,
+      Math.max(TRANSPORT_MIN_SURCHARGE_CLP, raw),
+    ),
+  };
+}
+
+export function transportExtraClp(input: {
+  workerLat?: number | null;
+  workerLng?: number | null;
+  jobLat?: number | null;
+  jobLng?: number | null;
+  radiusKm?: number | null;
+}): number {
+  return transportQuote(input).extraClp;
 }

@@ -310,6 +310,10 @@ export function PremiumSearchMap({
     });
     marker.addTo(map);
     clientMarkerRef.current = marker;
+    const point = L.latLng(clientLocation.latitude, clientLocation.longitude);
+    if (!map.getBounds().contains(point)) {
+      map.panTo(point);
+    }
     if (selected) {
       markersRef.current
         .get(selected.id)

@@ -15,7 +15,11 @@ import {
 import { serviceClient } from "../_shared/supabase.ts";
 import { tbkConfig, tbkCreateTransaction } from "../_shared/tbk.ts";
 import { turnstileDecision } from "../_shared/turnstile_gate.ts";
-import { asCoord, transportExtraClp } from "../_shared/transport.ts";
+import {
+  asCoord,
+  transportQuote,
+  withinTravelRange,
+} from "../_shared/transport.ts";
 
 type GuestBody = {
   name?: string;
@@ -175,13 +179,28 @@ Deno.serve(async (req) => {
     }
     const jobLat = asCoord(body.latitude);
     const jobLng = asCoord(body.longitude);
-    const extra = transportExtraClp({
+    if (jobLat == null || jobLng == null) {
+      return jsonResponse(
+        req,
+        { error: "Indica la ubicación del trabajo para calcular el traslado" },
+        400,
+      );
+    }
+    const quote = transportQuote({
       workerLat: asCoord(worker.latitud_base),
       workerLng: asCoord(worker.longitud_base),
       jobLat,
       jobLng,
       radiusKm: asCoord(worker.radio_servicio_km),
     });
+    if (!withinTravelRange(quote.distanceKm)) {
+      return jsonResponse(
+        req,
+        { error: "Este profesional queda a más de 30 km del trabajo" },
+        400,
+      );
+    }
+    const extra = quote.extraClp;
     const expected = visitFee + extra;
     if (Math.abs(amountClp - expected) > 1) {
       return jsonResponse(

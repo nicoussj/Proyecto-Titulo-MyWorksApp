@@ -32,7 +32,9 @@ import {
   fetchMyNotifications,
   fetchUserJobs,
   toWebWorkerCard,
+  tooFarToBookCopy,
   transportSurcharge,
+  withinTravelRange,
   type JobTrackingSnapshot,
   type CatalogCursor,
   type WorkerWithProfile,
@@ -814,53 +816,69 @@ export function App() {
 
   const liveSite = clientLocation;
   const chargeSite = jobSiteBound !== undefined ? jobSiteBound : liveSite;
-  const liveQuote = selectedWorker
-    ? transportSurcharge({
-        workerLat: selectedWorker.latitude,
-        workerLng: selectedWorker.longitude,
-        jobLat: liveSite?.latitude,
-        jobLng: liveSite?.longitude,
-        radiusKm: selectedWorker.serviceRadiusKm,
-      })
-    : null;
-  const chargeQuote = selectedWorker
-    ? transportSurcharge({
-        workerLat: selectedWorker.latitude,
-        workerLng: selectedWorker.longitude,
-        jobLat: chargeSite?.latitude,
-        jobLng: chargeSite?.longitude,
-        radiusKm: selectedWorker.serviceRadiusKm,
-      })
-    : null;
+  const quoteFor = (
+    worker: SearchWorker | null,
+    site: MapSite | null | undefined,
+  ) =>
+    worker
+      ? transportSurcharge({
+          workerLat: worker.latitude,
+          workerLng: worker.longitude,
+          jobLat: site?.latitude,
+          jobLng: site?.longitude,
+          radiusKm: worker.serviceRadiusKm,
+        })
+      : null;
+  const liveQuote = quoteFor(selectedWorker, liveSite);
+  const chargeQuote = quoteFor(selectedWorker, chargeSite);
+  const listedWorkers = (serviceMatch?.workers ?? []).filter((worker) => {
+    if (!clientLocation) return true;
+    const quote = quoteFor(worker, clientLocation);
+    return withinTravelRange(quote?.distanceKm);
+  });
+  const liveTooFar =
+    liveQuote?.distanceKm != null && !withinTravelRange(liveQuote.distanceKm);
   const radarHint = !selectedWorker
     ? undefined
-    : liveQuote?.insideRadar === true
-      ? 'El trabajo queda cerca: sin extra de traslado'
-      : liveQuote?.insideRadar === false
-        ? `Fuera del área: +$${Math.round(liveQuote.extraClp).toLocaleString('es-CL')} de traslado`
-        : `Hasta ${Math.round(liveQuote?.radiusKm ?? 7)} km cubre sin extra. Usa GPS, una dirección o el mapa.`;
+    : liveTooFar
+      ? tooFarToBookCopy()
+      : liveQuote?.insideRadar === true
+        ? 'El trabajo queda cerca: sin extra de traslado'
+        : liveQuote?.insideRadar === false
+          ? `Fuera del área: +$${Math.round(liveQuote.extraClp).toLocaleString('es-CL')} de traslado`
+          : `Hasta ${Math.round(liveQuote?.radiusKm ?? 7)} km cubre sin extra. Usa GPS, una dirección o el mapa.`;
 
   const pickClientLocation = (site: MapSite) => {
     setClientLocation(site);
     setBookingError(null);
   };
 
-  const searchJobAddress = async (queryText: string) => {
+  const resolveJobAddress = async (queryText: string): Promise<MapSite | null> => {
+    const hit = await geocodeChileAddress(queryText);
+    if (!hit) return null;
+    const site = { latitude: hit.latitude, longitude: hit.longitude };
+    setClientLocation(site);
+    return site;
+  };
+
+  const searchJobAddress = async (queryText: string, quiet = false) => {
     setLocatingAddress(true);
-    setBookingError(null);
+    if (!quiet) setBookingError(null);
     try {
-      const hit = await geocodeChileAddress(queryText);
-      if (!hit) {
+      const site = await resolveJobAddress(queryText);
+      if (!site && !quiet) {
         setBookingError(
           'No encontramos esa dirección. Prueba con calle y ciudad, o marca el punto en el mapa.',
         );
-        return;
       }
-      setClientLocation({ latitude: hit.latitude, longitude: hit.longitude });
+      return site;
     } catch {
-      setBookingError(
-        'No se pudo buscar la dirección. Márcala en el mapa o usa el GPS si tu equipo lo tiene.',
-      );
+      if (!quiet) {
+        setBookingError(
+          'No se pudo buscar la dirección. Márcala en el mapa o usa el GPS si tu equipo lo tiene.',
+        );
+      }
+      return null;
     } finally {
       setLocatingAddress(false);
     }
@@ -901,6 +919,10 @@ export function App() {
     }
     if (slotIso) setScheduledAt(slotIso);
     setBookingError(null);
+    if (liveTooFar) {
+      setBookingError(tooFarToBookCopy());
+      return;
+    }
 
     // Sin sesión: datos + Webpay. Con sesión: el trabajo se crea al cobrar
     // con el GPS de ese momento, para que el monto coincida con el servidor.
@@ -938,7 +960,27 @@ export function App() {
         site = clientLocation ?? null;
       } else {
         site = finiteMapSite(snap.latitude, snap.longitude);
+        if (!site) {
+          jobId = null;
+          site = clientLocation ?? null;
+        }
       }
+    }
+
+    if (!site) {
+      throw new Error(
+        'Indica dónde es el trabajo: GPS, una dirección o el punto en el mapa.',
+      );
+    }
+    const payQuote = transportSurcharge({
+      workerLat: selectedWorker.latitude,
+      workerLng: selectedWorker.longitude,
+      jobLat: site.latitude,
+      jobLng: site.longitude,
+      radiusKm: selectedWorker.serviceRadiusKm,
+    });
+    if (!withinTravelRange(payQuote.distanceKm)) {
+      throw new Error(tooFarToBookCopy());
     }
 
     setJobSiteBound(site);
@@ -951,23 +993,15 @@ export function App() {
         description: serviceMatch?.problem ?? query,
         pricingMode: 'precio_fijo',
         scheduledAt: scheduledAt ?? undefined,
-        latitude: site?.latitude,
-        longitude: site?.longitude,
+        latitude: site.latitude,
+        longitude: site.longitude,
       });
       jobId = job.id;
       setCheckoutJobId(job.id);
       sessionStorage.setItem('mwa-active-job', job.id);
     }
 
-    const amountClp =
-      (selectedWorker.pricePerVisit ?? 0) +
-      transportSurcharge({
-        workerLat: selectedWorker.latitude,
-        workerLng: selectedWorker.longitude,
-        jobLat: site?.latitude,
-        jobLng: site?.longitude,
-        radiusKm: selectedWorker.serviceRadiusKm,
-      }).extraClp;
+    const amountClp = (selectedWorker.pricePerVisit ?? 0) + payQuote.extraClp;
 
     sessionStorage.setItem(
       'mwa-pending-checkout',
@@ -1005,31 +1039,34 @@ export function App() {
     if (!selectedWorker || !selectedServiceId) {
       throw new Error('Falta profesional o servicio.');
     }
-    let guestSite = clientLocation;
-    if (!guestSite && data.address.trim()) {
-      const hit = await geocodeChileAddress(data.address);
-      if (hit) {
-        guestSite = { latitude: hit.latitude, longitude: hit.longitude };
-        setClientLocation(guestSite);
-      }
+    const guestSite = data.address.trim()
+      ? await resolveJobAddress(data.address)
+      : clientLocation;
+    if (!guestSite) {
+      throw new Error(
+        'No encontramos esa dirección. Escríbela con calle y ciudad, o marca el punto en el mapa.',
+      );
+    }
+    const guestQuote = transportSurcharge({
+      workerLat: selectedWorker.latitude,
+      workerLng: selectedWorker.longitude,
+      jobLat: guestSite.latitude,
+      jobLng: guestSite.longitude,
+      radiusKm: selectedWorker.serviceRadiusKm,
+    });
+    if (!withinTravelRange(guestQuote.distanceKm)) {
+      throw new Error(tooFarToBookCopy());
     }
     const guestAmount =
-      (selectedWorker.pricePerVisit ?? 0) +
-      transportSurcharge({
-        workerLat: selectedWorker.latitude,
-        workerLng: selectedWorker.longitude,
-        jobLat: guestSite?.latitude,
-        jobLng: guestSite?.longitude,
-        radiusKm: selectedWorker.serviceRadiusKm,
-      }).extraClp;
+      (selectedWorker.pricePerVisit ?? 0) + guestQuote.extraClp;
     const session = await createGuestWebpayCheckout(supabase, {
       ...data,
       workerId: selectedWorker.id,
       serviceId: selectedServiceId,
       description: serviceMatch?.problem ?? query,
       amountClp: guestAmount,
-      latitude: guestSite?.latitude,
-      longitude: guestSite?.longitude,
+      latitude: guestSite.latitude,
+      longitude: guestSite.longitude,
       scheduledAt: scheduledAt ?? undefined,
       turnstileToken: data.turnstileToken,
     });
@@ -1258,7 +1295,7 @@ export function App() {
 
           query={query}
 
-          workers={serviceMatch?.workers ?? []}
+          workers={listedWorkers}
 
           isLoading={isSearching}
 
@@ -1365,6 +1402,8 @@ export function App() {
               setJobSiteBound(undefined);
             }}
             onSubmit={submitGuestCheckout}
+            onPreviewAddress={(queryText) => searchJobAddress(queryText, true)}
+            locatingAddress={locatingAddress}
             onPreferLogin={() => {
               setShowGuestCheckout(false);
               setAuthInitialEmail('');

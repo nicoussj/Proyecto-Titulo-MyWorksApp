@@ -26,4 +26,10 @@ void main() {
     expect(quote.extraClp, greaterThanOrEqualTo(kTransportMinSurchargeClp));
     expect(withinTravelRange(quote.distanceKm), isTrue);
   });
+
+  test('más de 30 km no se ofrece el viaje', () {
+    expect(withinTravelRange(30), isTrue);
+    expect(withinTravelRange(30.1), isFalse);
+    expect(withinTravelRange(null), isTrue);
+  });
 }

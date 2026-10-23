@@ -50,7 +50,7 @@ interface SearchResultsViewProps {
   clientLocation?: { latitude: number; longitude: number } | null;
   onUseMyLocation?: () => void;
   onPickClientLocation?: (location: { latitude: number; longitude: number }) => void;
-  onSearchAddress?: (query: string) => Promise<void>;
+  onSearchAddress?: (query: string) => Promise<unknown>;
   locating?: boolean;
   locatingAddress?: boolean;
 }
