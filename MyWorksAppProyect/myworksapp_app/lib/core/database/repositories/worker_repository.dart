@@ -1,4 +1,5 @@
 import '../../domain/distance_match.dart';
+import '../../domain/transport_surcharge.dart';
 import '../../domain/user_location_context.dart';
 import '../../domain/worker_login_item.dart';
 import '../../services/worker_reputation_service.dart';
@@ -56,9 +57,8 @@ class WorkerRepository {
     return _filterListedWorkers(workers, near: near);
   }
 
-  /// Con coordenadas del cliente y base del profesional se usa la distancia
-  /// real contra `radio_servicio_km`. Si falta alguna, se compara la zona por
-  /// nombre de ciudad/comuna como antes.
+  /// Con GPS se usa la distancia real. Fuera del radio cercano se puede pedir
+  /// con extra de traslado; más de 30 km se oculta. Sin GPS se compara la zona.
   static bool _servesLocation(WorkerModel worker, UserLocationContext near) {
     final lat = near.latitude;
     final lng = near.longitude;
@@ -70,7 +70,7 @@ class WorkerRepository {
         jobLng: lng,
         radiusKm: worker.serviceRadiusKm,
       );
-      if (match != null) return !match.outsideRadius;
+      if (match != null) return withinTravelRange(match.distanceKm);
     }
     final zone = worker.workZone;
     if (zone == null || zone.isEmpty) return true;

@@ -32,7 +32,7 @@ class _WorkerBaseLocationCardState extends State<WorkerBaseLocationCard> {
   final _map = MapController();
   late double? _lat = widget.latitude;
   late double? _lng = widget.longitude;
-  late double _radius = widget.radiusKm.clamp(1, 80);
+  late double _radius = widget.radiusKm.clamp(3, 15);
   bool _saving = false;
   String? _error;
 
@@ -103,7 +103,7 @@ class _WorkerBaseLocationCardState extends State<WorkerBaseLocationCard> {
             Text(
               widget.origin == 'comuna' && widget.latitude != null
                   ? 'Hoy está el centro de tu comuna. Confírmalo en el mapa para que el pin deje de ser aproximado.'
-                  : 'Este punto y el radio se usan en el mapa y para ofrecer trabajos cercanos.',
+                  : 'Este punto es tu base. Dentro del radio no cobras traslado extra; si el cliente pide un trabajo más lejos, la app suma un recargo.',
             ),
             const SizedBox(height: 8),
             TextField(
@@ -165,11 +165,13 @@ class _WorkerBaseLocationCardState extends State<WorkerBaseLocationCard> {
                 ],
               ),
             ),
-            Text('Radio de servicio: ${_radius.round()} km'),
+            Text(
+              'Radio cercano: ${_radius.round()} km (sin extra de traslado)',
+            ),
             Slider(
-              min: 1,
-              max: 80,
-              divisions: 79,
+              min: 3,
+              max: 15,
+              divisions: 12,
               value: _radius,
               label: '${_radius.round()} km',
               onChanged: widget.enabled ? (value) => setState(() => _radius = value) : null,

@@ -10,6 +10,7 @@ import '../../../../core/database/repositories/service_repository.dart';
 import '../../../../core/database/repositories/service_config_repository.dart';
 import '../../../../core/database/models/service_model.dart';
 import '../../../../core/domain/pricing_constants.dart';
+import '../../../../core/domain/transport_surcharge.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/services/open_quote_notification_service.dart';
@@ -157,13 +158,24 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
     return parsed;
   }
 
+  TransportSurcharge get _traslado {
+    return transportSurcharge(
+      workerLat: _selectedWorker?.baseLatitude,
+      workerLng: _selectedWorker?.baseLongitude,
+      jobLat: _selectedLatitude,
+      jobLng: _selectedLongitude,
+      radiusKm: _selectedWorker?.serviceRadiusKm,
+    );
+  }
+
   int? _workerTierTotalClp() {
     if (_selectedWorker == null || _selectedWorkerOption == null) return null;
-    return WorkerServiceOptionsCatalog.totalPriceForWorker(
+    final base = WorkerServiceOptionsCatalog.totalPriceForWorker(
       worker: _selectedWorker!,
       option: _selectedWorkerOption!,
       squareMeters: _parsedSquareMeters,
     );
+    return base + _traslado.extraClp;
   }
 
   int? _chargeAmountClpForDisclaimer() {
@@ -386,6 +398,7 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
           priceUnit: _selectedWorkerOption!.unit.name,
           squareMeters: _parsedSquareMeters,
           unitRateClp: unitRate,
+          transportExtraClp: _traslado.extraClp,
         );
         if (!mounted) return;
         final paid = await EscrowCheckoutSheet.show(
@@ -710,6 +723,10 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
                       },
                     ),
                   ),
+                  if (_selectedWorker != null) ...[
+                    const SizedBox(height: 12),
+                    _TrasladoRadarBanner(quote: _traslado),
+                  ],
                   const SizedBox(height: 20),
                   if (_usesWorkerTierPricing) ...[
                     WorkerServiceOptionPicker(
@@ -921,5 +938,56 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
     });
   }
 
+}
+
+class _TrasladoRadarBanner extends StatelessWidget {
+  const _TrasladoRadarBanner({required this.quote});
+
+  final TransportSurcharge quote;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = quote.radiusKm.round();
+    late final String text;
+    late final Color color;
+    if (quote.insideRadar == true) {
+      text = 'El trabajo queda dentro de $radius km: sin extra de traslado.';
+      color = AppColors.success;
+    } else if (quote.insideRadar == false) {
+      final km = quote.distanceKm?.toStringAsFixed(1) ?? '?';
+      text =
+          'Queda a $km km, fuera del área cercana. Traslado extra: \$${quote.extraClp}.';
+      color = AppColors.brandOrange;
+    } else {
+      text =
+          'Hasta $radius km cubre sin extra de traslado. Confirma tu ubicación para calcularlo.';
+      color = AppColors.grayMedium;
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.radar_rounded, color: color, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 

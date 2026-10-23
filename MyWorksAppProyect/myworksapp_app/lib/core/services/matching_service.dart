@@ -6,6 +6,7 @@ import '../database/models/worker_model.dart';
 import '../database/models/job_model.dart';
 import '../database/models/user_model.dart';
 import '../domain/distance_match.dart';
+import '../domain/transport_surcharge.dart';
 import '../domain/zone_match.dart';
 import '../utils/app_logger.dart';
 import '../utils/constants.dart';
@@ -209,7 +210,9 @@ class MatchingService {
         jobLng: jobLng,
         radiusKm: worker.serviceRadiusKm,
       );
-      if (distance != null && distance.outsideRadius) return null;
+      if (distance != null && !withinTravelRange(distance.distanceKm)) {
+        return null;
+      }
       final double? distanceKm = distance?.distanceKm;
 
       // 3. Obtener cancelaciones previas (solo del trabajador, no del usuario)

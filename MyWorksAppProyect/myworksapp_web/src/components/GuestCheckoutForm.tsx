@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Lock, MapPin, Phone, User, Mail, X, ExternalLink } from 'lucide-react';
+import { transportCheckoutCopy } from '@myworksapp/shared';
 import { TurnstileWidget } from './TurnstileWidget';
 import { turnstileSiteKey } from './turnstileSite';
 
@@ -15,6 +16,8 @@ interface GuestCheckoutFormProps {
   workerName: string;
   profession: string;
   basePrice: number;
+  transportExtraClp?: number;
+  insideRadar?: boolean | null;
   serviceDescription?: string;
   onClose: () => void;
   onSubmit: (data: GuestCheckoutPayload) => Promise<void>;
@@ -25,6 +28,8 @@ export function GuestCheckoutForm({
   workerName,
   profession,
   basePrice,
+  transportExtraClp = 0,
+  insideRadar = null,
   serviceDescription = 'Visita / urgencia a domicilio',
   onClose,
   onSubmit,
@@ -89,8 +94,8 @@ export function GuestCheckoutForm({
           </p>
           <h2 id="guest-checkout-title">Datos para la visita</h2>
           <p className="guest-checkout-lead">
-            Sin cuenta te enviamos a Webpay para pagar este pedido. Si inicias
-            sesión, el cobro sale de la tarjeta inscrita en la app.
+            Sin cuenta te enviamos a Webpay para pagar este pedido. Si tu PC no
+            tiene GPS, la dirección de abajo sirve para calcular el traslado.
           </p>
         </div>
 
@@ -98,9 +103,14 @@ export function GuestCheckoutForm({
           <span>
             {profession} · {workerName}
           </span>
-          <strong>{basePrice.toLocaleString('es-CL')} CLP</strong>
+          <strong>
+            {(basePrice + Math.max(0, transportExtraClp)).toLocaleString('es-CL')} CLP
+          </strong>
         </div>
-        <p className="guest-checkout-service">{serviceDescription}</p>
+        <p className="guest-checkout-service">
+          {serviceDescription}
+          {` · ${transportCheckoutCopy({ extraClp: transportExtraClp, insideRadar })}`}
+        </p>
 
         <form className="guest-checkout-form" onSubmit={(e) => void handleSubmit(e)}>
           <label>
