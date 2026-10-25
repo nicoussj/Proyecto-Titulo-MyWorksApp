@@ -28,6 +28,9 @@ export interface SearchWorker {
   availableNow?: boolean;
   latitude?: number | null;
   longitude?: number | null;
+  urbanRadiusKm?: number | null;
+  outsideMobilizationFeeClp?: number | null;
+  isElite?: boolean;
 }
 
 interface SearchResultsViewProps {
@@ -50,6 +53,13 @@ interface SearchResultsViewProps {
 function clp(amount: number): string {
   const value = Number.isFinite(amount) ? Math.round(amount) : 0;
   return value.toLocaleString('es-CL');
+}
+
+function coverageLine(worker: SearchWorker): string {
+  const km = worker.urbanRadiusKm ?? 5;
+  const fee = worker.outsideMobilizationFeeClp ?? 0;
+  const feeLabel = fee <= 0 ? 'sin recargo' : `$${clp(fee)}`;
+  return `Radio urbano ${km} km: movilización $0 dentro. Fuera, ${feeLabel}.`;
 }
 
 export function SearchResultsView({
@@ -250,7 +260,11 @@ export function SearchResultsView({
                   <div className="pro-card-body">
                     <div className="pro-card-top">
                       <strong>{w.name}</strong>
-                      <Heart size={16} className="pro-card-heart" />
+                      {w.isElite ? (
+                        <span className="pro-card-elite">Élite</span>
+                      ) : (
+                        <Heart size={16} className="pro-card-heart" />
+                      )}
                     </div>
                     <span className="pro-card-role">{w.profession}</span>
                     <div className="pro-card-rating">
@@ -259,6 +273,7 @@ export function SearchResultsView({
                       <span className="pro-card-stars">★★★★★</span>
                       <span>{w.jobsDone} trabajos</span>
                     </div>
+                    <p className="pro-card-coverage">{coverageLine(w)}</p>
                     <div className="pro-card-footer">
                       <span className="pro-card-price">
                         Desde ${clp(w.pricePerVisit)} / visita
@@ -301,6 +316,7 @@ export function SearchResultsView({
           </button>
           <div className="search-map-legend">
             <span className="search-map-legend-dot" /> Profesionales cerca
+            <span className="search-map-legend-dot search-map-legend-dot--elite" /> Élite del mes
           </div>
         </aside>
       </div>

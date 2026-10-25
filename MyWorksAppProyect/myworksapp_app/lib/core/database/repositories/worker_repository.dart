@@ -104,7 +104,11 @@ class WorkerRepository {
       }
     }
 
-    WorkerReputationService.instance.sortForListing(listed);
+    WorkerReputationService.instance.sortForListing(
+      listed,
+      clientLatitude: near?.latitude,
+      clientLongitude: near?.longitude,
+    );
     return listed;
   }
 
@@ -206,6 +210,17 @@ class WorkerRepository {
       'longitud_base': longitude,
       'radio_servicio_km': radiusKm,
       'origen_base': 'mapa',
+    }).eq('id_usuario', userId);
+  }
+
+  Future<void> updateUrbanCoverage({
+    required String userId,
+    required double urbanRadiusKm,
+    required int outsideFeeClp,
+  }) async {
+    await supabase.from(_table).update({
+      'radio_urbano_km': urbanRadiusKm,
+      'tarifa_fuera_radio_clp': outsideFeeClp,
     }).eq('id_usuario', userId);
   }
 

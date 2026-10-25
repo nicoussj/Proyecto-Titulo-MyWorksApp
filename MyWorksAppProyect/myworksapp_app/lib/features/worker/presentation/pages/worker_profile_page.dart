@@ -26,6 +26,7 @@ import '../../../../core/domain/worker_custom_service.dart';
 import '../../../../core/domain/worker_service_options_catalog.dart';
 import '../widgets/worker_verification_card.dart';
 import '../widgets/worker_base_location_card.dart';
+import '../widgets/worker_urban_coverage_card.dart';
 import '../../../../core/widgets/design_system/error_state_widget.dart';
 import '../widgets/sii_tax_info_widget.dart';
 import '../widgets/worker_custom_services_editor.dart';
@@ -488,6 +489,24 @@ class _WorkerProfilePageState extends ConsumerState<WorkerProfilePage> {
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Ubicación base guardada')),
+                    );
+                  },
+                ),
+              if (_worker != null)
+                WorkerUrbanCoverageCard(
+                  urbanRadiusKm: _worker!.urbanRadiusKm,
+                  outsideFeeClp: _worker!.outsideMobilizationFeeClp,
+                  enabled: _isEditing,
+                  onSave: (urbanRadiusKm, outsideFeeClp) async {
+                    await _workerRepository.updateUrbanCoverage(
+                      userId: user.id,
+                      urbanRadiusKm: urbanRadiusKm,
+                      outsideFeeClp: outsideFeeClp,
+                    );
+                    await _loadData();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Radio urbano guardado')),
                     );
                   },
                 ),

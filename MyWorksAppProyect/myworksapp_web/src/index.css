@@ -845,6 +845,22 @@ h1, h2, h3, .brand-display {
 .pro-card-top strong { font-size: 15px; }
 .pro-card-heart { color: var(--text-muted-dark); flex-shrink: 0; }
 .pro-card-role { font-size: 12px; color: var(--text-muted-dark); display: block; margin-bottom: 6px; }
+.pro-card-elite {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #b45309;
+  background: rgba(180, 83, 9, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.pro-card-coverage {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted-dark);
+}
 .pro-card-rating {
   display: flex;
   align-items: center;
@@ -1035,6 +1051,10 @@ h1, h2, h3, .brand-display {
   background: #2563eb;
   box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25);
 }
+.mwa-map-pin--elite .mwa-map-pin-dot {
+  background: #b45309;
+  box-shadow: 0 0 0 6px rgba(180, 83, 9, 0.28);
+}
 .mwa-map-pin--active .mwa-map-pin-dot {
   width: 28px;
   height: 28px;
@@ -1176,6 +1196,10 @@ h1, h2, h3, .brand-display {
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--orange-accent);
+}
+.search-map-legend-dot--elite {
+  background: #b45309;
+  margin-left: 10px;
 }
 
 /* —— Quick booking bar —— */

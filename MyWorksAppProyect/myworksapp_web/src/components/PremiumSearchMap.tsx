@@ -25,6 +25,13 @@ const pinIcon = L.divIcon({
   iconAnchor: [14, 14],
 });
 
+const pinIconElite = L.divIcon({
+  className: 'mwa-map-pin mwa-map-pin--elite',
+  html: '<span class="mwa-map-pin-dot"></span>',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
 const pinIconActive = L.divIcon({
   className: 'mwa-map-pin mwa-map-pin--active',
   html: '<span class="mwa-map-pin-dot"></span>',
@@ -70,6 +77,7 @@ export function PremiumSearchMap({
   const hostRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const eliteRef = useRef<Set<string>>(new Set());
   const onSelectRef = useRef(onSelectWorker);
   onSelectRef.current = onSelectWorker;
 
@@ -127,6 +135,7 @@ export function PremiumSearchMap({
 
     for (const marker of markersRef.current.values()) marker.remove();
     markersRef.current.clear();
+    eliteRef.current = new Set(workers.filter((worker) => worker.isElite).map((worker) => worker.id));
 
     const positions: L.LatLngExpression[] = [];
     for (const worker of workers) {
@@ -134,9 +143,14 @@ export function PremiumSearchMap({
       if (!position) continue;
       positions.push(position);
       const price = Math.round(worker.pricePerVisit).toLocaleString('es-CL');
-      const marker = L.marker(position, { icon: pinIcon });
+      const elite = worker.isElite === true;
+      const marker = L.marker(position, { icon: elite ? pinIconElite : pinIcon });
       marker.bindPopup(
-        workerPopup(worker.name, worker.profession, `★ ${worker.rating.toFixed(1)} · desde $${price}`),
+        workerPopup(
+          worker.name,
+          elite ? `${worker.profession} · Élite` : worker.profession,
+          `★ ${worker.rating.toFixed(1)} · desde $${price}`,
+        ),
       );
       marker.on('click', () => onSelectRef.current(worker));
       marker.addTo(map);
@@ -154,7 +168,10 @@ export function PremiumSearchMap({
 
   useEffect(() => {
     for (const [id, marker] of markersRef.current) {
-      marker.setIcon(id === selectedWorkerId ? pinIconActive : pinIcon);
+      const elite = eliteRef.current.has(id);
+      marker.setIcon(
+        id === selectedWorkerId ? pinIconActive : elite ? pinIconElite : pinIcon,
+      );
     }
     const timer = window.setTimeout(() => mapRef.current?.invalidateSize(), 50);
     return () => window.clearTimeout(timer);

@@ -332,6 +332,13 @@ BEGIN
   END IF;
   DELETE FROM public.mensajes WHERE id LIKE 'demo-%';
   DELETE FROM public.calificaciones WHERE id LIKE 'demo-%';
+  IF to_regclass('public.calificaciones_cliente') IS NOT NULL THEN
+    DELETE FROM public.calificaciones_cliente WHERE id_trabajo LIKE 'demo-%';
+  END IF;
+  IF to_regclass('public.fotos_trabajo') IS NOT NULL THEN
+    DELETE FROM public.fotos_trabajo
+    WHERE id LIKE 'demo-%' OR id_trabajo LIKE 'demo-%';
+  END IF;
   DELETE FROM public.disputas WHERE id LIKE 'demo-%';
   DELETE FROM public.notificaciones WHERE id LIKE 'demo-%';
   DELETE FROM public.pagos WHERE id LIKE 'demo-%';
@@ -365,6 +372,16 @@ BEGIN
       ('demo-job-cerrado', 'andres.pizarro@demo.myworksapp.cl', 'tomas.herrera@demo.myworksapp.cl', COALESCE(v_svc_construccion, v_svc_plomeria), 'completado', 'Av. Pajaritos 2500, Maipú', 'Reparación de muro interior.', -33.5111, -70.7580),
       ('demo-job-disputa', 'camila.soto@demo.myworksapp.cl', 'maria.fuentes@demo.myworksapp.cl', v_svc_electricidad, 'en_curso', 'Av. Providencia 2100, Providencia', 'El automático salta al encender el horno.', -33.4314, -70.6093)
   ) AS v(id, cliente, pro, servicio, estado, direccion, descripcion, lat, lng);
+
+  -- Sin esta foto, cerrar_trabajo_conforme deja el pago retenido.
+  INSERT INTO public.fotos_trabajo (id, id_trabajo, ruta_foto, tipo_medio, creado_en)
+  VALUES (
+    'demo-foto-conforme',
+    'demo-job-conforme',
+    'demo/conforme-limpieza.jpg',
+    'foto',
+    v_now
+  );
 
   UPDATE public.trabajos
   SET estado_pago = 'liberado'

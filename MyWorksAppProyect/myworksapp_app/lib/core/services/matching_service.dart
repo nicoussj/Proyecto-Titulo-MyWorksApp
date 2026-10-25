@@ -247,6 +247,10 @@ class MatchingService {
         score += _weightActivity * activityScore;
       }
 
+      if (worker.rating > 0 && worker.rating < 3.5) {
+        score *= 0.45;
+      }
+
       // Normalizar score a 0-1
       score = math.min(1.0, math.max(0.0, score));
 

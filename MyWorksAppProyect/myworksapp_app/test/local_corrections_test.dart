@@ -27,6 +27,13 @@ void main() {
       expect(ContentFilter.hasSensitiveData('Háblame al fijo'), isTrue);
     });
 
+    test('detecta enlaces y correos escritos con arroba', () {
+      expect(ContentFilter.hasSensitiveData('mira https://wa.me/56911111111'), isTrue);
+      expect(ContentFilter.hasSensitiveData('mi sitio es ejemplo.cl'), isTrue);
+      expect(ContentFilter.hasSensitiveData('es ana arroba correo.cl'), isTrue);
+      expect(ContentFilter.hasSensitiveData('hablame por telegram'), isTrue);
+    });
+
     test('permite texto de trabajo sin datos de contacto', () {
       expect(
         ContentFilter.hasSensitiveData('El enchufe de la cocina no funciona'),

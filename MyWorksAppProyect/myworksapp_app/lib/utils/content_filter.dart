@@ -21,7 +21,19 @@ class ContentFilter {
 
   /// Palabras usadas para sacar la conversación de la app.
   static final RegExp evasionKeywordsPattern = RegExp(
-    r'(?:whats\s*app|\bwsp\b|ll[aá]mame|h[aá]blame\s+al)',
+    r'(?:whats\s*app|\bwsp\b|ll[aá]mame|h[aá]blame\s+al|telegram|\binsta\b|instagram|wa\.me|t\.me)',
+    caseSensitive: false,
+  );
+
+  /// Correo escrito con «arroba» para esquivar el @.
+  static final RegExp spelledEmailPattern = RegExp(
+    r'\barroba\b',
+    caseSensitive: false,
+  );
+
+  /// Enlaces y dominios. El chat no es el canal para pasar una web.
+  static final RegExp linkPattern = RegExp(
+    r'(https?:\/\/|www\.|\b[\w\-]+\.(?:cl|com|net|org)\b)',
     caseSensitive: false,
   );
 
@@ -29,8 +41,10 @@ class ContentFilter {
     final value = text.trim();
     if (value.isEmpty) return false;
     return emailPattern.hasMatch(value) ||
+        spelledEmailPattern.hasMatch(value) ||
         chileanPhonePattern.hasMatch(value) ||
-        evasionKeywordsPattern.hasMatch(value);
+        evasionKeywordsPattern.hasMatch(value) ||
+        linkPattern.hasMatch(value);
   }
 
   /// Diálogo rojo. Cancela el envío en el llamador si [hasSensitiveData] es true.
