@@ -563,6 +563,12 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
                                             label: worker.workZone!,
                                             color: AppColors.grayMedium,
                                           ),
+                                        WorkerCardBadge(
+                                          icon: Icons.radar_rounded,
+                                          label:
+                                              '${worker.serviceRadiusKm.round()} km sin extra',
+                                          color: AppColors.brandOrange,
+                                        ),
                                         if (isBusy)
                                           const WorkerCardBadge(
                                             icon: Icons.schedule,
