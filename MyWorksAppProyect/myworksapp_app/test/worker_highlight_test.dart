@@ -44,13 +44,11 @@ void main() {
     );
   });
 
-  test('el aviso distingue dentro y fuera del radio urbano', () {
+  test('el aviso distingue dentro y fuera del radar de traslado', () {
     final worker = _worker(
       id: 'pm',
       lat: -41.4718,
       lng: -72.9396,
-      urban: 5,
-      outsideFee: 7000,
     );
     final inside = coverageNotice(
       worker: worker,
@@ -63,9 +61,9 @@ void main() {
       clientLongitude: -72.9854,
     );
     expect(inside.inside, isTrue);
-    expect(inside.text, contains('sin recargo'));
+    expect(inside.text, contains('sin extra'));
     expect(outside.inside, isFalse);
-    expect(outside.text, contains('7.000'));
+    expect(outside.text, contains('traslado'));
   });
 
   test('el feed sube a la élite cercana y baja la nota floja', () {

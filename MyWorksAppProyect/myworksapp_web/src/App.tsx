@@ -323,6 +323,9 @@ export function App() {
 
   const [selectedWorker, setSelectedWorker] = useState<SearchWorker | null>(null);
   const [clientLocation, setClientLocation] = useState<MapSite | null>(null);
+  const [clientLocationSource, setClientLocationSource] = useState<
+    'gps' | 'map' | 'address' | null
+  >(null);
   /** Sitio ya guardado en el trabajo de cobro. `undefined` = aún no hay pedido. */
   const [jobSiteBound, setJobSiteBound] = useState<MapSite | null | undefined>(
     undefined,
@@ -850,6 +853,7 @@ export function App() {
 
   const pickClientLocation = (site: MapSite) => {
     setClientLocation(site);
+    setClientLocationSource('map');
     setBookingError(null);
   };
 
@@ -858,6 +862,7 @@ export function App() {
     if (!hit) return null;
     const site = { latitude: hit.latitude, longitude: hit.longitude };
     setClientLocation(site);
+    setClientLocationSource('address');
     return site;
   };
 
@@ -899,6 +904,7 @@ export function App() {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
         });
+        setClientLocationSource('gps');
         setLocating(false);
       },
       () => {
@@ -1039,9 +1045,13 @@ export function App() {
     if (!selectedWorker || !selectedServiceId) {
       throw new Error('Falta profesional o servicio.');
     }
-    const guestSite = data.address.trim()
-      ? await resolveJobAddress(data.address)
-      : clientLocation;
+    const typedAddress = data.address.trim();
+    const pinIsIntentional =
+      clientLocationSource === 'map' || clientLocationSource === 'gps';
+    let guestSite = clientLocation;
+    if (typedAddress && !pinIsIntentional) {
+      guestSite = (await resolveJobAddress(typedAddress)) ?? guestSite;
+    }
     if (!guestSite) {
       throw new Error(
         'No encontramos esa dirección. Escríbela con calle y ciudad, o marca el punto en el mapa.',
@@ -1365,6 +1375,7 @@ export function App() {
             basePrice={selectedWorker.pricePerVisit}
             transportExtraClp={chargeQuote?.extraClp ?? 0}
             insideRadar={chargeQuote?.insideRadar ?? null}
+            hasJobSite={Boolean(chargeSite)}
             onUseAddress={searchJobAddress}
             locatingAddress={locatingAddress}
 

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../database/models/worker_model.dart';
 import '../domain/distance_match.dart';
+import '../domain/transport_surcharge.dart';
 import '../domain/worker_highlight.dart';
 
 /// Orden de marketplace: usa el score del servidor si existe.
@@ -32,7 +33,7 @@ class WorkerReputationService {
         baseLat != null &&
         baseLng != null) {
       final km = haversineKm(baseLat, baseLng, clientLatitude, clientLongitude);
-      if (km <= worker.urbanRadiusKm) {
+      if (km <= resolveServiceRadiusKm(worker.serviceRadiusKm)) {
         score += 12;
       } else {
         score -= math.min(km, 40) * 0.35;

@@ -111,7 +111,8 @@ export function GuestCheckoutForm({
           <h2 id="guest-checkout-title">Datos para la visita</h2>
           <p className="guest-checkout-lead">
             Sin cuenta te enviamos a Webpay para pagar este pedido. La dirección
-            de abajo fija el punto del trabajo y el extra de traslado.
+            o el pin del mapa fijan el traslado: se cobra el punto que ves en
+            el total.
           </p>
         </div>
 

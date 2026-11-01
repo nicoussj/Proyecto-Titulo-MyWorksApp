@@ -1,4 +1,4 @@
-import 'distance_match.dart';
+import 'transport_surcharge.dart';
 import '../database/models/worker_model.dart';
 
 /// Destacado del mes: misma regla que `trabajadores.es_elite` en Postgres.
@@ -34,38 +34,36 @@ String _clp(int amount) {
   return '\$$buffer';
 }
 
+/// Misma regla que el cobro: radio de servicio, extra por km fuera.
 CoverageNotice coverageNotice({
   required WorkerModel worker,
   double? clientLatitude,
   double? clientLongitude,
 }) {
-  final urban = worker.urbanRadiusKm;
-  final fee = worker.outsideMobilizationFeeClp;
-  final feeLabel = fee <= 0 ? 'sin recargo' : _clp(fee);
-  final baseLat = worker.baseLatitude;
-  final baseLng = worker.baseLongitude;
-  if (clientLatitude == null ||
-      clientLongitude == null ||
-      baseLat == null ||
-      baseLng == null) {
+  final radiusKm = resolveServiceRadiusKm(worker.serviceRadiusKm);
+  final quote = transportSurcharge(
+    workerLat: worker.baseLatitude,
+    workerLng: worker.baseLongitude,
+    jobLat: clientLatitude,
+    jobLng: clientLongitude,
+    radiusKm: worker.serviceRadiusKm,
+  );
+  if (quote.insideRadar == null) {
     return CoverageNotice(
       inside: null,
       text:
-          'Radio urbano ${urban.toStringAsFixed(0)} km: movilización \$0 dentro. Fuera, $feeLabel.',
+          'Hasta ${radiusKm.round()} km sin extra de traslado. Más lejos, recargo por km.',
     );
   }
-
-  final km = haversineKm(baseLat, baseLng, clientLatitude, clientLongitude);
-  if (km <= urban) {
+  if (quote.insideRadar == true) {
     return CoverageNotice(
       inside: true,
-      text:
-          'Dentro del radio urbano (${urban.toStringAsFixed(0)} km). Movilización sin recargo.',
+      text: 'Dentro de ${radiusKm.round()} km: sin extra de traslado.',
     );
   }
+  final km = quote.distanceKm?.toStringAsFixed(1) ?? '?';
   return CoverageNotice(
     inside: false,
-    text:
-        'Fuera del radio urbano (${km.toStringAsFixed(1)} km). Movilización $feeLabel.',
+    text: 'Fuera del área ($km km): +${_clp(quote.extraClp)} de traslado.',
   );
 }

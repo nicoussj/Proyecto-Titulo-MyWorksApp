@@ -90,9 +90,8 @@ class _WorkerUrbanCoverageCardState extends State<WorkerUrbanCoverageCard> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Dentro de estos kilómetros desde tu base, la movilización es \$0. '
-              'Fuera, el cliente ve este cobro fijo antes de reservar. '
-              'En Puerto Montt, 5 km cubre el casco urbano.',
+              'Dato de zona. El extra de traslado que paga el cliente sale del '
+              'radar de Ubicación base: cerca no cobra extra; más lejos, recargo por km.',
             ),
             const SizedBox(height: 12),
             TextField(

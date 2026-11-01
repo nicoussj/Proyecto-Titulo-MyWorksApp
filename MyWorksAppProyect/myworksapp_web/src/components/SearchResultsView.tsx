@@ -64,10 +64,8 @@ function clp(amount: number): string {
 }
 
 function coverageLine(worker: SearchWorker): string {
-  const km = worker.urbanRadiusKm ?? 5;
-  const fee = worker.outsideMobilizationFeeClp ?? 0;
-  const feeLabel = fee <= 0 ? 'sin recargo' : `$${clp(fee)}`;
-  return `Radio urbano ${km} km: movilización $0 dentro. Fuera, ${feeLabel}.`;
+  const km = Math.round(worker.serviceRadiusKm ?? 7);
+  return `Hasta ${km} km sin extra de traslado. Más lejos, recargo por km.`;
 }
 
 export function SearchResultsView({

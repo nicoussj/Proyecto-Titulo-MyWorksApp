@@ -20,6 +20,7 @@ interface PaymentCheckoutModalProps {
   jobId?: string | null;
   onUseAddress?: (query: string) => Promise<unknown>;
   locatingAddress?: boolean;
+  hasJobSite?: boolean;
   onClose: () => void;
   /** Cobra la tarjeta guardada. Si no hay, redirige a Webpay Plus. */
   onPayWithWebpay: () => Promise<CheckoutPayResult>;
@@ -36,6 +37,7 @@ export function PaymentCheckoutModal({
   jobId,
   onUseAddress,
   locatingAddress = false,
+  hasJobSite = false,
   onClose,
   onPayWithWebpay,
   onSuccess,
@@ -45,7 +47,7 @@ export function PaymentCheckoutModal({
   const [error, setError] = useState<string | null>(null);
   const [addressQuery, setAddressQuery] = useState('');
   const totalAmount = basePrice + Math.max(0, transportExtraClp);
-  const needsManualSite = insideRadar == null && transportExtraClp <= 0 && Boolean(onUseAddress);
+  const needsManualSite = !hasJobSite && Boolean(onUseAddress);
 
   const submitAddress = async (event: FormEvent) => {
     event.preventDefault();
