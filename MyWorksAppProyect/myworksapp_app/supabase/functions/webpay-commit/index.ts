@@ -162,7 +162,9 @@ Deno.serve(async (req) => {
 
     const { data: payment } = await admin
       .from("pagos")
-      .select("id, id_trabajo, monto, estado, metodo_pago, origen_retorno, buy_order")
+      .select(
+        "id, id_trabajo, monto, estado, metodo_pago, origen_retorno, buy_order, tipo_pago, id_orden_cambio",
+      )
       .eq("token_tbk", tokenWs)
       .maybeSingle();
 
@@ -232,8 +234,14 @@ Deno.serve(async (req) => {
 
     let guest = false;
     let alta = "";
+    const holdOptions = {
+      changeOrderId: payment.id_orden_cambio
+        ? String(payment.id_orden_cambio)
+        : null,
+      paymentId: String(payment.id),
+    };
     if (decision.action === "hold") {
-      await openJobAfterHold(admin, payment.id_trabajo);
+      await openJobAfterHold(admin, payment.id_trabajo, holdOptions);
 
       const { data: job } = await admin
         .from("trabajos")
@@ -268,7 +276,7 @@ Deno.serve(async (req) => {
     }
 
     if (decision.action === "replay") {
-      await openJobAfterHold(admin, payment.id_trabajo);
+      await openJobAfterHold(admin, payment.id_trabajo, holdOptions);
     }
 
     if (decision.action === "mismatch") {

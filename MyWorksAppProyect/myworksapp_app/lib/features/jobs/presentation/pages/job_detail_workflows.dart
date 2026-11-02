@@ -415,7 +415,8 @@ extension JobDetailWorkflows on _JobDetailPageState {
       builder: (ctx) => AlertDialog(
         title: Text(order.titulo),
         content: Text(
-          '${order.descripcion}\n\nMonto: \$${order.montoClp}\n\nSe autorizará el cobro adicional (demo).',
+          '${order.descripcion}\n\nMonto base: \$${order.montoClp}\n\n'
+          'Se abrirá Webpay para retener el cobro adicional (+ comisión).',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Rechazar')),
@@ -431,14 +432,28 @@ extension JobDetailWorkflows on _JobDetailPageState {
     }
 
     try {
-      await ChangeOrderService.instance.approveAndPay(
+      final quote = await ChangeOrderService.instance.prepareWebpayCheckout(
         order: order,
         clientUserId: user.id,
+      );
+      if (!mounted) return;
+      final paid = await EscrowCheckoutSheet.show(
+        context,
+        jobId: order.jobId,
+        quote: quote,
+        changeOrderId: order.id,
+        serviceName: order.titulo,
       );
       await _loadJobDetails();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cobro adicional aprobado')),
+        SnackBar(
+          content: Text(
+            paid
+                ? 'Cobro adicional retenido. El trabajo se reanudó.'
+                : 'Pago adicional no confirmado. Puedes reintentar.',
+          ),
+        ),
       );
     } on AppError catch (e) {
       if (!mounted) return;
