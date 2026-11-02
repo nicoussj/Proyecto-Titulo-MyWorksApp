@@ -2,21 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:myworksapp/core/theme/app_colors.dart';
 import 'package:myworksapp/core/utils/mock_reserved_slots.dart';
 
-/// Chips de hora. Los bloques de [mockReservedSlots] se ven deshabilitados
-/// y, si se tocan, muestran la alerta local de hora ocupada.
+/// Chips de hora. Los bloques de [reservedLabels] se ven deshabilitados
+/// y, si se tocan, muestran la alerta de hora ocupada.
 class TimeSlotSelector extends StatelessWidget {
   const TimeSlotSelector({
     super.key,
     required this.selected,
     required this.onChanged,
+    this.reservedLabels = const <String>{},
   });
 
   final TimeOfDay? selected;
   final ValueChanged<TimeOfDay> onChanged;
+  final Set<String> reservedLabels;
 
   @override
   Widget build(BuildContext context) {
-    final selectedLabel = selected == null ? null : MockReservedSlots.format(selected!);
+    final selectedLabel =
+        selected == null ? null : MockReservedSlots.format(selected!);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +30,9 @@ class TimeSlotSelector extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Las horas marcadas ya están reservadas.',
+          reservedLabels.isEmpty
+              ? 'Elige un horario disponible.'
+              : 'Las horas marcadas ya están reservadas para este profesional.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 10),
@@ -38,7 +43,7 @@ class TimeSlotSelector extends StatelessWidget {
             for (final slot in mockBookableSlots)
               _SlotChip(
                 label: slot,
-                reserved: MockReservedSlots.isReservedLabel(slot),
+                reserved: reservedLabels.contains(slot),
                 selected: selectedLabel == slot,
                 onPick: () => onChanged(MockReservedSlots.parse(slot)),
               ),

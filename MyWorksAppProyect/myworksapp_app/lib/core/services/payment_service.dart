@@ -412,6 +412,7 @@ class PaymentService {
   Future<WebpayTransactionResponse> initiateWebpayPayment({
     required String jobId,
     required double amount,
+    String? changeOrderId,
   }) async {
     if (jobId.trim().isEmpty) {
       throw AppError.validation('Falta el identificador del trabajo');
@@ -430,10 +431,11 @@ class PaymentService {
         body: {
           'jobId': jobId,
           'amountClp': amount.round(),
-          // En web Transbank debe volver al Edge `webpay-commit`, no a
-          // `/payment-result` (Flutter no sirve esa ruta). El commit redirige
-          // al origen del cliente con `?pago=ok`.
-          if (!kIsWeb) 'returnUrl': _webpayClientReturn(),
+          if (changeOrderId != null && changeOrderId.isNotEmpty)
+            'changeOrderId': changeOrderId,
+          // En web Transbank vuelve al Edge `webpay-commit` y de ahí al Origin.
+          // En móvil el WebView escucha `myworksapp://pago?pago=ok|fail`.
+          if (!kIsWeb) 'clientReturnOrigin': 'myworksapp://pago',
         },
       );
       final data = _asMap(response.data);
@@ -475,11 +477,6 @@ class PaymentService {
       AppLogger.e('Error confirmando Webpay', e);
       throw AppError.network(_edgeErrorMessage(e), e);
     }
-  }
-
-  String _webpayClientReturn() {
-    if (kIsWeb) return '${Uri.base.origin}/payment-result';
-    return 'myworksapp://payment-result';
   }
 
   Map<String, dynamic> _asMap(dynamic data) {

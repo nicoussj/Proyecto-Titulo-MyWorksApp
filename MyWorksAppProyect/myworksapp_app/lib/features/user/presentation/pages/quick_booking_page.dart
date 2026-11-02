@@ -13,6 +13,7 @@ import '../../../../core/theme/app_decorations.dart';
 import '../../../../core/utils/comuna_utils.dart';
 import '../../../../core/design_system/layout_utils.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/services/worker_availability_service.dart';
 import '../../../../core/utils/mock_reserved_slots.dart';
 import '../../../../utils/content_filter.dart';
 import '../widgets/time_slot_selector.dart';
@@ -49,6 +50,7 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
   String? _serviceName;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay? _selectedTime;
+  Set<String> _reservedLabels = {};
   bool _loading = true;
   bool _submitting = false;
 
@@ -62,14 +64,34 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
     final worker = await _workerRepository.getWorkerByUserId(widget.workerId);
     final user = await _userRepository.getPublicProfile(widget.workerId);
     final service = await _serviceRepository.getServiceById(widget.serviceId);
+    final reserved = await WorkerAvailabilityService.instance.reservedLabelsForDay(
+      workerId: widget.workerId,
+      day: _selectedDate,
+    );
     if (mounted) {
       setState(() {
         _worker = worker;
         _workerUser = user;
         _serviceName = service?.name;
+        _reservedLabels = reserved;
         _loading = false;
       });
     }
+  }
+
+  Future<void> _refreshReservedSlots() async {
+    final reserved = await WorkerAvailabilityService.instance.reservedLabelsForDay(
+      workerId: widget.workerId,
+      day: _selectedDate,
+    );
+    if (!mounted) return;
+    setState(() {
+      _reservedLabels = reserved;
+      if (_selectedTime != null &&
+          WorkerAvailabilityService.isReserved(_reservedLabels, _selectedTime!)) {
+        _selectedTime = null;
+      }
+    });
   }
 
   @override
@@ -89,7 +111,10 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
       lastDate: DateTime.now().add(const Duration(days: 90)),
       locale: const Locale('es', 'CL'),
     );
-    if (picked != null) setState(() => _selectedDate = picked);
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+      await _refreshReservedSlots();
+    }
   }
 
   Future<void> _confirm() async {
@@ -107,7 +132,10 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
       await ContentFilter.showBlockedDialog(context);
       return;
     }
-    if (_selectedTime == null || MockReservedSlots.isReserved(_selectedTime!)) {
+    await _refreshReservedSlots();
+    if (_selectedTime == null ||
+        WorkerAvailabilityService.isReserved(_reservedLabels, _selectedTime!)) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -242,6 +270,7 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
             const SizedBox(height: 8),
             TimeSlotSelector(
               selected: _selectedTime,
+              reservedLabels: _reservedLabels,
               onChanged: (time) => setState(() => _selectedTime = time),
             ),
             const SizedBox(height: 8),

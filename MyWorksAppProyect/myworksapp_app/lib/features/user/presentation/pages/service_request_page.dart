@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/services/worker_availability_service.dart';
 import '../../../../core/utils/mock_reserved_slots.dart';
 import '../../../../utils/content_filter.dart';
 import '../../../../core/database/repositories/service_repository.dart';
@@ -78,6 +79,7 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
   double? _selectedLongitude;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  Set<String> _reservedLabels = {};
   String _pricingMode = '';
   int _blockHours = 4;
   PricingModeRecommendation? _pricingRecommendation;
@@ -138,6 +140,29 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
         _selectedWorkerUser = user;
       });
     }
+    await _refreshReservedSlots();
+  }
+
+  Future<void> _refreshReservedSlots() async {
+    final workerId = _selectedWorkerId;
+    final day = _selectedDate ?? DateTime.now();
+    if (workerId == null || workerId.isEmpty) {
+      if (mounted) setState(() => _reservedLabels = {});
+      return;
+    }
+    final reserved =
+        await WorkerAvailabilityService.instance.reservedLabelsForDay(
+      workerId: workerId,
+      day: day,
+    );
+    if (!mounted) return;
+    setState(() {
+      _reservedLabels = reserved;
+      if (_selectedTime != null &&
+          WorkerAvailabilityService.isReserved(_reservedLabels, _selectedTime!)) {
+        _selectedTime = null;
+      }
+    });
   }
 
   String? _categoryForSelectedService() {
@@ -316,7 +341,10 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
       await ContentFilter.showBlockedDialog(context);
       return;
     }
-    if (_selectedTime != null && MockReservedSlots.isReserved(_selectedTime!)) {
+    await _refreshReservedSlots();
+    if (_selectedTime != null &&
+        WorkerAvailabilityService.isReserved(_reservedLabels, _selectedTime!)) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(MockReservedSlots.reservedMessage)),
       );
@@ -851,12 +879,14 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
                         );
                         if (date != null) {
                           setState(() => _selectedDate = date);
+                          await _refreshReservedSlots();
                         }
                       },
                     ),
                     const SizedBox(height: 8),
                     TimeSlotSelector(
                       selected: _selectedTime,
+                      reservedLabels: _reservedLabels,
                       onChanged: (time) {
                         FocusManager.instance.primaryFocus?.unfocus();
                         setState(() => _selectedTime = time);
