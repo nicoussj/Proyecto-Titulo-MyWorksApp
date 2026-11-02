@@ -6,10 +6,13 @@ import '../domain/price_quote.dart';
 import '../providers/auth_provider.dart';
 import '../providers/service_providers.dart';
 import '../theme/app_colors.dart';
+import '../utils/app_error.dart';
+import '../utils/transbank_checkout.dart';
 import '../../features/payments/presentation/pages/card_enrollment_page.dart';
 import 'pricing_quote_card.dart';
+import 'webpay_webview_page.dart';
 
-/// Checkout de la app: cobra la tarjeta inscrita. Si no hay, la pide una vez.
+/// Checkout: pagar este pedido en Transbank, o inscribir tarjeta y cobrarla.
 class EscrowCheckoutSheet extends ConsumerStatefulWidget {
   const EscrowCheckoutSheet({
     super.key,
@@ -58,25 +61,73 @@ class EscrowCheckoutSheet extends ConsumerStatefulWidget {
 class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
   bool _processing = false;
 
-  Future<void> _payWithCard() async {
+  String _errorText(Object e) {
+    if (e is AppError) return e.message;
+    return 'No se pudo iniciar el pago';
+  }
+
+  Future<void> _openWebpay(String url) async {
+    if (kIsWeb) {
+      await openTransbankCheckout(url);
+      return;
+    }
+    if (!mounted) return;
+    final ok = await WebpayWebViewPage.open(
+      context,
+      paymentUrl: url,
+      title: 'Pago Webpay',
+    );
+    if (!mounted) return;
+    if (ok) Navigator.of(context).pop(true);
+  }
+
+  Future<void> _payWithoutSavingCard() async {
+    setState(() => _processing = true);
+    try {
+      final session =
+          await ref.read(paymentServiceProvider).initiateWebpayPayment(
+                jobId: widget.jobId,
+                amount: widget.quote.totalClp.toDouble(),
+              );
+      final url = session.redirectUrl ?? session.url;
+      if (!mounted) return;
+      await _openWebpay(url);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_errorText(e))),
+      );
+    } finally {
+      if (mounted) setState(() => _processing = false);
+    }
+  }
+
+  Future<void> _enrollCard() async {
+    setState(() => _processing = true);
+    try {
+      final enrolled = await CardEnrollmentPage.open(context);
+      if (!mounted) return;
+      if (!enrolled) return;
+      await _payWithSavedCard(skipWebFallback: true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_errorText(e))),
+      );
+    } finally {
+      if (mounted) setState(() => _processing = false);
+    }
+  }
+
+  Future<void> _payWithSavedCard({bool skipWebFallback = false}) async {
     setState(() => _processing = true);
     try {
       final user = ref.read(authProvider).user;
       if (user == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Debes iniciar sesión para confirmar el pedido')),
-        );
-        return;
-      }
-
-      if (kIsWeb) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Inscribe la tarjeta en la app. Con esa tarjeta se cobra el pedido.',
-            ),
+            content: Text('Debes iniciar sesión para confirmar el pedido'),
           ),
         );
         return;
@@ -89,6 +140,10 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
       );
       if (!mounted) return;
       if (charge.needsCard) {
+        if (kIsWeb && !skipWebFallback) {
+          await _payWithoutSavingCard();
+          return;
+        }
         final enrolled = await CardEnrollmentPage.open(context);
         if (!mounted || !enrolled) return;
         charge = await payments.chargeSavedCard(
@@ -99,15 +154,23 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
       if (!mounted) return;
       if (!charge.charged) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La tarjeta no quedó lista para este cobro.')),
+          const SnackBar(
+            content: Text(
+              'La tarjeta no quedó lista. Puedes pagar este pedido en Transbank sin guardarla.',
+            ),
+          ),
         );
         return;
       }
       Navigator.of(context).pop(true);
     } catch (e) {
+      if (kIsWeb && !skipWebFallback && mounted) {
+        await _payWithoutSavingCard();
+        return;
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo cobrar la tarjeta: $e')),
+        SnackBar(content: Text(_errorText(e))),
       );
     } finally {
       if (mounted) setState(() => _processing = false);
@@ -117,7 +180,7 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -145,8 +208,7 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
               color: AppColors.brandOrange.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
               child: const Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(
                   children: [
                     Icon(
@@ -157,7 +219,9 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Se descuenta de la tarjeta inscrita en la app. Si es la primera vez, Transbank la pide una sola vez.',
+                        kIsWeb
+                            ? 'Puedes pagar este pedido en Transbank sin guardar la tarjeta, o inscribirla para los siguientes.'
+                            : 'Paga con la tarjeta inscrita, inscríbela ahora o paga este pedido en Transbank sin guardarla.',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.brandOrange,
@@ -176,7 +240,9 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              onPressed: _processing ? null : _payWithCard,
+              onPressed: _processing
+                  ? null
+                  : (kIsWeb ? _payWithoutSavingCard : _payWithSavedCard),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.brandOrange,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -190,11 +256,28 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.credit_card),
+                  : const Icon(Icons.lock_outline),
               label: Text(
                 _processing
-                    ? 'Conectando…'
-                    : 'Confirmar · \$${widget.quote.totalClp}',
+                    ? 'Conectando con Transbank…'
+                    : kIsWeb
+                        ? 'Pagar ahora en Transbank · \$${widget.quote.totalClp}'
+                        : 'Pagar con tarjeta · \$${widget.quote.totalClp}',
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _processing
+                  ? null
+                  : (kIsWeb ? _enrollCard : _payWithoutSavingCard),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              icon: const Icon(kIsWeb ? Icons.add_card : Icons.account_balance),
+              label: const Text(
+                kIsWeb
+                    ? 'Inscribir tarjeta en Transbank'
+                    : 'Pagar en Transbank sin guardar tarjeta',
               ),
             ),
             TextButton(

@@ -7,8 +7,8 @@ import {
 } from '@myworksapp/shared';
 import type { SearchWorker } from './SearchResultsView';
 
-/** Vista inicial si ningún profesional tiene coordenada propia. */
-const SANTIAGO_CENTER: [number, number] = [-33.45, -70.66];
+/** Vista inicial si ningún profesional tiene coordenada propia (demo Puerto Montt). */
+const DEMO_CENTER: [number, number] = [-41.4717, -72.9366];
 
 export type ClientMapLocation = {
   latitude: number;
@@ -142,7 +142,7 @@ export function PremiumSearchMap({
     if (stamped._leaflet_id != null) delete stamped._leaflet_id;
 
     const map = L.map(host, { scrollWheelZoom: true, zoomControl: true }).setView(
-      SANTIAGO_CENTER,
+      DEMO_CENTER,
       13,
     );
     mapRef.current = map;
@@ -237,7 +237,7 @@ export function PremiumSearchMap({
     if (selectedIdRef.current) return;
 
     if (!positions.length) {
-      map.setView(SANTIAGO_CENTER, 13);
+      map.setView(DEMO_CENTER, 13);
     } else if (positions.length === 1) {
       map.setView(positions[0], 14);
     } else {

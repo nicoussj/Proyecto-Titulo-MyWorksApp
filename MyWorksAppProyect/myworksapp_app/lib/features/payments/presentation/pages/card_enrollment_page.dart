@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flutter/foundation.dart';
+
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_error.dart';
+import '../../../../core/utils/transbank_checkout.dart';
 import '../../../../core/widgets/webpay_webview_page.dart';
 
 /// Primera entrada del cliente: guarda la tarjeta una vez.
@@ -39,6 +42,10 @@ class _CardEnrollmentPageState extends ConsumerState<CardEnrollmentPage> {
       if (!mounted) return;
       if (handoff.isEmpty) {
         Navigator.of(context).pop(true);
+        return;
+      }
+      if (kIsWeb) {
+        await openTransbankCheckout(handoff);
         return;
       }
       final ok = await WebpayWebViewPage.open(

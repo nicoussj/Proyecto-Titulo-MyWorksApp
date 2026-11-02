@@ -153,8 +153,7 @@ extension JobDetailWorkflows on _JobDetailPageState {
 
   void _goToDashboard() {
     final user = ref.read(authProvider).user;
-    if (user == null) return;
-    if (user.role == AppConstants.roleWorker) {
+    if (user?.role == AppConstants.roleWorker) {
       requestWorkerHomeRefresh(ref);
       context.go(AppConstants.routeWorkerHome);
       return;
@@ -162,24 +161,47 @@ extension JobDetailWorkflows on _JobDetailPageState {
     context.go(AppConstants.routeUserHome);
   }
 
+  Future<PriceQuote?> _quoteForEscrow(JobModel job) async {
+    final existing = JobDetailHelpers.quoteFromJob(job);
+    if (existing != null && existing.totalClp > 0) return existing;
+    final workerId = job.workerId;
+    if (workerId == null) return null;
+    try {
+      final worker = await _workerRepository.getWorkerByUserId(workerId);
+      if (worker == null) return null;
+      final extra = job.serviceMetadata?['traslado_extra_clp'];
+      final extraClp = extra is num ? extra.toInt() : 0;
+      return PricingService.instance.calculateVisitBooking(
+        visitFeeClp: worker.visitFee.round(),
+        transportExtraClp: extraClp,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _payEscrow() async {
     final job = _job;
     final auth = ref.read(authProvider).user;
     if (job == null || auth == null) return;
 
-    final quote = JobDetailHelpers.quoteFromJob(job);
+    final quote = await _quoteForEscrow(job);
+    if (!mounted) return;
     if (quote == null) {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No hay cotización para este trabajo')),
+        const SnackBar(
+          content: Text(
+            'No se pudo calcular el cobro de este trabajo. Vuelve a crear la solicitud.',
+          ),
+        ),
       );
       return;
     }
 
-    final paid = await PaymentScreen.open(
+    final paid = await EscrowCheckoutSheet.show(
       context,
       jobId: job.id,
-      amount: quote.totalClp.toDouble(),
+      quote: quote,
       serviceName: job.description,
     );
 
@@ -251,12 +273,11 @@ extension JobDetailWorkflows on _JobDetailPageState {
         );
       }
 
-      await _loadJobDetails();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Trabajo recibido conforme. Los fondos quedaron liberados.')),
       );
-      context.push('${AppConstants.routeRating}/${widget.jobId}');
+      context.go('${AppConstants.routeRating}/${widget.jobId}');
     } on AppError catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -465,15 +486,33 @@ extension JobDetailWorkflows on _JobDetailPageState {
 
   Widget buildJobDetail(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        appBar: null,
-        body: LoadingWidget(),
+      return Scaffold(
+        appBar: AppGradientAppBar(
+          title: const Text('Detalles del Trabajo'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home_outlined),
+              tooltip: 'Volver al inicio',
+              onPressed: _goToDashboard,
+            ),
+          ],
+        ),
+        body: const LoadingWidget(),
       );
     }
 
     if (_error != null || _job == null) {
       return Scaffold(
-        appBar: const AppGradientAppBar(),
+        appBar: AppGradientAppBar(
+          title: const Text('Detalles del Trabajo'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home_outlined),
+              tooltip: 'Volver al inicio',
+              onPressed: _goToDashboard,
+            ),
+          ],
+        ),
         body: ErrorStateWidget(
           title: 'Trabajo no disponible',
           message: _error ?? 'Trabajo no encontrado',
@@ -576,8 +615,6 @@ extension JobDetailWorkflows on _JobDetailPageState {
                 latitude: _job!.latitude ?? 0,
                 longitude: _job!.longitude ?? 0,
                 isLoadingAddress: _isLoadingAddress,
-                showApproximateHint:
-                    _job!.status == AppConstants.jobStatusPending,
               ),
             ],
             if (_job!.pricingMode == PricingConstants.modeHourlyBlock &&

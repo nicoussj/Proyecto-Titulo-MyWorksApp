@@ -26,6 +26,17 @@ void main() {
       expect(WorkerJobStatus.isActive(AppConstants.jobStatusCompleted), isFalse);
     });
 
+    test('busyStatuses no trata esperando_pago como trabajo en curso', () {
+      expect(
+        WorkerJobStatus.busyStatuses,
+        isNot(contains(PricingConstants.jobAwaitingPayment)),
+      );
+      expect(
+        WorkerJobStatus.busyStatuses,
+        contains(AppConstants.jobStatusAccepted),
+      );
+    });
+
     test('pickHighlightJob prioriza in_progress', () {
       final jobs = [
         _job(PricingConstants.jobAwaitingPayment),

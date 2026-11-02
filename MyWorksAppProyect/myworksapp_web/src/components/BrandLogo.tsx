@@ -2,11 +2,17 @@ type BrandLogoProps = {
   size?: number;
   showText?: boolean;
   tagline?: string;
+  onClick?: () => void;
 };
 
-export function BrandLogo({ size = 36, showText = true, tagline }: BrandLogoProps) {
-  return (
-    <div className="brand-logo">
+export function BrandLogo({
+  size = 36,
+  showText = true,
+  tagline,
+  onClick,
+}: BrandLogoProps) {
+  const mark = (
+    <>
       <div className="brand-logo-mark" style={{ width: size, height: size }} aria-hidden>
         <img src="/brand/mark.svg" alt="" width={size} height={size} />
       </div>
@@ -16,6 +22,21 @@ export function BrandLogo({ size = 36, showText = true, tagline }: BrandLogoProp
           {tagline && <span className="brand-logo-tagline">{tagline}</span>}
         </div>
       )}
-    </div>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className="brand-logo brand-logo-button"
+        onClick={onClick}
+        aria-label="Volver al inicio"
+      >
+        {mark}
+      </button>
+    );
+  }
+
+  return <div className="brand-logo">{mark}</div>;
 }

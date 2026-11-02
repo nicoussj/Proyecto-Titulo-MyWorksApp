@@ -51,7 +51,7 @@ class JobAcceptedLocationCard extends StatelessWidget {
             JobLocationMap(
               latitude: latitude,
               longitude: longitude,
-              height: 96,
+              height: 160,
             ),
             const SizedBox(height: AppSpacing.sm + 2),
             if (isLoadingAddress)

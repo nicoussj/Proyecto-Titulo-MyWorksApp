@@ -15,7 +15,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_decorations.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/utils/error_handler.dart';
+import '../../../../core/domain/user_location_context.dart';
 import '../../../../core/domain/worker_highlight.dart';
+import '../../../../core/services/user_location_service.dart';
 import '../../../../core/utils/service_worker_mapper.dart';
 import '../../../../core/widgets/design_system/app_gradient_app_bar.dart';
 import '../../../../core/widgets/design_system/before_after_slider.dart';
@@ -26,6 +28,7 @@ import '../../../../core/widgets/portfolio_media_tile.dart';
 import '../../../../core/widgets/portfolio_media_viewer.dart';
 import '../../../../core/widgets/profile_avatar_picker.dart';
 import '../widgets/worker_reviews_section.dart';
+import '../widgets/worker_search_map.dart';
 class WorkerDetailPage extends ConsumerStatefulWidget {
   final String workerId;
   final String? serviceId;
@@ -51,6 +54,7 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
   UserModel? _user;
   List<PortfolioModel> _portfolio = [];
   List<WorkerReviewModel> _reviews = [];
+  UserLocationContext? _clientLocation;
   String? _resolvedServiceId;
   bool _isLoading = true;
   bool _isAcceptingJobs = false;
@@ -70,7 +74,6 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
 
     try {
       final worker = await _workerRepository.getWorkerByUserId(widget.workerId);
-      await _workerRepository.enforceUnavailableWhileBusy(widget.workerId);
       final acceptingJobs =
           await _workerRepository.isWorkerAcceptingJobs(widget.workerId);
       final user = await _userRepository.getPublicProfile(widget.workerId);
@@ -78,6 +81,7 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
           await _portfolioRepository.getPortfolioByWorkerId(widget.workerId);
       final reviews =
           await _ratingRepository.getWorkerReviewsForProfile(widget.workerId);
+      final clientLocation = await UserLocationService.instance.resolve();
 
       String? serviceId = widget.serviceId;
       if (serviceId == null && worker != null) {
@@ -90,6 +94,7 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
         _user = user;
         _portfolio = portfolio;
         _reviews = reviews;
+        _clientLocation = clientLocation;
         _resolvedServiceId = serviceId;
         _isAcceptingJobs = acceptingJobs;
         _isLoading = false;
@@ -173,6 +178,8 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
                   _buildProfileHeader(context),
                   const SizedBox(height: AppSpacing.md),
                   _buildAboutCard(context),
+                  const SizedBox(height: AppSpacing.md),
+                  _buildCoverageMap(context),
                   const SizedBox(height: AppSpacing.md),
                   _buildPortfolioSection(context),
                   const SizedBox(height: AppSpacing.md),
@@ -332,6 +339,40 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
     );
   }
 
+  Widget _buildCoverageMap(BuildContext context) {
+    final worker = _worker!;
+    if (worker.baseLatitude == null || worker.baseLongitude == null) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Cobertura en el mapa',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 240,
+          child: WorkerSearchMap(
+            workers: [worker],
+            users: {_user!.id: _user!},
+            selectedWorkerId: worker.userId,
+            clientLatitude: _clientLocation?.latitude,
+            clientLongitude: _clientLocation?.longitude,
+            categoryLabel: worker.profession,
+            onSelectWorker: (_) {},
+            showSelectedCard: false,
+            showLocationBar: false,
+            interactive: false,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildAboutCard(BuildContext context) {
     final categoryLabel = ServiceWorkerMapper.categoryLabels[_worker!.serviceCategory] ??
         _worker!.profession;
@@ -379,7 +420,11 @@ class _WorkerDetailPageState extends ConsumerState<WorkerDetailPage> {
           ],
           const SizedBox(height: 8),
           Text(
-            coverageNotice(worker: _worker!).text,
+            coverageNotice(
+              worker: _worker!,
+              clientLatitude: _clientLocation?.latitude,
+              clientLongitude: _clientLocation?.longitude,
+            ).text,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.35),
           ),
           const SizedBox(height: 10),

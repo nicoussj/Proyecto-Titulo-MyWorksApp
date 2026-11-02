@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../../utils/json_map.dart';
+
 class QuoteProposalModel {
   final String id;
   final String jobId;
@@ -36,14 +38,7 @@ class QuoteProposalModel {
       };
 
   factory QuoteProposalModel.fromMap(Map<String, dynamic> map) {
-    Map<String, dynamic>? desglose;
-    if (map['desglose'] != null) {
-      try {
-        desglose = jsonDecode(map['desglose'] as String) as Map<String, dynamic>;
-      } catch (_) {
-        desglose = null;
-      }
-    }
+    final desglose = decodeJsonMap(map['desglose']);
     return QuoteProposalModel(
       id: map['id'] as String,
       jobId: map['id_trabajo'] as String,

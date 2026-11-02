@@ -147,7 +147,10 @@ const trackingUserId = '22222222-2222-4222-8222-222222222222';
 const trackingWorkerId = '11111111-1111-4111-8111-000000000101';
 const trackingJobId = '33333333-3333-4333-8333-333333333333';
 
-async function mockSignedInTracking(page: import('@playwright/test').Page) {
+async function mockSignedInTracking(
+  page: import('@playwright/test').Page,
+  job: { estado?: string; estado_pago?: string } = {},
+) {
   await page.addInitScript(
     ({ userId, jobId, storageKey }) => {
       const session = JSON.stringify({
@@ -209,8 +212,8 @@ async function mockSignedInTracking(page: import('@playwright/test').Page) {
     if (url.includes('/rest/v1/trabajos')) {
       await json({
         id: trackingJobId,
-        estado: 'en_camino',
-        estado_pago: 'retenido',
+        estado: job.estado ?? 'en_camino',
+        estado_pago: job.estado_pago ?? 'retenido',
         direccion: 'Av. Providencia 123',
         descripcion: 'Fuga en la llave',
         latitud: -33.4314,
@@ -309,4 +312,34 @@ test('a 390 el formulario de invitado no corta el monto', async ({ page }) => {
   expect(box).not.toBeNull();
   expect(box!.x).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+});
+
+test('con el trabajo cerrado se puede volver al inicio desde el seguimiento', async ({
+  page,
+}) => {
+  await mockSignedInTracking(page, {
+    estado: 'completado',
+    estado_pago: 'liberado',
+  });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Fuga en la llave' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inicio' })).toBeVisible();
+  await expect(
+    page.locator('.tracking-complete-card').getByRole('button', { name: 'Volver al inicio' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Inicio' }).click();
+  await expect(page.getByRole('button', { name: /buscar servicio/i })).toBeVisible();
+});
+
+test('en móvil el inicio del seguimiento cerrado sigue visible', async ({ page }) => {
+  await mockSignedInTracking(page, {
+    estado: 'completado',
+    estado_pago: 'liberado',
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Inicio' })).toBeVisible();
+  await page.getByRole('button', { name: 'Inicio' }).click();
+  await expect(page.getByRole('button', { name: /buscar servicio/i })).toBeVisible();
 });

@@ -51,6 +51,7 @@ import '../../features/admin/presentation/pages/admin_desktop_management_page.da
 import '../../core/utils/constants.dart';
 import '../../core/utils/app_logger.dart';
 import '../../core/utils/role_utils.dart';
+import '../../core/utils/webpay_return_route.dart';
 import '../../core/database/repositories/worker_repository.dart';
 
 /// Puente entre los cambios de [authProvider] y los redirects de GoRouter.
@@ -118,6 +119,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (!isLoggedIn && !isOnWelcome && !isOnAuth && !isLegalRoute) {
           return AppConstants.routeWelcome;
         }
+
+        final paidReturn = webpayReturnLocation(isLoggedIn: isLoggedIn);
+        if (paidReturn != null) return paidReturn;
 
         // Si está logueado y está en welcome/auth/onboarding, redirigir según rol
         if (isLoggedIn && (isOnWelcome || isOnAuth)) {

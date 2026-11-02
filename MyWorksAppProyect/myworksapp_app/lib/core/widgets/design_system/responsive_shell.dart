@@ -21,12 +21,17 @@ class ResponsiveShell extends StatelessWidget {
     final padding = AppBreakpoints.screenPadding(context);
     final maxWidth = AppBreakpoints.contentMaxWidthFor(context);
 
+    final height = MediaQuery.sizeOf(context).height;
     return Align(
       alignment: Alignment.topCenter,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxWidth),
+          constraints: BoxConstraints(
+            maxWidth: maxWidth,
+            minHeight: height,
+            maxHeight: height,
+          ),
           child: child,
         ),
       ),

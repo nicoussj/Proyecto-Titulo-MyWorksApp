@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:math' show Point;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:latlong2/latlong.dart' as ll;
 
 import '../services/user_location_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/chile_comunas.dart';
 import 'job_location_map.dart';
 
 class LocationPickerWidget extends StatefulWidget {
@@ -87,6 +91,10 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
         _useFallbackLocation();
         return;
       }
+      if (!ChileComunas.inChile(position.latitude, position.longitude)) {
+        _useFallbackLocation();
+        return;
+      }
       await _getAddressFromCoordinates(position.latitude, position.longitude);
     } catch (e) {
       if (!mounted) return;
@@ -164,6 +172,20 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
     }
   }
 
+  Future<void> _pickOnMap() async {
+    final initial = ll.LatLng(
+      _latitude ?? UserLocationService.demoFallbackLatitude,
+      _longitude ?? UserLocationService.demoFallbackLongitude,
+    );
+    final picked = await showModalBottomSheet<ll.LatLng>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => _ClientMapPickerSheet(initial: initial),
+    );
+    if (picked == null || !mounted) return;
+    await _getAddressFromCoordinates(picked.latitude, picked.longitude);
+  }
+
   /// Permite corregir la dirección a mano (p. ej. el GPS del emulador).
   Future<void> _editAddress() async {
     final controller = TextEditingController(
@@ -200,13 +222,13 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
 
     double? lat = _latitude;
     double? lng = _longitude;
+    var address = query;
     try {
-      final results = await Geocoding(locale: const Locale('es'))
-          .locationFromAddress(query)
-          .timeout(const Duration(seconds: 6));
-      if (results.isNotEmpty) {
-        lat = results.first.latitude;
-        lng = results.first.longitude;
+      final geo = await UserLocationService.instance.fromAddress(query);
+      if (geo?.latitude != null && geo?.longitude != null) {
+        lat = geo!.latitude;
+        lng = geo.longitude;
+        address = geo.displayLabel;
       }
     } catch (_) {
       // Sin geocodificación: se conserva la coordenada actual.
@@ -215,13 +237,13 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
     lat ??= UserLocationService.demoFallbackLatitude;
     lng ??= UserLocationService.demoFallbackLongitude;
     setState(() {
-      _currentAddress = query;
+      _currentAddress = address;
       _latitude = lat;
       _longitude = lng;
       _isLoading = false;
       _hasError = false;
     });
-    _emitLocation(query, lat, lng);
+    _emitLocation(address, lat, lng);
   }
 
   Future<void> _cacheLocation(double latitude, double longitude) async {
@@ -230,9 +252,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
         latitude,
         longitude,
       );
-      if (ctx != null) {
-        await UserLocationService.instance.persist(ctx);
-      }
+      await UserLocationService.instance.persist(ctx);
     } catch (_) {
       // El caché es opcional: la ubicación ya se mostró y se emitió.
     }
@@ -307,11 +327,11 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
             JobLocationMap(
               latitude: _latitude!,
               longitude: _longitude!,
-              // Vista estática: un GoogleMap interactivo (platform view) dentro del
-              // SingleChildScrollView captura los gestos y congela el scroll.
+              // Vista estática: un mapa interactivo dentro del scroll congela
+              // el gesto. El punto se elige en el mapa a pantalla completa.
               mode: JobMapDisplayMode.preview,
               height: 120,
-              onTap: _editAddress,
+              onTap: _pickOnMap,
             ),
             const SizedBox(height: 12),
           ],
@@ -377,6 +397,13 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
               ),
               if (!_isLoading)
                 IconButton(
+                  icon: const Icon(Icons.map_outlined),
+                  onPressed: _pickOnMap,
+                  tooltip: 'Marcar en el mapa',
+                  color: AppColors.brandOrange,
+                ),
+              if (!_isLoading)
+                IconButton(
                   icon: const Icon(Icons.edit_location_alt_outlined),
                   onPressed: _editAddress,
                   tooltip: 'Editar dirección',
@@ -395,7 +422,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
             const SizedBox(height: 8),
             Text(
               hasCoords
-                  ? 'El mapa muestra tu posición actual para que el profesional llegue sin problemas.'
+                  ? 'Toca el mapa o arrastra el pin azul. También puedes usar GPS o una dirección escrita.'
                   : 'Esperando coordenadas GPS...',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.grayMedium,
@@ -403,6 +430,122 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                   ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ClientMapPickerSheet extends StatefulWidget {
+  const _ClientMapPickerSheet({required this.initial});
+
+  final ll.LatLng initial;
+
+  @override
+  State<_ClientMapPickerSheet> createState() => _ClientMapPickerSheetState();
+}
+
+class _ClientMapPickerSheetState extends State<_ClientMapPickerSheet> {
+  late ll.LatLng _point = widget.initial;
+  final _map = MapController();
+  bool _dragging = false;
+
+  @override
+  void dispose() {
+    try {
+      _map.dispose();
+    } catch (_) {}
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height * 0.72;
+    return SizedBox(
+      height: height,
+      child: Column(
+        children: [
+            const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              'Toca el mapa o arrastra el pin azul',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          Expanded(
+            child: FlutterMap(
+              mapController: _map,
+              options: MapOptions(
+                initialCenter: _point,
+                initialZoom: 15,
+                onTap: _dragging
+                    ? null
+                    : (_, point) => setState(() => _point = point),
+                interactionOptions: InteractionOptions(
+                  flags: _dragging
+                      ? InteractiveFlag.none
+                      : InteractiveFlag.all & ~InteractiveFlag.rotate,
+                  cursorKeyboardRotationOptions:
+                      CursorKeyboardRotationOptions.disabled(),
+                ),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.myworksapp.myworksapp',
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _point,
+                      width: 44,
+                      height: 44,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onPanStart: (_) => setState(() => _dragging = true),
+                        onPanUpdate: (details) {
+                          try {
+                            final camera = _map.camera;
+                            final current = camera.latLngToScreenPoint(_point);
+                            final next = camera.pointToLatLng(
+                              Point(
+                                current.x + details.delta.dx,
+                                current.y + details.delta.dy,
+                              ),
+                            );
+                            setState(() => _point = next);
+                          } catch (_) {}
+                        },
+                        onPanEnd: (_) => setState(() => _dragging = false),
+                        onPanCancel: () => setState(() => _dragging = false),
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Color(0xFF2563EB),
+                          size: 36,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Row(
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                const Spacer(),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, _point),
+                  child: const Text('Usar este punto'),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

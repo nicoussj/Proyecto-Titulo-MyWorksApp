@@ -279,24 +279,27 @@ class PricingService {
     String? comunaKey,
     int transportExtraClp = 0,
   }) {
-    final factor = _comunaFactors[comunaKey?.toLowerCase()] ?? 1.0;
     final extra = transportExtraClp < 0 ? 0 : transportExtraClp;
-    final subtotal = (visitFeeClp * factor).round() + extra;
-    const feePercent = 0.10;
-    final fee = (subtotal * feePercent).round();
+    // El servidor cobra `tarifa_visita + recargo_traslado`, sin comisión extra
+    // al cliente. Si el total no coincide, Webpay no abre.
+    final subtotal = visitFeeClp + extra;
+    final fee = serviceFeeFor(subtotal);
     return PriceQuote(
       pricingMode: PricingConstants.modeFixedPrice,
       subtotalClp: subtotal,
       platformFeeClp: fee,
-      totalClp: subtotal + fee,
+      totalClp: subtotal,
+      workerPayoutClp: subtotal - fee,
       breakdown: {
         'visit_fee_clp': visitFeeClp,
         'transport_extra_clp': extra,
-        'comuna_factor': factor,
+        if (comunaKey != null) 'comuna_key': comunaKey,
+        'service_fee_clp': fee,
+        'worker_payout_clp': subtotal - fee,
       },
       message: extra > 0
-          ? 'Pago de visita más ${_formatClp(extra)} de traslado (fuera del área cercana).'
-          : 'Pago de visita con fondos en garantía. Sin extra de traslado.',
+          ? 'Pago de visita más ${_formatClp(extra)} de traslado (fuera del área cercana). La comisión se descuenta del profesional.'
+          : 'Pago de visita con fondos en garantía. Sin extra de traslado. La comisión se descuenta del profesional.',
     );
   }
 

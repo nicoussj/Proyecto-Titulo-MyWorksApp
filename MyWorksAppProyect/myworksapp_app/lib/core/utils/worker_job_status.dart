@@ -11,6 +11,12 @@ class WorkerJobStatus {
   static const List<String> activeStatuses =
       GeneratedWorkerActiveJobStatuses.values;
 
+  /// Estados que sí ocupan al profesional. Un checkout sin pagar
+  /// (`esperando_pago`) se muestra como oferta, no como trabajo en curso.
+  static List<String> get busyStatuses => activeStatuses
+      .where((status) => status != PricingConstants.jobAwaitingPayment)
+      .toList();
+
   static bool isActive(String status) =>
       GeneratedWorkerActiveJobStatuses.contains(status);
 

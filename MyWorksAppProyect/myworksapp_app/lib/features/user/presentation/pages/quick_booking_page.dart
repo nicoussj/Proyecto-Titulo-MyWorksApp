@@ -166,16 +166,20 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Visita agendada y pago en garantía')),
         );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reserva creada. Completa el pago desde el detalle del trabajo.'),
-          ),
-        );
+        context.go('${AppConstants.routeJobDetail}/${booking.job.id}');
+        return;
       }
 
-      context.go('${AppConstants.routeJobDetail}/${booking.job.id}');
+      await bookingService.abandonUnpaidCheckout(
+        jobId: booking.job.id,
+        userId: auth.id,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pago cancelado. El pedido no se envió al profesional.'),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -430,7 +430,10 @@ class PaymentService {
         body: {
           'jobId': jobId,
           'amountClp': amount.round(),
-          'returnUrl': _webpayClientReturn(),
+          // En web Transbank debe volver al Edge `webpay-commit`, no a
+          // `/payment-result` (Flutter no sirve esa ruta). El commit redirige
+          // al origen del cliente con `?pago=ok`.
+          if (!kIsWeb) 'returnUrl': _webpayClientReturn(),
         },
       );
       final data = _asMap(response.data);

@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Bell,
   ChevronDown,
+  Home,
   Lock,
   MessageCircle,
   ShieldCheck,
@@ -34,6 +35,7 @@ interface TrackingDashboardProps {
   paymentNotice?: string | null;
   unreadCount?: number;
   onBack: () => void;
+  onGoHome: () => void;
   onOpenChat: () => void;
   onOpenNotifications?: () => void;
   onConfirmReceipt?: () => void;
@@ -65,6 +67,7 @@ export function TrackingDashboard({
   paymentNotice,
   unreadCount = 0,
   onBack,
+  onGoHome,
   onOpenChat,
   onOpenNotifications,
   onConfirmReceipt,
@@ -95,10 +98,12 @@ export function TrackingDashboard({
           ? null
           : 'La llegada aparece cuando el profesional publica su ubicación en camino o en curso.');
 
+  const leaveTracking = closedJob ? onGoHome : onBack;
+
   return (
     <div className="tracking-dashboard">
       <header className="tracking-nav">
-        <BrandLogo size={32} />
+        <BrandLogo size={32} onClick={onGoHome} />
         <span className="tracking-premium-badge">CLIENTE</span>
 
         <div className="tracking-nav-center">
@@ -108,6 +113,14 @@ export function TrackingDashboard({
         </div>
 
         <div className="tracking-nav-right">
+          <button
+            type="button"
+            className="tracking-nav-home"
+            onClick={onGoHome}
+          >
+            <Home size={16} />
+            Inicio
+          </button>
           <button
             type="button"
             className="search-nav-bell"
@@ -130,8 +143,8 @@ export function TrackingDashboard({
 
       <div className="tracking-layout">
         <aside className="tracking-sidebar">
-          <button type="button" className="tracking-back-link" onClick={onBack}>
-            <ArrowLeft size={16} /> Seguimiento del trabajo
+          <button type="button" className="tracking-back-link" onClick={leaveTracking}>
+            <ArrowLeft size={16} /> {closedJob ? 'Volver al inicio' : 'Volver'}
           </button>
 
           <div className="tracking-status-pill">
@@ -190,11 +203,24 @@ export function TrackingDashboard({
             <p className="tracking-status-detail" role="alert">{confirmError}</p>
           ) : null}
 
+          {closedJob ? (
+            <div className="tracking-complete-card">
+              <strong>Pago liberado</strong>
+              <p>
+                {paymentNotice
+                  ?? 'El trabajo quedó cerrado y el retenido se liberó al profesional.'}
+              </p>
+              <button type="button" className="btn-primary" onClick={onGoHome}>
+                Volver al inicio
+              </button>
+            </div>
+          ) : null}
+
           <button type="button" className="btn-primary tracking-chat-btn" onClick={onOpenChat}>
             <MessageCircle size={18} /> Abrir chat
           </button>
 
-          {onOpenDispute ? (
+          {!closedJob && onOpenDispute ? (
             <form
               className="tracking-escrow-card"
               onSubmit={(event) => {
@@ -233,7 +259,7 @@ export function TrackingDashboard({
               </div>
             </form>
           ) : null}
-          {onAddDisputeComment ? (
+          {!closedJob && onAddDisputeComment ? (
             <form
               className="tracking-escrow-card"
               onSubmit={(event) => {

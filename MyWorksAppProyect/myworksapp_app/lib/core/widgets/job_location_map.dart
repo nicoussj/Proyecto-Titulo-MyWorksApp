@@ -1,6 +1,3 @@
-import 'dart:math' as math;
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
@@ -20,7 +17,7 @@ enum JobMapDisplayMode {
   interactive,
 }
 
-/// Mapa de ubicación: Google Maps en móvil/web, OpenStreetMap en escritorio.
+/// Mapa de ubicación con OpenStreetMap (el recorte estático de OSM fallaba en web).
 class JobLocationMap extends StatelessWidget {
   const JobLocationMap({
     super.key,
@@ -41,7 +38,15 @@ class JobLocationMap extends StatelessWidget {
 
   bool get _isPreview => mode == JobMapDisplayMode.preview;
 
-  double get _zoom => _isPreview ? 17.5 : 15;
+  double get _zoom => _isPreview ? 15 : 15;
+
+  static bool hasUsablePoint(double? latitude, double? longitude) {
+    if (latitude == null || longitude == null) return false;
+    if (!latitude.isFinite || !longitude.isFinite) return false;
+    if (latitude.abs() > 90 || longitude.abs() > 180) return false;
+    if (latitude.abs() < 0.01 && longitude.abs() < 0.01) return false;
+    return true;
+  }
 
   Future<void> _handleTap(BuildContext context) async {
     if (onTap != null) {
@@ -93,28 +98,7 @@ class JobLocationMap extends StatelessWidget {
     );
   }
 
-  Widget _emphasisPin() {
-    if (!_isPreview) return const SizedBox.shrink();
-
-    return IgnorePointer(
-      child: Center(
-        child: Icon(
-          Icons.location_on,
-          color: const Color(0xFFE53935),
-          size: 38,
-          shadows: [
-            Shadow(
-              color: Colors.black.withValues(alpha: 0.35),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _desktopMap(BuildContext context) {
+  Widget _osmMap(BuildContext context) {
     final point = ll.LatLng(latitude, longitude);
 
     return ClipRRect(
@@ -130,6 +114,8 @@ class JobLocationMap extends StatelessWidget {
                 flags: _isPreview
                     ? InteractiveFlag.none
                     : InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                cursorKeyboardRotationOptions:
+                    CursorKeyboardRotationOptions.disabled(),
               ),
             ),
             children: [
@@ -137,24 +123,22 @@ class JobLocationMap extends StatelessWidget {
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.myworksapp.myworksapp',
               ),
-              if (!_isPreview)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: point,
-                      width: 36,
-                      height: 36,
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Color(0xFFE53935),
-                        size: 36,
-                      ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: point,
+                    width: 36,
+                    height: 36,
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Color(0xFFE53935),
+                      size: 36,
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
             ],
           ),
-          _emphasisPin(),
           if (_isPreview) _previewHint(context),
           if (!_isPreview)
             Positioned(
@@ -190,14 +174,12 @@ class JobLocationMap extends StatelessWidget {
               target: gmaps.LatLng(latitude, longitude),
               zoom: _zoom,
             ),
-            markers: _isPreview
-                ? {}
-                : {
-                    gmaps.Marker(
-                      markerId: const gmaps.MarkerId('job_location'),
-                      position: gmaps.LatLng(latitude, longitude),
-                    ),
-                  },
+            markers: {
+              gmaps.Marker(
+                markerId: const gmaps.MarkerId('job_location'),
+                position: gmaps.LatLng(latitude, longitude),
+              ),
+            },
             zoomControlsEnabled: !_isPreview,
             myLocationButtonEnabled: !_isPreview,
             myLocationEnabled: !_isPreview,
@@ -207,7 +189,6 @@ class JobLocationMap extends StatelessWidget {
             tiltGesturesEnabled: !_isPreview,
             mapType: gmaps.MapType.normal,
           ),
-          _emphasisPin(),
           if (_isPreview) _previewHint(context),
         ],
       ),
@@ -215,59 +196,32 @@ class JobLocationMap extends StatelessWidget {
   }
 
   Widget _mapBody(BuildContext context) {
-    if (_isPreview) {
-      return _staticPreview(context);
-    }
-    if (AppPlatform.supportsEmbeddedGoogleMap &&
+    if (!_isPreview &&
+        AppPlatform.supportsEmbeddedGoogleMap &&
         GoogleMapsConfig.useEmbeddedGoogleMap) {
       return _googleMap(context);
     }
-    return _desktopMap(context);
-  }
-
-  Widget _staticPreview(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          CachedNetworkImage(
-            imageUrl: _osmTileUrl(),
-            fit: BoxFit.cover,
-            memCacheWidth: 512,
-            httpHeaders: const {
-              'User-Agent': 'MyWorksApp/1.0 (com.myworksapp.myworksapp)',
-            },
-            placeholder: (context, url) => const ColoredBox(
-              color: Color(0xFF152033),
-            ),
-            errorWidget: (context, url, error) => const ColoredBox(
-              color: Color(0xFF152033),
-            ),
-          ),
-          _emphasisPin(),
-          _previewHint(context),
-        ],
-      ),
-    );
-  }
-
-  String _osmTileUrl() {
-    final z = _zoom.round().clamp(1, 19);
-    final n = 1 << z;
-    final latRad = latitude * math.pi / 180;
-    final x = ((longitude + 180.0) / 360.0 * n).floor().clamp(0, n - 1);
-    final y = ((1 -
-                math.log(math.tan(latRad) + 1 / math.cos(latRad)) / math.pi) /
-            2 *
-            n)
-        .floor()
-        .clamp(0, n - 1);
-    return 'https://tile.openstreetmap.org/$z/$x/$y.png';
+    return _osmMap(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!hasUsablePoint(latitude, longitude)) {
+      return SizedBox(
+        height: height,
+        width: double.infinity,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.brandOrange.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child: Text('Sin coordenadas para mostrar el mapa'),
+          ),
+        ),
+      );
+    }
+
     final map = SizedBox(
       height: height,
       width: double.infinity,

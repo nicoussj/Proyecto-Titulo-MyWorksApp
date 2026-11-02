@@ -8,7 +8,9 @@ import '../../../../core/utils/mock_reserved_slots.dart';
 import '../../../../utils/content_filter.dart';
 import '../../../../core/database/repositories/service_repository.dart';
 import '../../../../core/database/repositories/service_config_repository.dart';
+import '../../../../core/database/models/job_model.dart';
 import '../../../../core/database/models/service_model.dart';
+import '../../../../core/domain/price_quote.dart';
 import '../../../../core/domain/pricing_constants.dart';
 import '../../../../core/domain/transport_surcharge.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -237,6 +239,42 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
     context.go('${AppConstants.routeJobDetail}/$jobId');
   }
 
+  /// Si paga, confirma y va al detalle. Si cancela, anula el pedido y se queda.
+  Future<void> _runEscrowCheckout({
+    required ({JobModel job, PriceQuote quote}) booking,
+    Future<void> Function()? afterPaid,
+  }) async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+    final bookingService = ref.read(jobBookingServiceProvider);
+    final paid = await EscrowCheckoutSheet.show(
+      context,
+      jobId: booking.job.id,
+      quote: booking.quote,
+    );
+    if (!mounted) return;
+    if (paid) {
+      await bookingService.confirmEscrowAndAccept(
+        jobId: booking.job.id,
+        userId: user.id,
+      );
+      if (afterPaid != null) await afterPaid();
+      if (!mounted) return;
+      _navigateAfterJobCreated(booking.job.id);
+      return;
+    }
+    await bookingService.abandonUnpaidCheckout(
+      jobId: booking.job.id,
+      userId: user.id,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Pago cancelado. El pedido no se envió al profesional.'),
+      ),
+    );
+  }
+
   Future<void> _handleSubmit() async {
     if (_usesWorkerTierPricing) {
       if (_formKey.currentState?.validate() == false) return;
@@ -401,29 +439,21 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
           transportExtraClp: _traslado.extraClp,
         );
         if (!mounted) return;
-        final paid = await EscrowCheckoutSheet.show(
-          context,
-          jobId: booking.job.id,
-          quote: booking.quote,
+        await _runEscrowCheckout(
+          booking: booking,
+          afterPaid: () async {
+            try {
+              await OpenQuoteNotificationService.instance.notifyInvitedWorker(
+                jobId: booking.job.id,
+                workerId: _selectedWorkerId!,
+                jobLabel: _selectedWorkerOption!.title,
+                isTierInvitation: true,
+              );
+            } catch (_) {
+              // El pago ya quedó; la notificación no debe bloquear al usuario.
+            }
+          },
         );
-        if (paid) {
-          await bookingService.confirmEscrowAndAccept(
-            jobId: booking.job.id,
-            userId: user.id,
-          );
-          try {
-            await OpenQuoteNotificationService.instance.notifyInvitedWorker(
-              jobId: booking.job.id,
-              workerId: _selectedWorkerId!,
-              jobLabel: _selectedWorkerOption!.title,
-              isTierInvitation: true,
-            );
-          } catch (_) {
-            // El pago ya quedó; la notificación no debe bloquear al usuario.
-          }
-        }
-        if (!mounted) return;
-        _navigateAfterJobCreated(booking.job.id);
         return;
       }
 
@@ -446,19 +476,7 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
           serviceMetadata: metadata,
         );
         if (!mounted) return;
-        final paid = await EscrowCheckoutSheet.show(
-          context,
-          jobId: booking.job.id,
-          quote: booking.quote,
-        );
-        if (paid) {
-          await bookingService.confirmEscrowAndAccept(
-            jobId: booking.job.id,
-            userId: user.id,
-          );
-        }
-        if (!mounted) return;
-        _navigateAfterJobCreated(booking.job.id);
+        await _runEscrowCheckout(booking: booking);
         return;
       }
 
@@ -481,19 +499,7 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
           serviceMetadata: metadata,
         );
         if (!mounted) return;
-        final paid = await EscrowCheckoutSheet.show(
-          context,
-          jobId: booking.job.id,
-          quote: booking.quote,
-        );
-        if (paid) {
-          await bookingService.confirmEscrowAndAccept(
-            jobId: booking.job.id,
-            userId: user.id,
-          );
-        }
-        if (!mounted) return;
-        _navigateAfterJobCreated(booking.job.id);
+        await _runEscrowCheckout(booking: booking);
         return;
       }
 

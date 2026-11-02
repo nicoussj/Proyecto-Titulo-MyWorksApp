@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import '../../domain/pricing_constants.dart';
 import '../../utils/app_error.dart';
 import '../../utils/constants.dart';
+import '../../utils/json_map.dart';
 import '../../utils/worker_job_status.dart';
 import '../job_insert_policy.dart';
 import '../models/job_model.dart';
@@ -64,6 +66,21 @@ class JobRepository {
     return rows.map<JobModel>((m) => JobModel.fromMap(m)).toList();
   }
 
+  /// Pedidos asignados al profesional: pagados (`pendiente`) o con checkout
+  /// iniciado desde la web (`esperando_pago`).
+  Future<List<JobModel>> getIncomingJobsForWorker(String workerId) async {
+    final rows = await supabase
+        .from(_table)
+        .select()
+        .eq('id_trabajador', workerId)
+        .inFilter('estado', [
+          AppConstants.jobStatusPending,
+          PricingConstants.jobAwaitingPayment,
+        ])
+        .order('creado_en', ascending: false);
+    return rows.map<JobModel>((m) => JobModel.fromMap(m)).toList();
+  }
+
   /// Trabajos asignados al profesional que aún no están completados ni cancelados.
   Future<List<JobModel>> getActiveJobsByWorkerId(String workerId) async {
     final rows = await supabase
@@ -81,7 +98,7 @@ class JobRepository {
         .from(_table)
         .select('id')
         .eq('id_trabajador', workerId)
-        .inFilter('estado', WorkerJobStatus.activeStatuses)
+        .inFilter('estado', WorkerJobStatus.busyStatuses)
         .limit(1)
         .maybeSingle();
     return row != null;
@@ -100,7 +117,7 @@ class JobRepository {
           .from(_table)
           .select('id_trabajador')
           .inFilter('id_trabajador', chunk)
-          .inFilter('estado', WorkerJobStatus.activeStatuses);
+          .inFilter('estado', WorkerJobStatus.busyStatuses);
       for (final row in rows) {
         final id = row['id_trabajador'] as String?;
         if (id != null) busy.add(id);
@@ -251,18 +268,7 @@ class JobRepository {
       return now;
     }
 
-    Map<String, dynamic>? metadata;
-    final rawMeta = map['metadatos_servicio'];
-    if (rawMeta is String && rawMeta.isNotEmpty) {
-      try {
-        final decoded = jsonDecode(rawMeta);
-        if (decoded is Map) metadata = Map<String, dynamic>.from(decoded);
-      } catch (_) {
-        metadata = null;
-      }
-    } else if (rawMeta is Map) {
-      metadata = Map<String, dynamic>.from(rawMeta);
-    }
+    final metadata = decodeJsonMap(map['metadatos_servicio']);
 
     return JobModel(
       id: map['id'] as String,

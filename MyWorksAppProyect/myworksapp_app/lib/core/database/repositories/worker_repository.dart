@@ -1,3 +1,4 @@
+import '../../config/demo_credentials.dart';
 import '../../domain/distance_match.dart';
 import '../../domain/transport_surcharge.dart';
 import '../../domain/user_location_context.dart';
@@ -160,7 +161,12 @@ class WorkerRepository {
       );
     }
 
-    items.sort((a, b) => a.name.compareTo(b.name));
+    items.sort((a, b) {
+      final aGas = a.serviceCategory.toLowerCase().contains('gasfit') ? 0 : 1;
+      final bGas = b.serviceCategory.toLowerCase().contains('gasfit') ? 0 : 1;
+      if (aGas != bGas) return aGas - bGas;
+      return a.name.compareTo(b.name);
+    });
     return items;
   }
 
@@ -246,6 +252,26 @@ class WorkerRepository {
     final worker = await getWorkerByUserId(userId);
     if (worker != null && worker.isAvailable) {
       await updateAvailability(userId, false);
+    }
+  }
+
+  /// Si no está en un trabajo en curso, las cuentas demo vuelven al catálogo.
+  /// Un checkout o pedido pendiente no debe dejarlas ocultas para el cliente.
+  Future<void> syncAvailabilityWithJobs(
+    String userId, {
+    String? email,
+  }) async {
+    final jobRepository = JobRepository();
+    if (await jobRepository.hasActiveJobs(userId)) {
+      await enforceUnavailableWhileBusy(userId);
+      return;
+    }
+    if (email == null || !DemoCredentials.isDemoEmail(email)) {
+      return;
+    }
+    final worker = await getWorkerByUserId(userId);
+    if (worker != null && !worker.isAvailable) {
+      await updateAvailability(userId, true);
     }
   }
 

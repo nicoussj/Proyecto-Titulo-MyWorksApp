@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../domain/pricing_constants.dart';
+import '../../utils/json_map.dart';
 
 class JobModel {
   final String id;
@@ -78,23 +79,8 @@ class JobModel {
   }
 
   factory JobModel.fromMap(Map<String, dynamic> map) {
-    Map<String, dynamic>? metadata;
-    if (map['metadatos_servicio'] != null) {
-      try {
-        metadata = jsonDecode(map['metadatos_servicio'] as String) as Map<String, dynamic>;
-      } catch (_) {
-        metadata = null;
-      }
-    }
-
-    Map<String, dynamic>? snapshot;
-    if (map['instantanea_precio'] != null) {
-      try {
-        snapshot = jsonDecode(map['instantanea_precio'] as String) as Map<String, dynamic>;
-      } catch (_) {
-        snapshot = null;
-      }
-    }
+    final metadata = decodeJsonMap(map['metadatos_servicio']);
+    final snapshot = decodeJsonMap(map['instantanea_precio']);
 
     return JobModel(
       id: map['id'] as String,

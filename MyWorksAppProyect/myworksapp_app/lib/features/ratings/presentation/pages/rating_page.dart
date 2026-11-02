@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/database/repositories/rating_repository.dart';
 import '../../../../core/database/models/rating_model.dart';
 import '../../../../core/database/supabase_db.dart';
+import '../../../../core/utils/constants.dart';
 import '../../../../core/utils/error_handler.dart';
 
 class RatingPage extends StatefulWidget {
@@ -31,6 +32,10 @@ class _RatingPageState extends State<RatingPage> {
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  void _goHome() {
+    context.go(AppConstants.routeUserHome);
   }
 
   Future<void> _submitRating() async {
@@ -70,7 +75,7 @@ class _RatingPageState extends State<RatingPage> {
         const SnackBar(content: Text('Calificación enviada exitosamente')),
       );
 
-      context.pop();
+      _goHome();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,8 +91,16 @@ class _RatingPageState extends State<RatingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppGradientAppBar(
-        title: Text('Calificar Trabajo'),
+      appBar: AppGradientAppBar(
+        title: const Text('Calificar Trabajo'),
+        automaticallyImplyLeading: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            tooltip: 'Volver al inicio',
+            onPressed: _goHome,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: LayoutUtils.scrollPadding(context),
@@ -101,7 +114,6 @@ class _RatingPageState extends State<RatingPage> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 32),
-              // Selector de estrellas
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -147,6 +159,11 @@ class _RatingPageState extends State<RatingPage> {
                       )
                     : const Text('Enviar Calificación'),
               ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: _isLoading ? null : _goHome,
+                child: const Text('Ahora no, volver al inicio'),
+              ),
             ],
           ),
         ),
@@ -154,4 +171,3 @@ class _RatingPageState extends State<RatingPage> {
     );
   }
 }
-

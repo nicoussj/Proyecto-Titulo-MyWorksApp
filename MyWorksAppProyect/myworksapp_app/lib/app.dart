@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'bootstrap/app_initializer.dart';
@@ -111,6 +112,7 @@ class _MyWorksAppState extends ConsumerState<MyWorksApp> {
     return MaterialApp.router(
       title: AppConstants.appBrandDisplayName,
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const AppScrollBehavior(),
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
@@ -129,5 +131,18 @@ class _MyWorksAppState extends ConsumerState<MyWorksApp> {
       },
     );
   }
+}
+
+/// Permite bajar listas con rueda, trackpad o arrastre del mouse (Flutter web).
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
 }
 

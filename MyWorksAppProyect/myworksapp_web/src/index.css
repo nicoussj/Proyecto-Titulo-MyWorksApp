@@ -107,6 +107,15 @@ h1, h2, h3, .brand-display {
   gap: 10px;
   min-width: 0;
 }
+button.brand-logo-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
 .brand-logo-mark {
   flex-shrink: 0;
 }
@@ -1369,6 +1378,8 @@ h1, h2, h3, .brand-display {
   padding: 12px 24px;
   border-bottom: 1px solid var(--border-dark);
   background: rgba(7, 11, 18, 0.95);
+  position: relative;
+  z-index: 3;
 }
 .tracking-premium-badge {
   font-size: 10px;
@@ -1404,6 +1415,20 @@ h1, h2, h3, .brand-display {
   align-items: center;
   gap: 14px;
 }
+.tracking-nav-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-dark);
+  color: var(--text-main-dark);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-family);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
 .tracking-layout {
   flex: 1;
   display: grid;
@@ -1411,10 +1436,31 @@ h1, h2, h3, .brand-display {
   min-height: 0;
 }
 .tracking-sidebar {
+  position: relative;
+  z-index: 2;
   padding: 24px 22px;
   border-right: 1px solid var(--border-dark);
   overflow-y: auto;
   background: var(--bg-canvas-dark-alt);
+}
+.tracking-complete-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+.tracking-complete-card strong {
+  font-size: 15px;
+}
+.tracking-complete-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted-dark);
 }
 .tracking-back-link {
   background: none;
@@ -1576,6 +1622,7 @@ h1, h2, h3, .brand-display {
 
 .tracking-map-full {
   position: relative;
+  z-index: 1;
   overflow: hidden;
   background: #0a1018;
 }
@@ -1597,7 +1644,7 @@ h1, h2, h3, .brand-display {
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 6;
+  z-index: 8;
   max-width: min(560px, calc(100% - 32px));
   margin: 0;
   padding: 12px 16px;

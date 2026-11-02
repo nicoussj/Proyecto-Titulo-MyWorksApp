@@ -39,6 +39,18 @@ class PriceQuote {
         if (message != null) 'message': message,
       };
 
+  /// Copia visible en `metadatos_servicio`. El servidor borra
+  /// `instantanea_precio` al crear el trabajo; estos campos permiten
+  /// reconstruir el cobro en el detalle.
+  Map<String, dynamic> toJobMetadata() => {
+        'quoted_total_clp': totalClp,
+        'quoted_subtotal_clp': subtotalClp,
+        'quoted_fee_clp': platformFeeClp,
+        if (workerPayoutClp != null) 'quoted_worker_payout_clp': workerPayoutClp,
+        'quoted_pricing_mode': pricingMode,
+        if (message != null) 'quoted_message': message,
+      };
+
   factory PriceQuote.fromJson(Map<String, dynamic> json) {
     return PriceQuote(
       pricingMode: json['pricing_mode'] as String? ?? PricingConstants.modeLegacy,

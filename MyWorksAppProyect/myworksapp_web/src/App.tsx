@@ -419,15 +419,40 @@ export function App() {
     };
   }, [view, checkoutJobId]);
 
+  const goHome = () => {
+    sessionStorage.removeItem('mwa-active-job');
+    setShowChat(false);
+    setShowNotifications(false);
+    setShowCheckout(false);
+    setShowGuestCheckout(false);
+    setMyOrders(null);
+    setConfirmError(null);
+    setConfirmBusy(false);
+    setPaymentNotice(null);
+    setView('landing');
+  };
+
   const confirmReceipt = async () => {
     if (!checkoutJobId) return;
     setConfirmBusy(true);
     setConfirmError(null);
     try {
       await closeJobOnClientApproval(supabase, checkoutJobId);
-      const snapshot = await fetchJobTrackingSnapshot(supabase, checkoutJobId);
-      setJobSnapshot(snapshot);
       setPaymentNotice('Recibiste conforme. El pago retenido quedó liberado.');
+      try {
+        const snapshot = await fetchJobTrackingSnapshot(supabase, checkoutJobId);
+        if (snapshot) {
+          setJobSnapshot(snapshot);
+        } else {
+          setJobSnapshot((prev) =>
+            prev ? { ...prev, status: 'completado', paymentStatus: 'liberado' } : prev,
+          );
+        }
+      } catch {
+        setJobSnapshot((prev) =>
+          prev ? { ...prev, status: 'completado', paymentStatus: 'liberado' } : prev,
+        );
+      }
     } catch (err) {
       setConfirmError(
         err instanceof Error ? err.message : 'No se pudo recibir conforme.',
@@ -1134,7 +1159,7 @@ export function App() {
             setView('landing');
             setShowAuth(true);
           }}
-          onGoHome={() => setView('landing')}
+          onGoHome={goHome}
         />
       </Suspense>
     );
@@ -1188,7 +1213,15 @@ export function App() {
 
           unreadCount={unreadCount}
 
+          onGoHome={goHome}
+
           onBack={() => {
+            const closed = jobSnapshot?.status === 'completado'
+              || jobSnapshot?.status === 'cancelado';
+            if (closed) {
+              goHome();
+              return;
+            }
             // Un pedido abierto desde Mis pedidos o tras recargar no trae resultados de búsqueda.
             sessionStorage.removeItem('mwa-active-job');
             setView(serviceMatch && serviceMatch.workers.length > 0 ? 'search' : 'landing');

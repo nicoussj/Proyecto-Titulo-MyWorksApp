@@ -22,6 +22,7 @@ class WorkerOnboardingCard extends StatefulWidget {
 class _WorkerOnboardingCardState extends State<WorkerOnboardingCard> {
   WorkerOnboardingStatus? _status;
   bool _loading = true;
+  bool _expanded = false;
 
   @override
   void initState() {
@@ -146,37 +147,56 @@ class _WorkerOnboardingCardState extends State<WorkerOnboardingCard> {
                     : AppColors.brandOrangeSoft,
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Para aparecer en búsquedas y recibir trabajos:',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: muted,
-              ),
-            ),
-            const SizedBox(height: 4),
-            ...status.missingItems.map(
-              (item) => ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(
-                  Icons.radio_button_unchecked,
-                  size: 20,
-                  color: AppColors.brandOrange.withValues(alpha: 0.85),
-                ),
-                title: Text(
-                  item,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: titleColor,
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _expanded
+                          ? 'Para aparecer en búsquedas y recibir trabajos:'
+                          : '${status.missingItems.length} pasos pendientes · toca para ver',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: muted,
+                      ),
+                    ),
                   ),
-                ),
-                trailing: Icon(Icons.chevron_right, color: muted, size: 18),
-                onTap: () => _goToStep(item),
+                  Icon(
+                    _expanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    color: muted,
+                  ),
+                ],
               ),
             ),
+            if (_expanded) ...[
+              const SizedBox(height: 4),
+              ...status.missingItems.map(
+                (item) => ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    Icons.radio_button_unchecked,
+                    size: 20,
+                    color: AppColors.brandOrange.withValues(alpha: 0.85),
+                  ),
+                  title: Text(
+                    item,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: titleColor,
+                    ),
+                  ),
+                  trailing: Icon(Icons.chevron_right, color: muted, size: 18),
+                  onTap: () => _goToStep(item),
+                ),
+              ),
+            ],
           ],
         ),
       ),

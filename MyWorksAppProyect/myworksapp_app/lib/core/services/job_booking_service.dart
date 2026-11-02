@@ -55,6 +55,10 @@ class JobBookingService {
       longitude: longitude,
       pricingMode: PricingConstants.modeFixedPrice,
       quote: quote,
+      serviceMetadata: {
+        'visit_fee_clp': visitFeeClp,
+        'traslado_extra_clp': transportExtraClp,
+      },
     );
   }
 
@@ -227,6 +231,7 @@ class JobBookingService {
     );
     final meta = <String, dynamic>{
       if (serviceMetadata != null) ...serviceMetadata,
+      ...quote.toJobMetadata(),
       'invited_worker_id': workerId,
       'worker_tier_id': tierOptionId,
       'worker_tier_label': tierLabel,
@@ -335,7 +340,10 @@ class JobBookingService {
       latitude: latitude,
       longitude: longitude,
       scheduledDate: scheduledDate,
-      serviceMetadata: serviceMetadata,
+      serviceMetadata: {
+        ...?serviceMetadata,
+        ...quote.toJobMetadata(),
+      },
       pricingMode: pricingMode,
       paymentStatus: PricingConstants.paymentNone,
       comunaId: comunaKey,
@@ -367,6 +375,26 @@ class JobBookingService {
     final updated = await _jobs.getJobById(jobId);
     if (updated == null) throw AppError.notFound('Trabajo no encontrado');
     return updated;
+  }
+
+  /// El cliente cerró el checkout sin pagar: el pedido no debe quedar
+  /// visible para el profesional ni abrir el detalle como si existiera.
+  Future<void> abandonUnpaidCheckout({
+    required String jobId,
+    required String userId,
+  }) async {
+    try {
+      final job = await _jobs.getJobById(jobId);
+      if (job == null || job.userId != userId) return;
+      if (job.status != PricingConstants.jobAwaitingPayment) return;
+      await _stateMachine.transitionTo(
+        jobId: jobId,
+        newStatus: AppConstants.jobStatusCancelled,
+        userId: userId,
+      );
+    } catch (e) {
+      AppLogger.e('No se pudo anular el pedido sin pago', e);
+    }
   }
 
   /// Tras el cobro en garantía el trabajo queda pendiente de que el profesional acepte.

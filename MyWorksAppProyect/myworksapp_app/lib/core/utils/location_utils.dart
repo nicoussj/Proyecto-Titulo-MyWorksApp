@@ -1,10 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 
+import '../services/geocode_chile.dart';
 import 'constants.dart';
 
 class LocationUtils {
@@ -33,11 +32,17 @@ class LocationUtils {
       if (placemarks.isNotEmpty) {
         return _formatApproximateAddress(placemarks.first);
       }
-
-      return 'Zona aproximada';
     } catch (_) {
-      return 'Ubicación aproximada';
+      // En web el plugin suele fallar; Nominatim cubre ese caso.
     }
+    final osm = await reverseGeocodeChile(approximateLat, approximateLon);
+    if (osm != null) {
+      final city = osm.city ?? osm.label;
+      if (city.trim().isNotEmpty) {
+        return '$city (ubicación aproximada)';
+      }
+    }
+    return 'Ubicación aproximada';
   }
 
   /// Indica si el texto guardado es una coordenada y no una dirección postal.
@@ -120,38 +125,8 @@ class LocationUtils {
       // Fallback OSM (útil en escritorio).
     }
 
-    return _reverseGeocodeFromOpenStreetMap(latitude, longitude);
-  }
-
-  static Future<String?> _reverseGeocodeFromOpenStreetMap(
-    double latitude,
-    double longitude,
-  ) async {
-    final client = HttpClient();
-    try {
-      final uri = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse'
-        '?lat=$latitude&lon=$longitude&format=json&addressdetails=1&accept-language=es',
-      );
-      final request = await client.getUrl(uri);
-      request.headers.set(
-        'User-Agent',
-        'MyWorksApp/1.0 (university demo project)',
-      );
-      final response = await request.close();
-      if (response.statusCode != 200) return null;
-
-      final body = await response.transform(utf8.decoder).join();
-      final data = jsonDecode(body) as Map<String, dynamic>;
-      final address = data['address'] as Map<String, dynamic>?;
-      if (address == null) return null;
-
-      return _formatOsmAddress(address);
-    } catch (_) {
-      return null;
-    } finally {
-      client.close();
-    }
+    final osm = await reverseGeocodeChile(latitude, longitude);
+    return osm?.label;
   }
 
   static String _formatExactAddress(Placemark place) {
@@ -189,40 +164,6 @@ class LocationUtils {
     }
 
     return parts.join(', ');
-  }
-
-  static String _formatOsmAddress(Map<String, dynamic> address) {
-    final parts = <String>[];
-
-    final road = _firstNonEmpty(address, ['road', 'pedestrian', 'footway']);
-    final houseNumber = _firstNonEmpty(address, ['house_number']);
-    if (road != null) {
-      parts.add(houseNumber != null ? '$road $houseNumber' : road);
-    } else if (houseNumber != null) {
-      parts.add('Nº $houseNumber');
-    }
-
-    final city = _firstNonEmpty(address, [
-      'city',
-      'town',
-      'municipality',
-      'village',
-      'county',
-    ]);
-    if (city != null) parts.add(city);
-
-    final region = _firstNonEmpty(address, ['state', 'region']);
-    if (region != null) parts.add(region);
-
-    return parts.join(', ');
-  }
-
-  static String? _firstNonEmpty(Map<String, dynamic> map, List<String> keys) {
-    for (final key in keys) {
-      final value = map[key];
-      if (value is String && value.trim().isNotEmpty) return value.trim();
-    }
-    return null;
   }
 
   static double _offsetLatitude(double lat, double distanceMeters, double bearing) {

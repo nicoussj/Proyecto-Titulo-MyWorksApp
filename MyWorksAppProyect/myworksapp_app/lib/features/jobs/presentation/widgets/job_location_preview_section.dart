@@ -11,34 +11,42 @@ class JobLocationPreviewSection extends StatelessWidget {
     required this.latitude,
     required this.longitude,
     this.isLoadingAddress = false,
-    this.showApproximateHint = false,
   });
 
   final String address;
   final double latitude;
   final double longitude;
   final bool isLoadingAddress;
-  final bool showApproximateHint;
 
   @override
   Widget build(BuildContext context) {
+    final hasMap = JobLocationMap.hasUsablePoint(latitude, longitude);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Ubicación',
+          'Ubicación del trabajo',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
         ),
         const SizedBox(height: 8),
+        if (hasMap) ...[
+          JobLocationMap(
+            latitude: latitude,
+            longitude: longitude,
+            height: 160,
+          ),
+          const SizedBox(height: 10),
+        ],
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              showApproximateHint ? Icons.location_searching : Icons.location_on,
+              hasMap ? Icons.location_on : Icons.location_searching,
               size: 20,
-              color: showApproximateHint ? AppColors.warning : AppColors.brandOrange,
+              color: hasMap ? AppColors.brandOrange : AppColors.warning,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -49,18 +57,14 @@ class JobLocationPreviewSection extends StatelessWidget {
                       ? const Text('Obteniendo ubicación...')
                       : Text(
                           address,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontStyle: showApproximateHint
-                                    ? FontStyle.italic
-                                    : null,
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                  if (showApproximateHint) ...[
+                  if (!hasMap) ...[
                     const SizedBox(height: 6),
                     Text(
-                      'Ubicación aproximada hasta que el trabajador acepte.',
+                      'Todavía no hay un punto en el mapa para este trabajo.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.warning,
+                            color: AppColors.grayMedium,
                           ),
                     ),
                   ],
@@ -69,14 +73,6 @@ class JobLocationPreviewSection extends StatelessWidget {
             ),
           ],
         ),
-        if (!showApproximateHint) ...[
-          const SizedBox(height: 10),
-          JobLocationMap(
-            latitude: latitude,
-            longitude: longitude,
-            height: 96,
-          ),
-        ],
       ],
     );
   }

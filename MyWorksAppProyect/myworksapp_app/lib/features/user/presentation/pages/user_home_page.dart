@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,6 +55,7 @@ class _UserHomePageState extends ConsumerState<UserHomePage> {
   }
 
   Future<void> _askForCardOnce() async {
+    if (kIsWeb) return;
     final user = ref.read(authProvider).user;
     if (!mounted || user == null || user.role != AppConstants.roleUser) return;
     try {

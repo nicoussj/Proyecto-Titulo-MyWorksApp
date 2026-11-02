@@ -105,7 +105,10 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
     });
 
     try {
-      await _workerRepository.enforceUnavailableWhileBusy(user.id);
+      await _workerRepository.syncAvailabilityWithJobs(
+        user.id,
+        email: user.email,
+      );
       final worker = await _workerRepository.getWorkerByUserId(user.id);
       final hasActiveJobs = await _jobRepository.hasActiveJobs(user.id);
       final pending = await _fetchPendingJobs(user.id);
@@ -273,9 +276,13 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
           body: AuthSoftBackground(
             showDecorations: true,
             child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                   _WorkerTopBar(
                     userName: user.name,
                     photoPath: user.profilePhotoPath,
@@ -392,15 +399,22 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
                         '${AppConstants.routeChat}/${_dashboard!.highlightJob!.id}',
                       ),
                     ),
-                ],
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.fromLTRB(
+                  ],
+                      ],
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
                       AppBreakpoints.screenPadding(context) - 4,
                       8,
                       AppBreakpoints.screenPadding(context) - 4,
-                      0,
+                      16,
                     ),
+                    sliver: SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: (MediaQuery.sizeOf(context).height * 0.62)
+                            .clamp(420.0, 780.0),
+                        child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.surfaceOf(context),
                       borderRadius: const BorderRadius.vertical(
@@ -467,7 +481,7 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
                                 loader: () => _fetchPendingJobs(user.id),
                                 emptyTitle: 'Sin solicitudes nuevas',
                                 emptyMessage:
-                                    'Activa tu disponibilidad para recibir trabajos cerca de ti.',
+                                    'El pedido de un cliente aparece aquí. Entra con la cuenta del profesional que eligieron. Si aún no pagan, verás “Esperando pago”.',
                                 emptyActionLabel: _isAvailable
                                     ? null
                                     : 'Activar disponibilidad',
@@ -507,13 +521,15 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
                         ),
                       ],
                     ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-      ),
     );
   }
 
@@ -528,9 +544,9 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
   }
 
   Future<List<JobModel>> _fetchPendingJobs(String workerId) async {
+    final assigned = await _jobRepository.getIncomingJobsForWorker(workerId);
     final hasActiveJobs = await _jobRepository.hasActiveJobs(workerId);
-    if (hasActiveJobs) return [];
-    final assigned = await _jobRepository.getPendingJobsForWorker(workerId);
+    if (hasActiveJobs) return assigned;
     final open = await _jobRepository.listOpenMarketplaceJobs();
     final openQuotes = open.where(
       (job) => job.status == PricingConstants.jobAwaitingQuotes,
@@ -549,7 +565,10 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
   }
 
   Future<List<JobModel>> _fetchActiveJobs(String workerId) async {
-    return _jobRepository.getActiveJobsByWorkerId(workerId);
+    final jobs = await _jobRepository.getActiveJobsByWorkerId(workerId);
+    return jobs
+        .where((job) => job.status != PricingConstants.jobAwaitingPayment)
+        .toList();
   }
 
   Future<List<JobModel>> _fetchCompletedJobs(String workerId) async {

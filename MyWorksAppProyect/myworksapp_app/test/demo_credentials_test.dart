@@ -14,5 +14,10 @@ void main() {
     }
     expect(DemoCredentials.demoPassword, 'Demo2026!');
     expect(emails.any((e) => e.endsWith('@demo.com')), isFalse);
+    expect(
+      DemoCredentials.isDemoEmail('ricardo.cheuquepan@demo.myworksapp.cl'),
+      isTrue,
+    );
+    expect(DemoCredentials.isDemoEmail('alguien@gmail.com'), isFalse);
   });
 }

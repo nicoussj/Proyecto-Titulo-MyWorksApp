@@ -1,7 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,6 +7,7 @@ import '../domain/user_location_context.dart';
 import '../utils/app_logger.dart';
 import '../utils/chile_comunas.dart';
 import '../utils/platform_support.dart';
+import 'geocode_chile.dart';
 
 class UserLocationService {
   static final UserLocationService instance = UserLocationService._();
@@ -70,7 +67,6 @@ class UserLocationService {
       return current;
     }
 
-    // Sin GPS ni caché: ciudad de la demo (misma que en debug).
     const fallback = UserLocationContext(
       city: _demoFallbackCity,
       region: _demoFallbackRegion,
@@ -89,14 +85,19 @@ class UserLocationService {
     if (city == null || city.isEmpty || lat == null || lng == null) {
       return null;
     }
-    return _ensureServiceArea(
-      UserLocationContext(
-        city: city,
-        region: prefs.getString(_keyRegion),
-        latitude: lat,
-        longitude: lng,
-      ),
+    final resolved = resolvePoint(
+      latitude: lat,
+      longitude: lng,
+      city: city,
+      region: prefs.getString(_keyRegion),
+      remapOutsideChile: true,
     );
+    if (resolved.city != city ||
+        resolved.latitude != lat ||
+        resolved.longitude != lng) {
+      await persist(resolved);
+    }
+    return resolved;
   }
 
   Future<void> persist(UserLocationContext location) async {
@@ -138,68 +139,142 @@ class UserLocationService {
       );
       if (position == null) return null;
 
-      return await fromCoordinates(position.latitude, position.longitude);
+      return await fromCoordinates(
+        position.latitude,
+        position.longitude,
+        remapOutsideChile: true,
+      );
     } catch (e) {
       AppLogger.w('No se pudo obtener ubicación del usuario', e);
       return null;
     }
   }
 
-  Future<UserLocationContext?> fromCoordinates(
+  /// GPS / tap / dirección → contexto. Si el punto está en Chile, **no** se
+  /// pisan las coordenadas (Alerce/Chamiza siguen en el mapa). El GPS fuera de
+  /// Chile (emulador) sí puede volver a la demo.
+  Future<UserLocationContext> fromCoordinates(
     double latitude,
-    double longitude,
-  ) async {
+    double longitude, {
+    bool remapOutsideChile = false,
+  }) async {
+    String? city;
+    String? region;
+
     final fromPlugin = await _fromGeocodingPlugin(latitude, longitude);
-    if (fromPlugin != null) return _ensureServiceArea(fromPlugin);
+    if (fromPlugin != null) {
+      city = fromPlugin.city;
+      region = fromPlugin.region;
+    } else {
+      final fromOsm = await reverseGeocodeChile(latitude, longitude);
+      if (fromOsm != null) {
+        city = fromOsm.city;
+        region = fromOsm.region;
+      } else {
+        final inferred = _inferCityFromCoordinates(latitude, longitude);
+        city = inferred?.$1;
+        region = inferred?.$2;
+      }
+    }
 
-    final fromOsm = await _fromOpenStreetMap(latitude, longitude);
-    if (fromOsm != null) return _ensureServiceArea(fromOsm);
+    final resolved = resolvePoint(
+      latitude: latitude,
+      longitude: longitude,
+      city: city,
+      region: region,
+      remapOutsideChile: remapOutsideChile,
+    );
+    await persist(resolved);
+    return resolved;
+  }
 
-    final inferred = _inferCityFromCoordinates(latitude, longitude);
-    if (inferred != null) {
-      return _ensureServiceArea(
-        UserLocationContext(
-          city: inferred.$1,
-          region: inferred.$2,
-          latitude: latitude,
-          longitude: longitude,
-        ),
+  /// Punto del trabajo: conserva lat/lng en Chile; solo el GPS extranjero
+  /// vuelve a Puerto Montt. La ciudad de catálogo se infiere aparte.
+  @visibleForTesting
+  static UserLocationContext resolvePoint({
+    required double latitude,
+    required double longitude,
+    String? city,
+    String? region,
+    bool remapOutsideChile = false,
+  }) {
+    if (remapOutsideChile && !ChileComunas.inChile(latitude, longitude)) {
+      AppLogger.w('GPS fuera de Chile: usando $_demoFallbackCity');
+      return const UserLocationContext(
+        city: _demoFallbackCity,
+        region: _demoFallbackRegion,
+        latitude: _demoFallbackLat,
+        longitude: _demoFallbackLng,
       );
     }
 
-    return null;
+    final catalog = ChileComunas.catalogCity(
+      city ?? '',
+      region: region,
+      latitude: latitude,
+      longitude: longitude,
+    );
+    return UserLocationContext(
+      city: catalog,
+      region: region ?? ChileComunas.regionOf(catalog),
+      latitude: latitude,
+      longitude: longitude,
+    );
   }
 
-  /// GPS fuera de Chile (p. ej. emulador en Mountain View) → demo en Puerto Montt.
-  Future<UserLocationContext?> _ensureServiceArea(UserLocationContext? ctx) async {
-    if (ctx == null) return null;
-    if (ChileComunas.isServiceCity(ctx.city)) {
-      await persist(ctx);
-      return ctx;
+  /// Dirección escrita (calle, barrio o ciudad) → GPS, igual que en la web.
+  Future<UserLocationContext?> fromAddress(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.length < 3) return null;
+
+    try {
+      final site = await geocodeChileAddress(trimmed);
+      if (site != null) {
+        final resolved = resolvePoint(
+          latitude: site.latitude,
+          longitude: site.longitude,
+          city: site.city,
+          region: site.region,
+        );
+        await persist(resolved);
+        return resolved;
+      }
+    } catch (e) {
+      AppLogger.w('Photon/Nominatim no geocodificó la dirección', e);
     }
 
-    AppLogger.w('Ciudad fuera de cobertura: ${ctx.city}');
-
-    // Debug y release: GPS fuera de cobertura (p. ej. emulador en
-    // Mountain View) usa la ciudad de la demo.
-    const fallback = UserLocationContext(
-      city: _demoFallbackCity,
-      region: _demoFallbackRegion,
-      latitude: _demoFallbackLat,
-      longitude: _demoFallbackLng,
-    );
-    await persist(fallback);
-    AppLogger.i('Fuera de cobertura: usando $_demoFallbackCity');
-    return fallback;
+    try {
+      final needle =
+          trimmed.toLowerCase().contains('chile') ? trimmed : '$trimmed, Chile';
+      final hits = await Geocoding(locale: const Locale('es'))
+          .locationFromAddress(needle)
+          .timeout(_geocodeTimeout);
+      if (hits.isEmpty) return null;
+      return await fromCoordinates(hits.first.latitude, hits.first.longitude);
+    } catch (e) {
+      AppLogger.w('No se geocodificó la dirección', e);
+      return null;
+    }
   }
 
   Future<UserLocationContext?> setManualCity(String city, {String? region}) async {
-    final cached = await getCached();
+    final center = ChileComunas.cityCenter(city);
+    double? latitude = center?.$1;
+    double? longitude = center?.$2;
+    var resolvedRegion = region ?? ChileComunas.regionOf(city);
+
+    if (latitude == null || longitude == null) {
+      final geo = await fromAddress(city);
+      latitude = geo?.latitude;
+      longitude = geo?.longitude;
+      resolvedRegion ??= geo?.region;
+    }
+
     final ctx = UserLocationContext(
       city: city,
-      region: region,
-      latitude: cached?.latitude,
-      longitude: cached?.longitude,
+      region: resolvedRegion,
+      latitude: latitude ?? _demoFallbackLat,
+      longitude: longitude ?? _demoFallbackLng,
     );
     await persist(ctx);
     return ctx;
@@ -231,76 +306,10 @@ class UserLocationService {
     }
   }
 
-  Future<UserLocationContext?> _fromOpenStreetMap(
-    double latitude,
-    double longitude,
-  ) async {
-    final client = HttpClient()..connectionTimeout = _geocodeTimeout;
-    try {
-      return await _fetchOpenStreetMap(client, latitude, longitude)
-          .timeout(_geocodeTimeout + _quickTimeout);
-    } catch (e) {
-      AppLogger.w('Reverse geocoding OSM falló', e);
-      return null;
-    } finally {
-      client.close(force: true);
-    }
-  }
-
-  Future<UserLocationContext?> _fetchOpenStreetMap(
-    HttpClient client,
-    double latitude,
-    double longitude,
-  ) async {
-    final uri = Uri.parse(
-      'https://nominatim.openstreetmap.org/reverse'
-      '?lat=$latitude&lon=$longitude&format=json&accept-language=es',
-    );
-    final request = await client.getUrl(uri);
-    request.headers.set('User-Agent', 'MyWorksApp/1.0 (demo university project)');
-    final response = await request.close();
-    if (response.statusCode != 200) return null;
-
-    final body = await response.transform(utf8.decoder).join();
-    final data = jsonDecode(body) as Map<String, dynamic>;
-    final address = data['address'] as Map<String, dynamic>?;
-    if (address == null) return null;
-
-    final city = _firstNonEmpty(address, [
-      'city',
-      'town',
-      'municipality',
-      'village',
-      'county',
-    ]);
-    if (city == null) return null;
-
-    final region = _firstNonEmpty(address, ['state', 'region']);
-
-    return UserLocationContext(
-      city: city,
-      region: region,
-      latitude: latitude,
-      longitude: longitude,
-    );
-  }
-
-  String? _firstNonEmpty(Map<String, dynamic> map, List<String> keys) {
-    for (final key in keys) {
-      final value = map[key];
-      if (value is String && value.trim().isNotEmpty) return value.trim();
-    }
-    return null;
-  }
-
   (String, String?)? _inferCityFromCoordinates(double lat, double lon) {
-    if (lat >= -41.65 && lat <= -41.25 && lon >= -73.25 && lon <= -72.65) {
-      return ('Puerto Montt', 'Los Lagos');
-    }
-    if (lat >= -33.65 && lat <= -33.05 && lon >= -71.05 && lon <= -70.35) {
-      return ('Santiago', 'Región Metropolitana');
-    }
-    return null;
+    if (!ChileComunas.inChile(lat, lon)) return null;
+    final city = ChileComunas.nearestServiceCity(lat, lon);
+    return (city, ChileComunas.regionOf(city));
   }
 
   String? _extractCity(Placemark place) {

@@ -8,6 +8,10 @@
 /// publicada en el repo.
 class DemoCredentials {
   static const demoPassword = 'Demo2026!';
+  static const demoEmailDomain = '@demo.myworksapp.cl';
+
+  static bool isDemoEmail(String email) =>
+      email.trim().toLowerCase().endsWith(demoEmailDomain);
 
   static const userEmail = 'camila.soto@demo.myworksapp.cl';
   static const userName = 'Camila Soto';

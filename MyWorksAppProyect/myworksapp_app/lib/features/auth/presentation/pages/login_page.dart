@@ -152,6 +152,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           _workersError = 'No hay trabajadores demo disponibles';
         }
       });
+      if (kDebugMode && _selectedWorker != null) {
+        _applyDemoCredentials(_selectedRole);
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -181,6 +184,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         showDecorations: true,
         child: SafeArea(
           child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(28, 28, 28, 20),
             child: Form(
               key: _formKey,
@@ -224,6 +228,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         : UserRole.publicRoles,
                   ),
                   const SizedBox(height: 22),
+                  if (_selectedRole.isEspecialista) ...[
+                    _WorkerPicker(
+                      workers: _demoWorkers,
+                      selected: _selectedWorker,
+                      loading: _loadingWorkers,
+                      error: _workersError,
+                      onRetry: _loadDemoWorkers,
+                      onSelect: (w) {
+                        setState(() {
+                          _selectedWorker = w;
+                          _emailController.text = w.email;
+                          _passwordController.text =
+                              DemoCredentials.demoPassword;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   _AuthField(
                     controller: _emailController,
                     focusNode: _emailFocus,
@@ -255,25 +277,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
                   ),
-                  if (_selectedRole.isEspecialista &&
-                      kDebugMode) ...[
-                    const SizedBox(height: 12),
-                    _WorkerPicker(
-                      workers: _demoWorkers,
-                      selected: _selectedWorker,
-                      loading: _loadingWorkers,
-                      error: _workersError,
-                      onRetry: _loadDemoWorkers,
-                      onSelect: (w) {
-                        setState(() {
-                          _selectedWorker = w;
-                          _emailController.text = w.email;
-                          _passwordController.text =
-                              DemoCredentials.demoPassword;
-                        });
-                      },
-                    ),
-                  ],
                   const SizedBox(height: 22),
                   SizedBox(
                     height: 56,
@@ -630,42 +633,80 @@ class _WorkerPicker extends StatelessWidget {
 
     final brightness = Theme.of(context).brightness;
     final textColor = AppColors.onCanvas(brightness);
+    final muted = AppColors.onCanvasMuted(brightness);
 
-    return DropdownButtonFormField<String>(
-      initialValue: selected?.userId,
-      dropdownColor: AppColors.surfaceElevatedOf(context),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: AppColors.fieldFillOf(context),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: AppColors.brandOrange.withValues(alpha: 0.55),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Cuentas demo (${workers.length})',
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
           ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide:
-              const BorderSide(color: AppColors.brandOrange, width: 1.6),
+        const SizedBox(height: 4),
+        Text(
+          'Baja la lista y elige al profesional que eligió el cliente.',
+          style: TextStyle(color: muted, fontSize: 12, height: 1.3),
         ),
-      ),
-      items: workers
-          .map(
-            (w) => DropdownMenuItem(
-              value: w.userId,
-              child: Text(
-                '${w.name} · ${w.profession}',
-                style: TextStyle(color: textColor, fontSize: 13),
+        const SizedBox(height: 8),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.fieldFillOf(context),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.brandOrange.withValues(alpha: 0.55),
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: workers.length,
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: AppColors.hairlineOf(context),
+              ),
+                itemBuilder: (context, index) {
+                  final worker = workers[index];
+                  final isSelected = worker.userId == selected?.userId;
+                  return ListTile(
+                    dense: true,
+                    selected: isSelected,
+                    selectedTileColor:
+                        AppColors.brandOrange.withValues(alpha: 0.12),
+                    title: Text(
+                      worker.name,
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${worker.profession} · ${worker.email}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: muted, fontSize: 11.5),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppColors.brandOrange,
+                            size: 18,
+                          )
+                        : null,
+                    onTap: () => onSelect(worker),
+                  );
+                },
               ),
             ),
-          )
-          .toList(),
-      onChanged: (id) {
-        if (id == null) return;
-        onSelect(workers.firstWhere((w) => w.userId == id));
-      },
+          ),
+      ],
     );
   }
 }
