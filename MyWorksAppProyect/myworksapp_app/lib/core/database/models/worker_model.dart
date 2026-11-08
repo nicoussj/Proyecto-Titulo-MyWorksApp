@@ -1,4 +1,5 @@
 import '../../domain/worker_custom_service.dart';
+import '../../domain/worker_hours.dart';
 
 class WorkerModel {
   final String userId;
@@ -31,6 +32,8 @@ class WorkerModel {
   final double urbanRadiusKm;
   /// Cobro fijo de movilización fuera del radio urbano.
   final int outsideMobilizationFeeClp;
+  /// Bloques semanales que el profesional publica para reservar.
+  final List<WorkerHourSlot> availableHours;
 
   WorkerModel({
     required this.userId,
@@ -55,8 +58,10 @@ class WorkerModel {
     this.isElite = false,
     this.urbanRadiusKm = 5,
     this.outsideMobilizationFeeClp = 0,
+    List<WorkerHourSlot>? availableHours,
   })  : pricingTiers = pricingTiers ?? const {},
-        customServices = customServices ?? const [];
+        customServices = customServices ?? const [],
+        availableHours = availableHours ?? const [];
 
   Map<String, dynamic> toMap() {
     return {
@@ -111,6 +116,7 @@ class WorkerModel {
       urbanRadiusKm: (map['radio_urbano_km'] as num?)?.toDouble() ?? 5,
       outsideMobilizationFeeClp:
           (map['tarifa_fuera_radio_clp'] as num?)?.toInt() ?? 0,
+      availableHours: parseWorkerHours(map['horarios_disponibles']),
     );
   }
 
@@ -137,6 +143,7 @@ class WorkerModel {
     bool? isElite,
     double? urbanRadiusKm,
     int? outsideMobilizationFeeClp,
+    List<WorkerHourSlot>? availableHours,
   }) {
     return WorkerModel(
       userId: userId ?? this.userId,
@@ -162,6 +169,7 @@ class WorkerModel {
       urbanRadiusKm: urbanRadiusKm ?? this.urbanRadiusKm,
       outsideMobilizationFeeClp:
           outsideMobilizationFeeClp ?? this.outsideMobilizationFeeClp,
+      availableHours: availableHours ?? this.availableHours,
     );
   }
 }

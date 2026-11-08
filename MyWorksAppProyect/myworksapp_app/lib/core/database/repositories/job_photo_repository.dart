@@ -11,7 +11,7 @@ class JobPhotoRepository {
   Future<List<JobPhotoModel>> getPhotosByJobId(String jobId) async {
     final rows = await supabase
         .from(_table)
-        .select()
+        .select('id, id_trabajo, ruta_foto, tipo_medio, creado_en, imagen_webp')
         .eq('id_trabajo', jobId)
         .order('creado_en', ascending: false);
     return rows.map<JobPhotoModel>((m) => JobPhotoModel.fromMap(m)).toList();

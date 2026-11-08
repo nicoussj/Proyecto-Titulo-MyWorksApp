@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:myworksapp/core/widgets/design_system/app_gradient_app_bar.dart';
@@ -42,18 +40,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   UserModel? _otherUser;
   bool _isLoading = true;
   String? _loadError;
-  Timer? _poll;
   RealtimeChannel? _channel;
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    _poll = Timer.periodic(const Duration(seconds: 12), (_) {
-      if (mounted && !_isLoading) {
-        _refreshMessages();
-      }
-    });
     _channel = supabase
         .channel('mensajes-${widget.jobId}')
         .onPostgresChanges(
@@ -82,7 +74,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   void dispose() {
-    _poll?.cancel();
     final channel = _channel;
     if (channel != null) {
       supabase.removeChannel(channel);
@@ -90,14 +81,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _refreshMessages() async {
-    try {
-      final messages = await _messageRepository.getMessagesByJobId(widget.jobId);
-      if (!mounted) return;
-      setState(() => _messages = messages);
-    } catch (_) {}
   }
 
   Future<void> _loadData() async {
@@ -175,12 +158,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         senderId: currentUser.id,
         receiverId: otherUserId,
         content: text,
-        createdAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(),
       );
 
       await _messageRepository.createMessage(message);
-      
-      // Enviar notificación al receptor
+
       try {
         await NotificationService.instance.showNotification(
           title: 'Nuevo mensaje',
@@ -192,11 +174,25 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       } catch (e) {
         // Ignorar errores de notificación
       }
-      
+
       _messageController.clear();
-      await _loadData();
+      if (!mounted) return;
+      setState(() {
+        if (_messages.every((item) => item.id != message.id)) {
+          _messages = [..._messages, message];
+        }
+      });
+      _scrollToBottom();
     } catch (e) {
       if (!mounted) return;
+      final raw = e.toString().toLowerCase();
+      if (raw.contains('mensaje bloqueado') ||
+          raw.contains('no se permite compartir') ||
+          raw.contains('este tipo de mensaje no está permitido') ||
+          raw.contains('este tipo de contenido no esta permitido')) {
+        await ContentFilter.showBlockedDialog(context);
+        return;
+      }
       ErrorHandler.showError(context, e);
     }
   }
@@ -362,15 +358,16 @@ class _MessageBubble extends StatelessWidget {
   }
 
   String _formatTime(DateTime date) {
+    final local = date.toLocal();
     final now = DateTime.now();
-    final difference = now.difference(date);
+    final difference = now.difference(local);
 
     if (difference.inDays == 0) {
-      return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     } else if (difference.inDays == 1) {
-      return 'Ayer ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      return 'Ayer ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     } else {
-      return '${date.day}/${date.month} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      return '${local.day}/${local.month} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     }
   }
 }

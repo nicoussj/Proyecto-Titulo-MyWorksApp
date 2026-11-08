@@ -414,6 +414,7 @@ export type Database = {
           creado_en: string
           id: string
           id_trabajo: string
+          imagen_webp: string | null
           ruta_foto: string
           tipo_medio: string
         }
@@ -421,6 +422,7 @@ export type Database = {
           creado_en: string
           id: string
           id_trabajo: string
+          imagen_webp?: string | null
           ruta_foto: string
           tipo_medio?: string
         }
@@ -428,6 +430,7 @@ export type Database = {
           creado_en?: string
           id?: string
           id_trabajo?: string
+          imagen_webp?: string | null
           ruta_foto?: string
           tipo_medio?: string
         }
@@ -1047,6 +1050,7 @@ export type Database = {
           longitud_base: number | null
           radio_servicio_km: number
           origen_base: string | null
+          horarios_disponibles: Json
         }
         Insert: {
           calificacion?: number
@@ -1067,6 +1071,7 @@ export type Database = {
           longitud_base?: number | null
           radio_servicio_km?: number
           origen_base?: string | null
+          horarios_disponibles?: Json
         }
         Update: {
           calificacion?: number
@@ -1087,6 +1092,7 @@ export type Database = {
           longitud_base?: number | null
           radio_servicio_km?: number
           origen_base?: string | null
+          horarios_disponibles?: Json
         }
         Relationships: [
           {
@@ -1245,6 +1251,10 @@ export type Database = {
       }
       es_parte_trabajo: { Args: { p_trabajo_id: string }; Returns: boolean }
       es_rol_trabajador: { Args: { p_usuario_id: string }; Returns: boolean }
+      horarios_libres_profesional: {
+        Args: { p_id_trabajador: string; p_dias?: number }
+        Returns: { inicio: string }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       categorias_con_disponibles: {
         Args: never

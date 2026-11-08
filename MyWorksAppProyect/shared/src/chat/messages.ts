@@ -33,15 +33,39 @@ export function buildJobMessageInsert(input: NewJobMessage) {
   };
 }
 
-function mapMessage(row: Record<string, unknown>): JobMessage {
+export function mapJobMessage(
+  row: Record<string, unknown> | null | undefined,
+): JobMessage | null {
+  if (!row || row.id == null || row.id_trabajo == null) return null;
   return {
     id: String(row.id),
     jobId: String(row.id_trabajo),
-    senderId: String(row.id_remitente),
-    receiverId: String(row.id_destinatario),
+    senderId: String(row.id_remitente ?? ''),
+    receiverId: String(row.id_destinatario ?? ''),
     content: String(row.contenido ?? ''),
-    createdAt: String(row.creado_en),
+    createdAt: String(row.creado_en ?? ''),
   };
+}
+
+export function mergeJobMessage(list: JobMessage[], incoming: JobMessage): JobMessage[] {
+  if (list.some((item) => item.id === incoming.id)) return list;
+  return [...list, incoming];
+}
+
+export function jobChatSendError(err: unknown): string {
+  const raw =
+    err instanceof Error
+      ? err.message
+      : typeof err === 'object' && err && 'message' in err
+        ? String((err as { message: unknown }).message)
+        : '';
+  if (raw.includes('mensaje bloqueado') || raw === contactBlockedMessage) {
+    return contactBlockedMessage;
+  }
+  if (/row-level security|JWT|not authenticated|permission denied|42501/i.test(raw)) {
+    return 'No se envió. Inicia sesión con la cuenta del pedido.';
+  }
+  return raw.trim() || 'No se pudo enviar el mensaje.';
 }
 
 export async function fetchJobMessages(
@@ -54,20 +78,24 @@ export async function fetchJobMessages(
     .eq('id_trabajo', jobId)
     .order('creado_en', { ascending: true });
   if (error) throw error;
-  return ((data ?? []) as Record<string, unknown>[]).map(mapMessage);
+  return ((data ?? []) as Record<string, unknown>[])
+    .map(mapJobMessage)
+    .filter((row): row is JobMessage => row != null);
 }
 
 export async function sendJobMessage(
   supabase: AppSupabase,
   input: NewJobMessage,
-): Promise<void> {
+): Promise<JobMessage> {
   const content = input.content.trim();
   if (!content) throw new Error('Escribe un mensaje.');
   if (content.length > 2000) throw new Error('El mensaje es demasiado largo.');
   if (containsContactData(content)) throw new Error(contactBlockedMessage);
-  const { error } = await supabase.from('mensajes').insert(buildJobMessageInsert({
+  const row = buildJobMessageInsert({
     ...input,
     content,
-  }));
+  });
+  const { error } = await supabase.from('mensajes').insert(row);
   if (error) throw error;
+  return mapJobMessage(row)!;
 }

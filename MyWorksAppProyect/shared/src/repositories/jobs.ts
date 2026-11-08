@@ -1,4 +1,6 @@
 import type { AppSupabase } from '../client';
+import { bookingSlotError } from '../jobs/bookingSlot';
+import { decodeBytea, isWebpBytes, webpBytesToDataUrl } from '../media/bytea';
 import type { JobRow } from '../types';
 
 export interface CreateJobInput {
@@ -9,7 +11,7 @@ export interface CreateJobInput {
   address?: string;
   latitude?: number;
   longitude?: number;
-  /** ISO del horario elegido en la barra (próximo viernes 10, 14 o 18). */
+  /** ISO del horario libre que eligió el cliente. */
   scheduledAt?: string;
   /** Alineado a PricingModes Flutter — default precio_fijo (visita). */
   pricingMode?: 'precio_fijo' | 'bloque_horas' | 'cotizacion_abierta' | 'legado';
@@ -39,7 +41,9 @@ export async function createPendingJob(
   };
 
   const { data, error } = await supabase.from('trabajos').insert(payload).select().single();
-  if (error) throw error;
+  if (error) {
+    throw new Error(bookingSlotError(error) ?? error.message);
+  }
 
   return {
     id: data.id as string,
@@ -139,4 +143,101 @@ export async function closeJobOnClientApproval(
     p_trabajo_id: jobId,
   });
   if (error) throw new Error(error.message || 'No se pudo recibir conforme');
+}
+
+export interface JobEvidencePhoto {
+  id: string;
+  mediaType: string;
+  src: string | null;
+}
+
+function mapEvidenceRow(row: Record<string, unknown>): JobEvidencePhoto {
+  const bytes = decodeBytea(row.imagen_webp);
+  const src = bytes && isWebpBytes(bytes) ? webpBytesToDataUrl(bytes) : null;
+  return {
+    id: String(row.id),
+    mediaType: String(row.tipo_medio ?? 'foto'),
+    src,
+  };
+}
+
+/** True si el índice (ids en orden) ya está pintado con bytes. */
+export function evidenceIndexMatches(
+  indexIds: string[],
+  current: JobEvidencePhoto[],
+): boolean {
+  if (indexIds.length !== current.length) return false;
+  return indexIds.every((id, i) => current[i]?.id === id && Boolean(current[i]?.src));
+}
+
+export function missingEvidenceIds(
+  indexIds: string[],
+  current: JobEvidencePhoto[],
+): string[] {
+  const have = new Set(current.filter((photo) => photo.src).map((photo) => photo.id));
+  return indexIds.filter((id) => !have.has(id));
+}
+
+export function reconcileEvidencePhotos(
+  index: Array<{ id: string; mediaType: string }>,
+  current: JobEvidencePhoto[],
+  fetched: JobEvidencePhoto[],
+): JobEvidencePhoto[] {
+  const known = new Map<string, JobEvidencePhoto>();
+  for (const photo of current) known.set(photo.id, photo);
+  for (const photo of fetched) known.set(photo.id, photo);
+  return index.map((row) => known.get(row.id) ?? {
+    id: row.id,
+    mediaType: row.mediaType,
+    src: null,
+  });
+}
+
+/** Fotos de evidencia en WebP (columna imagen_webp) listas para pintar. */
+export async function fetchJobEvidencePhotos(
+  supabase: AppSupabase,
+  jobId: string,
+): Promise<JobEvidencePhoto[]> {
+  const { data, error } = await supabase
+    .from('fotos_trabajo')
+    .select('id, tipo_medio, imagen_webp')
+    .eq('id_trabajo', jobId)
+    .order('creado_en', { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map(mapEvidenceRow);
+}
+
+/**
+ * En el poll del seguimiento solo pide ids. Si no hay fotos nuevas, no baja
+ * otra vez el bytea WebP.
+ */
+export async function syncJobEvidencePhotos(
+  supabase: AppSupabase,
+  jobId: string,
+  current: JobEvidencePhoto[],
+): Promise<JobEvidencePhoto[]> {
+  const { data, error } = await supabase
+    .from('fotos_trabajo')
+    .select('id, tipo_medio')
+    .eq('id_trabajo', jobId)
+    .order('creado_en', { ascending: false });
+  if (error) throw error;
+  const index = ((data ?? []) as Record<string, unknown>[]).map((row) => ({
+    id: String(row.id),
+    mediaType: String(row.tipo_medio ?? 'foto'),
+  }));
+  const indexIds = index.map((row) => row.id);
+  if (evidenceIndexMatches(indexIds, current)) return current;
+
+  const missingIds = missingEvidenceIds(indexIds, current);
+  let fetched: JobEvidencePhoto[] = [];
+  if (missingIds.length > 0) {
+    const { data: rows, error: fetchError } = await supabase
+      .from('fotos_trabajo')
+      .select('id, tipo_medio, imagen_webp')
+      .in('id', missingIds);
+    if (fetchError) throw fetchError;
+    fetched = ((rows ?? []) as Record<string, unknown>[]).map(mapEvidenceRow);
+  }
+  return reconcileEvidencePhotos(index, current, fetched);
 }

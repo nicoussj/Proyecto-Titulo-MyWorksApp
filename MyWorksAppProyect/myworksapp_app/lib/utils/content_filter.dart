@@ -6,8 +6,10 @@ import 'package:myworksapp/core/theme/app_colors.dart';
 class ContentFilter {
   ContentFilter._();
 
+  static const String blockedTitle = 'Mensaje no permitido';
+
   static const String blockedMessage =
-      'Por seguridad y garantía de pago (Escrow), no se permite compartir datos de contacto directo.';
+      'Este tipo de mensaje no está permitido. Para proteger a ambas partes y conservar la garantía de pago, no se puede compartir teléfono, correo electrónico, enlaces ni datos de contacto externos. Continúe la conversación dentro de la aplicación.';
 
   /// Correos como `example@email.com`.
   static final RegExp emailPattern = RegExp(
@@ -54,7 +56,7 @@ class ContentFilter {
       builder: (ctx) => AlertDialog(
         icon: const Icon(Icons.gpp_bad_outlined, color: AppColors.error, size: 36),
         title: const Text(
-          'Mensaje bloqueado',
+          blockedTitle,
           style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700),
         ),
         content: const Text(

@@ -61,6 +61,8 @@ void main() {
         home: Scaffold(
           body: TimeSlotSelector(
             selected: null,
+            availableLabels: mockBookableSlots,
+            reservedLabels: mockReservedSlots.toSet(),
             onChanged: (time) => picked = time,
           ),
         ),

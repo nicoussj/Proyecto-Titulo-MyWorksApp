@@ -1,14 +1,18 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:io';
-import '../../../../core/database/repositories/job_photo_repository.dart';
+
 import '../../../../core/database/models/job_photo_model.dart';
+import '../../../../core/database/repositories/job_photo_repository.dart';
 import '../../../../core/design_system/app_spacing.dart';
+import '../../../../core/services/evidence_webp.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../../../core/widgets/design_system/app_gradient_app_bar.dart';
 import '../../../../core/widgets/design_system/empty_state_widget.dart';
+import '../../../../core/widgets/evidence_photo_image.dart';
 
 class JobPhotosPage extends StatefulWidget {
   final String jobId;
@@ -29,6 +33,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
   final ImagePicker _imagePicker = ImagePicker();
   List<JobPhotoModel> _photos = [];
   bool _isLoading = true;
+  bool _uploading = false;
 
   @override
   void initState() {
@@ -40,25 +45,30 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     setState(() => _isLoading = true);
     try {
       final photos = await _photoRepository.getPhotosByJobId(widget.jobId);
+      if (!mounted) return;
       setState(() {
         _photos = photos;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
+      showAppSnackBar(
+        context,
+        'No se pudieron cargar las evidencias.',
+        type: AppSnackBarType.error,
+      );
     }
   }
 
-  Future<void> _saveEvidence({
-    required String path,
-    required String mediaType,
-  }) async {
+  Future<void> _savePhoto(Uint8List bytes) async {
     final photo = JobPhotoModel(
       id: const Uuid().v4(),
       jobId: widget.jobId,
-      photoPath: path,
-      mediaType: mediaType,
+      photoPath: 'evidencia.webp',
+      mediaType: JobPhotoModel.mediaPhoto,
       createdAt: DateTime.now(),
+      webpBytes: bytes,
     );
 
     await _photoRepository.createJobPhoto(photo);
@@ -67,42 +77,68 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     if (!mounted) return;
     showAppSnackBar(
       context,
-      mediaType == JobPhotoModel.mediaVideo ? 'Video agregado' : 'Foto agregada',
+      'Foto guardada en la base',
       type: AppSnackBarType.success,
     );
   }
 
   Future<void> _pickPhoto(ImageSource source) async {
+    if (_uploading) return;
     try {
       final XFile? image = await _imagePicker.pickImage(
         source: source,
-        imageQuality: 80,
+        imageQuality: 85,
+        maxWidth: 1920,
+        maxHeight: 1920,
       );
       if (image == null) return;
-      await _saveEvidence(
-        path: image.path,
-        mediaType: JobPhotoModel.mediaPhoto,
-      );
+
+      setState(() => _uploading = true);
+      final raw = await image.readAsBytes();
+      final webp = await encodeEvidenceWebp(raw);
+      await _savePhoto(webp);
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(context, 'Error: ${e.toString()}', type: AppSnackBarType.error);
+      showAppSnackBar(
+        context,
+        'No se pudo guardar la evidencia: $e',
+        type: AppSnackBarType.error,
+      );
+    } finally {
+      if (mounted) setState(() => _uploading = false);
     }
   }
 
   Future<void> _pickVideo() async {
+    if (_uploading) return;
     try {
       final XFile? video = await _imagePicker.pickVideo(
         source: ImageSource.gallery,
         maxDuration: const Duration(minutes: 3),
       );
       if (video == null) return;
-      await _saveEvidence(
-        path: video.path,
+
+      setState(() => _uploading = true);
+      final photo = JobPhotoModel(
+        id: const Uuid().v4(),
+        jobId: widget.jobId,
+        photoPath: video.name.isEmpty ? 'evidencia.mp4' : video.name,
         mediaType: JobPhotoModel.mediaVideo,
+        createdAt: DateTime.now(),
       );
+      await _photoRepository.createJobPhoto(photo);
+      await _loadPhotos();
+      if (!mounted) return;
+      showAppSnackBar(context, 'Video agregado', type: AppSnackBarType.success);
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(context, 'Error: ${e.toString()}', type: AppSnackBarType.error);
+      showAppSnackBar(
+        context,
+        'No se pudo guardar el video: $e',
+        type: AppSnackBarType.error,
+      );
+    } finally {
+      if (mounted) setState(() => _uploading = false);
     }
   }
 
@@ -178,7 +214,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
           if (widget.canAddPhotos)
             IconButton(
               icon: const Icon(Icons.add_a_photo),
-              onPressed: _showAddEvidenceSheet,
+              onPressed: _uploading ? null : _showAddEvidenceSheet,
               tooltip: 'Agregar evidencia',
             ),
         ],
@@ -186,100 +222,118 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _photos.isEmpty
-              ? const EmptyStateWidget(
-                  icon: Icons.photo_library,
-                  title: 'Sin evidencia',
-                  message: 'Sube al menos una foto o un video del trabajo realizado',
+              ? Stack(
+                  children: [
+                    const EmptyStateWidget(
+                      icon: Icons.photo_library,
+                      title: 'Sin evidencia',
+                      message:
+                          'Sube al menos una foto o un video del trabajo realizado',
+                    ),
+                    if (_uploading) const _UploadingScrim(),
+                  ],
                 )
-              : GridView.builder(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemCount: _photos.length,
-                  itemBuilder: (context, index) {
-                    final photo = _photos[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => _EvidenceViewer(
-                              photo: photo,
-                              onDelete: widget.canAddPhotos
-                                  ? () => _deletePhoto(photo.id)
-                                  : null,
-                            ),
+              : Stack(
+                  children: [
+                    GridView.builder(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                      ),
+                      itemCount: _photos.length,
+                      itemBuilder: (context, index) {
+                        final photo = _photos[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => _EvidenceViewer(
+                                  photo: photo,
+                                  onDelete: widget.canAddPhotos
+                                      ? () => _deletePhoto(photo.id)
+                                      : null,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              EvidencePhotoImage(photo: photo),
+                              if (photo.isVideo)
+                                Positioned(
+                                  left: 6,
+                                  bottom: 6,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.videocam,
+                                          color: Colors.white,
+                                          size: 14,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Video',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              if (widget.canAddPhotos)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: AppColors.error,
+                                    ),
+                                    onPressed: () => _deletePhoto(photo.id),
+                                    iconSize: 20,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                ),
+                            ],
                           ),
                         );
                       },
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          if (photo.isVideo)
-                            const ColoredBox(
-                              color: AppColors.grayDark,
-                              child: Center(
-                                child: Icon(
-                                  Icons.play_circle_fill,
-                                  color: Colors.white,
-                                  size: 48,
-                                ),
-                              ),
-                            )
-                          else
-                            Image.file(
-                              File(photo.photoPath),
-                              fit: BoxFit.cover,
-                            ),
-                          if (photo.isVideo)
-                            Positioned(
-                              left: 6,
-                              bottom: 6,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.videocam, color: Colors.white, size: 14),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Video',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          if (widget.canAddPhotos)
-                            Positioned(
-                              top: 4,
-                              right: 4,
-                              child: IconButton(
-                                icon: const Icon(Icons.delete, color: AppColors.error),
-                                onPressed: () => _deletePhoto(photo.id),
-                                iconSize: 20,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
+                    ),
+                    if (_uploading) const _UploadingScrim(),
+                  ],
                 ),
+    );
+  }
+}
+
+class _UploadingScrim extends StatelessWidget {
+  const _UploadingScrim();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: Color(0x66000000),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
@@ -328,18 +382,15 @@ class _EvidenceViewer extends StatelessWidget {
                           ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      photo.photoPath.split(Platform.pathSeparator).last,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white70,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
                   ],
                 ),
               )
-            : Image.file(File(photo.photoPath)),
+            : InteractiveViewer(
+                child: EvidencePhotoImage(
+                  photo: photo,
+                  fit: BoxFit.contain,
+                ),
+              ),
       ),
     );
   }

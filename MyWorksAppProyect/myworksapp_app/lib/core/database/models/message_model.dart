@@ -31,7 +31,7 @@ class MessageModel {
       'tipo': type,
       'ruta_imagen': imagePath,
       'leido': isRead ? 1 : 0,
-      'creado_en': createdAt.toIso8601String(),
+      'creado_en': createdAt.toUtc().toIso8601String(),
     };
   }
 

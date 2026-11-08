@@ -2,21 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:myworksapp/core/theme/app_colors.dart';
 import 'package:myworksapp/core/utils/mock_reserved_slots.dart';
 
-/// Chips de hora. Los bloques de [mockReservedSlots] se ven deshabilitados
-/// y, si se tocan, muestran la alerta local de hora ocupada.
+/// Chips de hora publicados por el profesional.
 class TimeSlotSelector extends StatelessWidget {
   const TimeSlotSelector({
     super.key,
     required this.selected,
     required this.onChanged,
+    this.availableLabels,
+    this.reservedLabels = const {},
+    this.emptyHint =
+        'Este profesional no tiene horarios libres en el día elegido.',
   });
 
   final TimeOfDay? selected;
   final ValueChanged<TimeOfDay> onChanged;
+  final List<String>? availableLabels;
+  final Set<String> reservedLabels;
+  final String emptyHint;
 
   @override
   Widget build(BuildContext context) {
-    final selectedLabel = selected == null ? null : MockReservedSlots.format(selected!);
+    final selectedLabel =
+        selected == null ? null : MockReservedSlots.format(selected!);
+    final slots = availableLabels ?? mockBookableSlots;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,23 +35,27 @@ class TimeSlotSelector extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Las horas marcadas ya están reservadas.',
+          slots.isEmpty
+              ? emptyHint
+              : 'Solo se muestran las horas que el profesional publicó y que siguen libres.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final slot in mockBookableSlots)
-              _SlotChip(
-                label: slot,
-                reserved: MockReservedSlots.isReservedLabel(slot),
-                selected: selectedLabel == slot,
-                onPick: () => onChanged(MockReservedSlots.parse(slot)),
-              ),
-          ],
-        ),
+        if (slots.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final slot in slots)
+                _SlotChip(
+                  label: slot,
+                  reserved: reservedLabels.contains(slot),
+                  selected: selectedLabel == slot,
+                  onPick: () => onChanged(MockReservedSlots.parse(slot)),
+                ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -73,7 +85,6 @@ class _SlotChip extends StatelessWidget {
           : null,
       selected: selected && !reserved,
       showCheckmark: !reserved,
-      // Sigue recibiendo el toque para poder avisar si se fuerza un horario ocupado.
       onSelected: (_) {
         if (reserved) {
           ScaffoldMessenger.of(context)

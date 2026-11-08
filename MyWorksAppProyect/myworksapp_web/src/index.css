@@ -1462,6 +1462,57 @@ button.brand-logo-button {
   line-height: 1.4;
   color: var(--text-muted-dark);
 }
+.tracking-evidence-block {
+  margin: 8px 0 16px;
+}
+.tracking-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.tracking-evidence-thumb {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.tracking-evidence-thumb img,
+.tracking-evidence-video {
+  width: 100%;
+  height: 96px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+.tracking-evidence-video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated-dark);
+  color: var(--text-muted-dark);
+  font-size: 12px;
+  font-weight: 700;
+}
+.tracking-evidence-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  border: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: zoom-out;
+}
+.tracking-evidence-lightbox img {
+  max-width: min(920px, 100%);
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
+}
 .tracking-back-link {
   background: none;
   border: none;
@@ -2169,6 +2220,25 @@ button.brand-logo-button {
   gap: 4px;
 }
 .chat-bubble-row--user .chat-bubble-meta { justify-content: flex-end; }
+.chat-blocked-notice {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--orange-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--orange-accent) 12%, var(--bg-surface-dark));
+  color: var(--text-main-dark);
+}
+.chat-blocked-notice strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.chat-blocked-notice p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted-dark);
+}
 .chat-widget-quick {
   padding: 8px 12px;
   border-top: 1px solid var(--border-dark);

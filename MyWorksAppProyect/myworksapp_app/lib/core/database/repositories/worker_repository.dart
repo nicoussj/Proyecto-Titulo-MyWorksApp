@@ -1,4 +1,5 @@
 import '../../config/demo_credentials.dart';
+import '../../domain/worker_hours.dart';
 import '../../domain/distance_match.dart';
 import '../../domain/transport_surcharge.dart';
 import '../../domain/user_location_context.dart';
@@ -175,6 +176,40 @@ class WorkerRepository {
         .from(_table)
         .update(worker.toMap())
         .eq('id_usuario', worker.userId);
+  }
+
+  Future<void> updateAvailableHours({
+    required String userId,
+    required List<WorkerHourSlot> hours,
+  }) async {
+    await supabase.from(_table).update({
+      'horarios_disponibles': uniqueWorkerHours(hours).map((slot) => slot.toJson()).toList(),
+    }).eq('id_usuario', userId);
+  }
+
+  Future<List<DateTime>> fetchFreeSlots(String workerId) async {
+    final rows = await supabase.rpc(
+      'horarios_libres_profesional',
+      params: {
+        'p_id_trabajador': workerId,
+        'p_dias': 14,
+      },
+    );
+    if (rows is! List) return const [];
+    final slots = <DateTime>[];
+    final seen = <String>{};
+    for (final raw in rows) {
+      final value = raw is Map ? raw['inicio'] : raw;
+      if (value == null) continue;
+      final parsed = DateTime.tryParse(value.toString());
+      if (parsed == null) continue;
+      final utc = parsed.toUtc();
+      final key = utc.toIso8601String().substring(0, 16);
+      if (!seen.add(key)) continue;
+      slots.add(utc);
+    }
+    slots.sort();
+    return slots;
   }
 
   Future<({String status, String? note})?> fetchVerification(String userId) async {

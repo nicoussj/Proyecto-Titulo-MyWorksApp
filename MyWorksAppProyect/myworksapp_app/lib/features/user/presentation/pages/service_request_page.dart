@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/domain/worker_hours.dart';
 import '../../../../core/utils/mock_reserved_slots.dart';
 import '../../../../utils/content_filter.dart';
 import '../../../../core/database/repositories/service_repository.dart';
@@ -78,6 +79,7 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
   double? _selectedLongitude;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  List<DateTime> _freeSlots = [];
   String _pricingMode = '';
   int _blockHours = 4;
   PricingModeRecommendation? _pricingRecommendation;
@@ -132,12 +134,28 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
   Future<void> _loadSelectedWorker(String workerId) async {
     final worker = await _workerRepository.getWorkerByUserId(workerId);
     final user = await _userRepository.getPublicProfile(workerId);
+    List<DateTime> slots = const [];
+    try {
+      slots = await _workerRepository.fetchFreeSlots(workerId);
+    } catch (_) {
+      slots = const [];
+    }
     if (mounted) {
       setState(() {
         _selectedWorker = worker;
         _selectedWorkerUser = user;
+        _freeSlots = slots;
+        _selectedTime = null;
       });
     }
+  }
+
+  List<String> get _hoursForSelectedDate {
+    final date = _selectedDate;
+    if (date == null) return const [];
+    return slotsOnDate(_freeSlots, date)
+        .map((slot) => MockReservedSlots.format(TimeOfDay.fromDateTime(slot.toLocal())))
+        .toList();
   }
 
   String? _categoryForSelectedService() {
@@ -316,9 +334,18 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
       await ContentFilter.showBlockedDialog(context);
       return;
     }
-    if (_selectedTime != null && MockReservedSlots.isReserved(_selectedTime!)) {
+    if (_selectedWorkerId != null &&
+        _selectedDate != null &&
+        _selectedTime != null &&
+        matchingFreeSlot(
+              freeSlots: _freeSlots,
+              date: _selectedDate!,
+              hour: _selectedTime!.hour,
+              minute: _selectedTime!.minute,
+            ) ==
+            null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(MockReservedSlots.reservedMessage)),
+        const SnackBar(content: Text(WorkerHourSlot.slotTakenMessage)),
       );
       return;
     }
@@ -382,13 +409,19 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
 
       DateTime? scheduledDate;
       if (_selectedDate != null && _selectedTime != null) {
-        scheduledDate = DateTime(
-          _selectedDate!.year,
-          _selectedDate!.month,
-          _selectedDate!.day,
-          _selectedTime!.hour,
-          _selectedTime!.minute,
-        );
+        scheduledDate = matchingFreeSlot(
+              freeSlots: _freeSlots,
+              date: _selectedDate!,
+              hour: _selectedTime!.hour,
+              minute: _selectedTime!.minute,
+            ) ??
+            DateTime(
+              _selectedDate!.year,
+              _selectedDate!.month,
+              _selectedDate!.day,
+              _selectedTime!.hour,
+              _selectedTime!.minute,
+            );
       }
 
       final comuna = inferComunaKey(_selectedAddress);
@@ -850,13 +883,22 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
                               DateTime.now().add(const Duration(days: 365)),
                         );
                         if (date != null) {
-                          setState(() => _selectedDate = date);
+                          setState(() {
+                            _selectedDate = date;
+                            _selectedTime = null;
+                          });
                         }
                       },
                     ),
                     const SizedBox(height: 8),
                     TimeSlotSelector(
                       selected: _selectedTime,
+                      availableLabels: _hoursForSelectedDate,
+                      emptyHint: _selectedWorkerId == null
+                          ? 'Elige un profesional para ver sus horarios de atención.'
+                          : _freeSlots.isEmpty
+                              ? 'Este profesional aún no publica horarios de atención.'
+                              : 'Este profesional no tiene horas libres este día.',
                       onChanged: (time) {
                         FocusManager.instance.primaryFocus?.unfocus();
                         setState(() => _selectedTime = time);

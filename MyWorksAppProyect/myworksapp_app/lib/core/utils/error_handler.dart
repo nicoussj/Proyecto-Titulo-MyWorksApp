@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myworksapp/utils/content_filter.dart';
 
 import '../theme/app_colors.dart';
 import 'app_error.dart';
@@ -22,6 +23,19 @@ class ErrorHandler {
 
     // Mensajes amigables para errores comunes
     final errorString = error.toString().toLowerCase();
+
+    if (errorString.contains('mensaje bloqueado') ||
+        errorString.contains('no se permite compartir') ||
+        errorString.contains('este tipo de mensaje no está permitido') ||
+        errorString.contains('este tipo de contenido no esta permitido')) {
+      return AppError.validation(ContentFilter.blockedMessage);
+    }
+    if (errorString.contains('ya esta reservado') ||
+        errorString.contains('ya está reservado')) {
+      return AppError.validation(
+        'Ese horario ya está reservado con este profesional. Elige otra hora.',
+      );
+    }
 
     if (errorString.contains('network') || errorString.contains('connection')) {
       return AppError.network('Error de conexión. Verifica tu internet e intenta nuevamente', error);

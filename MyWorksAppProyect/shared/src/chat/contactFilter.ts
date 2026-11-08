@@ -18,5 +18,7 @@ export function containsContactData(text: string): boolean {
   );
 }
 
+export const contactBlockedTitle = 'Mensaje no permitido';
+
 export const contactBlockedMessage =
-  'Por seguridad y garantía de pago, no se permite compartir teléfono, correo ni enlaces.';
+  'Este tipo de mensaje no está permitido. Para proteger a ambas partes y conservar la garantía de pago, no se puede compartir teléfono, correo electrónico, enlaces ni datos de contacto externos. Continúe la conversación dentro de la aplicación.';

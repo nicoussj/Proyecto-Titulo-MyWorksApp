@@ -3,6 +3,7 @@ import {
   CATALOG_PAGE_SIZE,
   type CatalogCursor,
 } from '../catalog';
+import { uniqueIsoSlots } from '../jobs/bookingSlot';
 import type { WebWorkerCard, WorkerWithProfile } from '../types';
 
 const DEFAULT_AVATAR =
@@ -212,6 +213,29 @@ export async function setWorkerVerification(
     p_nota: note ?? null,
   });
   if (error) throw error;
+}
+
+export async function fetchWorkerFreeSlots(
+  supabase: AppSupabase,
+  workerId: string,
+  days = 14,
+): Promise<string[]> {
+  const { data, error } = await supabase.rpc('horarios_libres_profesional', {
+    p_id_trabajador: workerId,
+    p_dias: days,
+  });
+  if (error) throw error;
+  const rows = Array.isArray(data) ? data : [];
+  const isos = rows
+    .map((row) => {
+      if (typeof row === 'string') return row;
+      if (row && typeof row === 'object' && 'inicio' in row) {
+        return String((row as { inicio: unknown }).inicio);
+      }
+      return '';
+    })
+    .filter((iso) => iso.length > 0);
+  return uniqueIsoSlots(isos);
 }
 
 export function toWebWorkerCard(worker: WorkerWithProfile, jobsDone = 0): WebWorkerCard {
