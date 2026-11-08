@@ -187,9 +187,15 @@ class WorkerRepository {
     required String userId,
     required List<WorkerHourSlot> hours,
   }) async {
-    await supabase.from(_table).update({
-      'horarios_disponibles': uniqueWorkerHours(hours).map((slot) => slot.toJson()).toList(),
-    }).eq('id_usuario', userId);
+    if (supabase.auth.currentUser?.id != userId) {
+      throw StateError('solo puedes editar tu propia agenda');
+    }
+    await supabase.rpc(
+      'guardar_horarios_propios',
+      params: {
+        'p_horarios': uniqueWorkerHours(hours).map((slot) => slot.toJson()).toList(),
+      },
+    );
   }
 
   Future<List<DateTime>> fetchFreeSlots(String workerId) async {

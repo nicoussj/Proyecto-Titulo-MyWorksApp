@@ -980,6 +980,32 @@ export type Database = {
         }
         Relationships: []
       }
+      trabajador_horarios: {
+        Row: {
+          actualizado_en: string
+          horarios: Json
+          id_usuario: string
+        }
+        Insert: {
+          actualizado_en?: string
+          horarios?: Json
+          id_usuario: string
+        }
+        Update: {
+          actualizado_en?: string
+          horarios?: Json
+          id_usuario?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trabajador_horarios_id_usuario_fkey"
+            columns: ["id_usuario"]
+            isOneToOne: true
+            referencedRelation: "trabajadores"
+            referencedColumns: ["id_usuario"]
+          },
+        ]
+      }
       trabajador_servicios: {
         Row: {
           categoria_servicio: string
@@ -1050,7 +1076,6 @@ export type Database = {
           longitud_base: number | null
           radio_servicio_km: number
           origen_base: string | null
-          horarios_disponibles: Json
         }
         Insert: {
           calificacion?: number
@@ -1071,7 +1096,6 @@ export type Database = {
           longitud_base?: number | null
           radio_servicio_km?: number
           origen_base?: string | null
-          horarios_disponibles?: Json
         }
         Update: {
           calificacion?: number
@@ -1092,7 +1116,6 @@ export type Database = {
           longitud_base?: number | null
           radio_servicio_km?: number
           origen_base?: string | null
-          horarios_disponibles?: Json
         }
         Relationships: [
           {
@@ -1257,6 +1280,10 @@ export type Database = {
       }
       horarios_disponibles_propios: {
         Args: Record<string, never>
+        Returns: Json
+      }
+      guardar_horarios_propios: {
+        Args: { p_horarios: Json }
         Returns: Json
       }
       is_admin: { Args: never; Returns: boolean }
