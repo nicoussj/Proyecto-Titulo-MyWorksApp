@@ -31,9 +31,23 @@ class ErrorHandler {
       return AppError.validation(ContentFilter.blockedMessage);
     }
     if (errorString.contains('ya esta reservado') ||
-        errorString.contains('ya está reservado')) {
+        errorString.contains('ya está reservado') ||
+        errorString.contains('duplicate key')) {
       return AppError.validation(
         'Ese horario ya está reservado con este profesional. Elige otra hora.',
+      );
+    }
+    if (errorString.contains('no esta publicada') ||
+        errorString.contains('no está publicada') ||
+        errorString.contains('ya no esta disponible') ||
+        errorString.contains('elige un horario publicado')) {
+      return AppError.validation(
+        'Esa hora no está publicada por el profesional. Elige un horario de su agenda.',
+      );
+    }
+    if (errorString.contains('demasiados pedidos esperando pago')) {
+      return AppError.validation(
+        'Tienes pedidos sin pagar en curso. Completa o espera a que venza uno para reservar otra hora.',
       );
     }
 

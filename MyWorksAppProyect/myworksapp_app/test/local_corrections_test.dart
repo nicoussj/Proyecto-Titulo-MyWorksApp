@@ -18,6 +18,13 @@ void main() {
       expect(ContentFilter.hasSensitiveData('912345678'), isTrue);
       expect(ContentFilter.hasSensitiveData('9.1234.5678'), isTrue);
       expect(ContentFilter.hasSensitiveData('9 1234 5678'), isTrue);
+      expect(ContentFilter.hasSensitiveData('el fijo es 2 2345 6789'), isTrue);
+      expect(
+        ContentFilter.hasSensitiveData(
+          'nueve uno dos tres cuatro cinco seis siete ocho',
+        ),
+        isTrue,
+      );
     });
 
     test('detecta palabras de evasión', () {

@@ -5,10 +5,12 @@ import {
   bookingSlotError,
   formatBookingSlotLabel,
   parseWorkerHours,
+  tooManyPendingPaymentsMessage,
   uniqueIsoSlots,
   uniqueWorkerHours,
   workerHourDuplicateMessage,
   workerSlotTakenMessage,
+  workerSlotUnpublishedMessage,
 } from './bookingSlot.ts';
 
 describe('horarios del profesional', () => {
@@ -52,6 +54,14 @@ describe('horarios del profesional', () => {
     assert.equal(
       bookingSlotError(new Error('ese horario ya esta reservado con este profesional')),
       workerSlotTakenMessage,
+    );
+    assert.equal(
+      bookingSlotError(new Error('esa hora no esta publicada por el profesional')),
+      workerSlotUnpublishedMessage,
+    );
+    assert.equal(
+      bookingSlotError(new Error('demasiados pedidos esperando pago')),
+      tooManyPendingPaymentsMessage,
     );
   });
 });

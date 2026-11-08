@@ -1,5 +1,5 @@
 import type { AppSupabase } from '../client';
-import { bookingSlotError } from '../jobs/bookingSlot';
+import { bookingSlotError, workerSlotUnpublishedMessage } from '../jobs/bookingSlot';
 import { decodeBytea, isWebpBytes, webpBytesToDataUrl } from '../media/bytea';
 import type { JobRow } from '../types';
 
@@ -21,6 +21,9 @@ export async function createPendingJob(
   supabase: AppSupabase,
   input: CreateJobInput,
 ): Promise<JobRow> {
+  if (!input.scheduledAt) {
+    throw new Error(workerSlotUnpublishedMessage);
+  }
   const now = new Date().toISOString();
   const modalidad = input.pricingMode ?? 'precio_fijo';
   const payload = {

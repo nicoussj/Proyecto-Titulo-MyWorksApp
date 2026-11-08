@@ -23,7 +23,12 @@ class WorkerRepository {
         .eq('id_usuario', userId)
         .maybeSingle();
     if (row == null) return null;
-    return WorkerModel.fromMap(row);
+    var worker = WorkerModel.fromMap(row);
+    if (supabase.auth.currentUser?.id == userId) {
+      final hours = await supabase.rpc('horarios_disponibles_propios');
+      worker = worker.copyWith(availableHours: parseWorkerHours(hours));
+    }
+    return worker;
   }
 
   /// Obtiene un trabajador por su ID (alias para getWorkerByUserId)

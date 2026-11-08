@@ -34,6 +34,12 @@ describe('containsContactData', () => {
     assert.equal(containsContactData('9 8765 4321'), true);
     assert.equal(containsContactData('mira https://wa.me/56911111111'), true);
     assert.equal(containsContactData('te paso mi wsp'), true);
+    assert.equal(containsContactData('el fijo es 2 2345 6789'), true);
+    assert.equal(
+      containsContactData('nueve uno dos tres cuatro cinco seis siete ocho'),
+      true,
+    );
+    assert.equal(containsContactData('te paso el wasap'), true);
   });
 
   it('deja pasar el texto del trabajo', () => {

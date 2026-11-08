@@ -1255,6 +1255,10 @@ export type Database = {
         Args: { p_id_trabajador: string; p_dias?: number }
         Returns: { inicio: string }[]
       }
+      horarios_disponibles_propios: {
+        Args: Record<string, never>
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       categorias_con_disponibles: {
         Args: never

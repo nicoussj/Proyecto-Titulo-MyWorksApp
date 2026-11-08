@@ -22,6 +22,12 @@ class WorkerHourSlot {
 
   static const slotTakenMessage =
       'Ese horario ya está reservado con este profesional. Elige otra hora.';
+
+  static const slotUnpublishedMessage =
+      'Esa hora no está publicada por el profesional. Elige un horario de su agenda.';
+
+  static const tooManyPendingPaymentsMessage =
+      'Tienes pedidos sin pagar en curso. Completa o espera a que venza uno para reservar otra hora.';
 }
 
 String? normalizeHourLabel(String raw) {

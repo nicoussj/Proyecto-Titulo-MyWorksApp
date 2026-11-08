@@ -129,6 +129,10 @@ Deno.serve(async (req) => {
         400,
       );
     }
+    const scheduledAt = scheduledOrNull(body.scheduledAt);
+    if (!scheduledAt) {
+      return jsonResponse(req, { error: "Elige un horario publicado por el profesional." }, 400);
+    }
 
     const admin = serviceClient();
     await admin.rpc("limpiar_invitados_sin_pago");
@@ -285,7 +289,7 @@ Deno.serve(async (req) => {
       direccion: address,
       latitud: jobLat,
       longitud: jobLng,
-      fecha_programada: scheduledOrNull(body.scheduledAt),
+      fecha_programada: scheduledAt,
       modalidad_cobro: "precio_fijo",
       estado_pago: "pendiente",
       metadatos_servicio: meta,

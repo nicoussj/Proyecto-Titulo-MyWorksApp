@@ -11,6 +11,12 @@ export const workerHourDuplicateMessage =
 export const workerSlotTakenMessage =
   'Ese horario ya está reservado con este profesional. Elige otra hora.';
 
+export const workerSlotUnpublishedMessage =
+  'Esa hora no está publicada por el profesional. Elige un horario de su agenda.';
+
+export const tooManyPendingPaymentsMessage =
+  'Tienes pedidos sin pagar en curso. Completa o espera a que venza uno para reservar otra hora.';
+
 export function normalizeHourLabel(raw: string): string | null {
   const match = raw.trim().match(/^(\d{1,2}):(\d{2})$/);
   if (!match) return null;
@@ -101,8 +107,18 @@ export function bookingSlotError(err: unknown): string | null {
       : typeof err === 'object' && err && 'message' in err
         ? String((err as { message: unknown }).message)
         : String(err ?? '');
-  if (/ya esta reservado|ya está reservado/i.test(raw)) {
+  if (/ya esta reservado|ya está reservado|duplicate key|23505/i.test(raw)) {
     return workerSlotTakenMessage;
+  }
+  if (
+    /no esta publicada|no está publicada|ya no esta disponible|elige un horario publicado/i.test(
+      raw,
+    )
+  ) {
+    return workerSlotUnpublishedMessage;
+  }
+  if (/demasiados pedidos esperando pago/i.test(raw)) {
+    return tooManyPendingPaymentsMessage;
   }
   return null;
 }
