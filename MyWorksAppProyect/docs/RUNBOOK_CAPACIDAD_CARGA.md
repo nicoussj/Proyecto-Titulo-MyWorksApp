@@ -5,8 +5,9 @@
 | Objetivo | Estimar cuántos **usuarios concurrentes leyendo** aguanta el backend actual |
 | Herramienta | [k6](https://k6.io) |
 | Scripts | `scripts/load/k6/` |
-| Fecha | 2026-09-20 |
-| Alcance | Supabase REST (catálogo). **No** Webpay ni guest-checkout |
+| Fecha | 2026-09-20; re-medido 2026-11-08 |
+| Alcance | Supabase REST (catálogo) + RPC de reserva. **No** Webpay ni guest-checkout |
+| Anexo 08-11-2026 | [`docs/anexos/2026-11-08-rendimiento-carga/`](anexos/2026-11-08-rendimiento-carga/INFORME.md) |
 
 ---
 
@@ -15,6 +16,7 @@
 ### Sí medimos
 
 - Lecturas del **home / búsqueda**: tablas `servicios` y `trabajadores` (como un visitante).
+- Funnel de reserva: RPC `categorias_con_disponibles`, `listar_profesionales_catalogo`, `horarios_libres_profesional` (`booking-reads.js`).
 - Opcional: lecturas de `trabajos` con un JWT de prueba.
 - Latencia (p95), tasa de errores y peticiones por segundo (RPS).
 
@@ -74,9 +76,14 @@ k6 run -e SUPABASE_URL=$env:SUPABASE_URL -e SUPABASE_ANON_KEY=$env:SUPABASE_ANON
 # 3) Stress — hasta ~200 VUs (~6 min)
 k6 run -e SUPABASE_URL=$env:SUPABASE_URL -e SUPABASE_ANON_KEY=$env:SUPABASE_ANON_KEY -e PROFILE=stress scripts/load/k6/catalog.js
 
+# 3a) Funnel de reserva (RPC catálogo + huecos). Baseline ~30 VUs; stress ~80 VUs.
+k6 run -e SUPABASE_URL=$env:SUPABASE_URL -e SUPABASE_ANON_KEY=$env:SUPABASE_ANON_KEY -e PROFILE=baseline scripts/load/k6/booking-reads.js
+k6 run -e SUPABASE_URL=$env:SUPABASE_URL -e SUPABASE_ANON_KEY=$env:SUPABASE_ANON_KEY -e PROFILE=stress scripts/load/k6/booking-reads.js
+
 # 3b) Techo Free — 100→300 VUs, umbral error <1 % y p95 <500 ms (~5,5 min)
 k6 run -e SUPABASE_URL=$env:SUPABASE_URL -e SUPABASE_ANON_KEY=$env:SUPABASE_ANON_KEY -e PROFILE=free-ceiling scripts/load/k6/catalog.js
 # Opcional (tras migración 20260926): -e K6_USE_RPC=1
+# Anexo 2026-11-08: no se repitió free-ceiling (egress + REST trabajadores anon vacío).
 
 # 4) Techo de RPS — sube peticiones/segundo hasta notar degradación (~4 min)
 k6 run -e SUPABASE_URL=$env:SUPABASE_URL -e SUPABASE_ANON_KEY=$env:SUPABASE_ANON_KEY scripts/load/k6/capacity-ceiling.js
@@ -123,9 +130,15 @@ Si se rompe a **50 VUs**:
 | Prueba | Fecha | VUs máx | p95 (ms) | Error % | RPS aprox | Conclusión |
 |--------|-------|---------|----------|---------|-----------|------------|
 | smoke | 20-09-2026 | 5 | 303 | 0 | ~6,5 | OK, sin 401 |
-| baseline | | 50 | | | | |
+| smoke | 08-11-2026 | 5 | 249 | 0 | ~6,7 | OK. JSON: `docs/anexos/2026-11-08-rendimiento-carga/` |
+| baseline | 08-11-2026 | 50 | 233 | 0 | ~48 | OK. REST `trabajadores` anon = `[]` |
 | stress | 20-09-2026 | 200 | ~220 | 0 | | OK (informe previo) |
+| stress | 08-11-2026 | 200 | **237** | **0** | ~174 | OK, mismo orden que sep. REST `trabajadores` anon vacío |
+| booking-reads baseline | 08-11-2026 | 30 | **250** | **0** | ~36 | Funnel RPC con filas (catálogo + huecos) |
+| booking-reads stress | 08-11-2026 | 80 | **249** | **0** | ~95 | p95 estable; max huecos 2,2 s |
+| mixed + JWT | 08-11-2026 | 40 | 240 | 0 | ~44 | `trabajos` 200 (Camila) |
 | free-ceiling | 20-09-2026 | 300 | **263** | **0** | ~302 | Umbrales Free cumplidos (p95&lt;500, error&lt;1 %). Egress prueba ≈ 196 MB |
+| free-ceiling | 08-11-2026 | — | — | — | — | No repetido (egress + REST vacío). Usar booking-reads |
 | ceiling | | (arrival-rate) | | | | |
 | soak | | 40 | | | | |
 

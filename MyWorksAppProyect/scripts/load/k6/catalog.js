@@ -139,6 +139,14 @@ export default function () {
     rpcMs.add(rpc.timings.duration);
     okRpc = check(rpc, {
       'rpc catalogo 200': (r) => r.status === 200,
+      'rpc catalogo con filas': (r) => {
+        try {
+          const rows = r.json();
+          return Array.isArray(rows) && rows.length > 0;
+        } catch {
+          return false;
+        }
+      },
     });
   }
 
