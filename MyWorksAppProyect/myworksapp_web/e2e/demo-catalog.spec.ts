@@ -59,6 +59,16 @@ test('demo web: catálogo con coordenada real y pedido sin tarjeta en el sitio',
       return;
     }
 
+    if (url.includes('/rpc/horarios_libres_profesional')) {
+      const inicio = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      inicio.setMinutes(0, 0, 0);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ inicio: inicio.toISOString() }]),
+      });
+      return;
+    }
     if (url.includes('/rpc/listar_profesionales_catalogo')) {
       await route.fulfill({
         status: 200,
@@ -116,7 +126,7 @@ test('demo web: catálogo con coordenada real y pedido sin tarjeta en el sitio',
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByText(/pedido sin sesión/i)).toBeVisible();
   await expect(page.locator('input[autocomplete="cc-number"]')).toHaveCount(0);
-  await expect(page.getByLabel(/dirección/i)).toBeVisible();
+  await expect(page.getByRole('dialog').getByLabel(/dirección/i)).toBeVisible();
 });
 
 test('oculta un oficio sin profesionales y explica la búsqueda vacía', async ({ page }) => {
@@ -137,6 +147,16 @@ test('oculta un oficio sin profesionales y explica la búsqueda vacía', async (
       return;
     }
 
+    if (url.includes('/rpc/horarios_libres_profesional')) {
+      const inicio = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      inicio.setMinutes(0, 0, 0);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ inicio: inicio.toISOString() }]),
+      });
+      return;
+    }
     if (url.includes('/rpc/listar_profesionales_catalogo')) {
       const payload = route.request().postDataJSON() as { p_categoria?: string } | null;
       const body = payload?.p_categoria === 'ensamblaje' ? [] : [pedro];
