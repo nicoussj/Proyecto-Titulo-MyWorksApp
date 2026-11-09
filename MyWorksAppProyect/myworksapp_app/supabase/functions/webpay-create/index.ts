@@ -48,18 +48,23 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const jobId = String(body.jobId || "");
     const amountClp = Number(body.amountClp);
+    const changeOrderId = String(body.changeOrderId || "").trim();
     if (!jobId || !Number.isFinite(amountClp) || amountClp <= 0) {
       return jsonResponse(req, { error: "jobId y amountClp requeridos" }, 400);
     }
 
-    const { data: payment, error: payErr } = await userSb.rpc(
-      "crear_intencion_pago",
-      {
+    const { data: payment, error: payErr } = changeOrderId
+      ? await userSb.rpc("crear_intencion_pago_orden_cambio", {
+        p_id_trabajo: jobId,
+        p_id_orden_cambio: changeOrderId,
+        p_monto: amountClp,
+        p_buy_order: null,
+      })
+      : await userSb.rpc("crear_intencion_pago", {
         p_id_trabajo: jobId,
         p_monto: amountClp,
         p_buy_order: null,
-      },
-    );
+      });
     if (payErr) {
       return jsonResponse(req, { error: publicErrorMessage(payErr, "No se pudo crear la intención de pago") }, 400);
     }
@@ -84,6 +89,11 @@ Deno.serve(async (req) => {
     });
 
     const admin = serviceClient();
+    const appReturnOrigin =
+      typeof body.clientReturnOrigin === "string" &&
+        body.clientReturnOrigin.trim().toLowerCase().startsWith("myworksapp://pago")
+        ? body.clientReturnOrigin.trim()
+        : null;
     const { error: updErr } = await admin
       .from("pagos")
       .update({
@@ -92,7 +102,7 @@ Deno.serve(async (req) => {
         url_tbk: url,
         ambiente: env,
         id_transaccion: buyOrder,
-        origen_retorno: resolveCallerReturnOrigin(req),
+        origen_retorno: resolveCallerReturnOrigin(req) || appReturnOrigin,
         actualizado_en: new Date().toISOString(),
       })
       .eq("id", paymentId);
