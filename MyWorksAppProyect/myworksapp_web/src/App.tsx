@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { LandingHome } from './views/LandingHome';
 import type { SearchWorker } from './components/SearchResultsView';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 import { supabase } from './supabaseClient';
 import { useLiveJobLocation } from './hooks/useLiveJobLocation';
 import { queryKeys } from './queryClient';
