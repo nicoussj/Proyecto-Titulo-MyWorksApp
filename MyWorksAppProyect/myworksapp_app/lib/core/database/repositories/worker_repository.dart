@@ -40,27 +40,7 @@ class WorkerRepository {
     String category, {
     UserLocationContext? near,
   }) async {
-    var rows = await supabase
-        .from(_table)
-        .select()
-        .eq('categoria_servicio', category)
-        .order('score_listado', ascending: false)
-        .limit(40);
-
-    if (rows.isEmpty) {
-      final needle = category.replaceAll(RegExp(r'[%_,]'), '');
-      if (needle.isNotEmpty) {
-        rows = await supabase
-            .from(_table)
-            .select()
-            .ilike('categoria_servicio', '%$needle%')
-            .order('score_listado', ascending: false)
-            .limit(40);
-      }
-    }
-
-    final workers =
-        rows.map<WorkerModel>((m) => WorkerModel.fromMap(m)).toList();
+    final workers = await _fetchCatalog(category: category);
     return _filterListedWorkers(workers, near: near);
   }
 
@@ -120,60 +100,50 @@ class WorkerRepository {
   }
 
   Future<List<WorkerModel>> getWorkersByProfession(String profession) async {
-    final rows = await supabase
-        .from(_table)
-        .select()
-        .eq('profesion', profession)
-        .eq('disponible', 1)
-        .order('score_listado', ascending: false)
-        .limit(40);
-    final workers = rows.map<WorkerModel>((m) => WorkerModel.fromMap(m)).toList();
+    final catalog = await _fetchCatalog();
+    final needle = profession.trim().toLowerCase();
+    final workers = catalog
+        .where((worker) => worker.profession.trim().toLowerCase() == needle)
+        .toList();
     WorkerReputationService.instance.sortForListing(workers);
     return workers;
   }
 
   Future<List<WorkerModel>> getAllAvailableWorkers() async {
-    final rows = await supabase
-        .from(_table)
-        .select()
-        .eq('disponible', 1)
-        .eq('precios_configurados', 1)
-        .order('score_listado', ascending: false)
-        .limit(40);
-    final workers =
-        rows.map<WorkerModel>((m) => WorkerModel.fromMap(m)).toList();
+    final workers = await _fetchCatalog();
     WorkerReputationService.instance.sortForListing(workers);
     return workers;
   }
 
   /// Correos solo de cuentas @demo.myworksapp.cl. El resto de perfiles no se lista.
   Future<List<WorkerLoginItem>> getWorkersForLogin() async {
-    final rows = await supabase.rpc('listar_cuentas_demo_acceso');
     final items = <WorkerLoginItem>[];
-    if (rows is! List) return items;
-    for (final raw in rows) {
-      if (raw is! Map) continue;
-      final row = Map<String, dynamic>.from(raw);
-      final userId = row['id'] as String?;
-      if (userId == null || userId.isEmpty) continue;
-      items.add(
-        WorkerLoginItem(
-          userId: userId,
-          name: row['nombre'] as String? ?? 'Trabajador',
-          email: row['correo'] as String? ?? '',
-          profession: row['profesion'] as String? ?? '',
-          serviceCategory: row['categoria_servicio'] as String? ?? 'general',
-        ),
-      );
+    try {
+      final rows = await supabase.rpc('listar_cuentas_demo_acceso');
+      if (rows is List) {
+        for (final raw in rows) {
+          if (raw is! Map) continue;
+          final row = Map<String, dynamic>.from(raw);
+          final userId = row['id'] as String?;
+          if (userId == null || userId.isEmpty) continue;
+          items.add(
+            WorkerLoginItem(
+              userId: userId,
+              name: row['nombre'] as String? ?? 'Trabajador',
+              email: row['correo'] as String? ?? '',
+              profession: row['profesion'] as String? ?? '',
+              serviceCategory: row['categoria_servicio'] as String? ?? 'general',
+            ),
+          );
+        }
+      }
+    } catch (_) {
+      // La RPC puede fallar si demo_modo está apagado o no hay GRANT.
     }
-
-    items.sort((a, b) {
-      final aGas = a.serviceCategory.toLowerCase().contains('gasfit') ? 0 : 1;
-      final bGas = b.serviceCategory.toLowerCase().contains('gasfit') ? 0 : 1;
-      if (aGas != bGas) return aGas - bGas;
-      return a.name.compareTo(b.name);
-    });
-    return items;
+    if (items.isEmpty) {
+      items.addAll(DemoCredentials.loginWorkers);
+    }
+    return sortWorkerLoginItems(items);
   }
 
   Future<void> updateWorker(WorkerModel worker) async {
@@ -325,16 +295,45 @@ class WorkerRepository {
   Future<List<WorkerModel>> getAvailableWorkersWithoutActiveJobs({
     UserLocationContext? near,
   }) async {
-    final rows = await supabase
-        .from(_table)
-        .select()
-        .eq('disponible', 1)
-        .eq('precios_configurados', 1)
-        .order('score_listado', ascending: false)
-        .limit(40);
-    final allWorkers =
-        rows.map<WorkerModel>((m) => WorkerModel.fromMap(m)).toList();
+    final allWorkers = await _fetchCatalog();
     return _filterListedWorkers(allWorkers, near: near);
+  }
+
+  /// Misma fuente que la web: RPC pública, no el REST de `trabajadores`.
+  Future<List<WorkerModel>> _fetchCatalog({String? category}) async {
+    final categoria = category?.trim();
+    try {
+      final rows = await supabase.rpc(
+        'listar_profesionales_catalogo',
+        params: {
+          'p_categoria': (categoria == null || categoria.isEmpty) ? null : categoria,
+          'p_limit': 40,
+        },
+      );
+      if (rows is List) {
+        return rows
+            .whereType<Map>()
+            .map((row) => WorkerModel.fromCatalogMap(Map<String, dynamic>.from(row)))
+            .toList();
+      }
+    } catch (_) {
+      // Si la RPC no está, un autenticado todavía puede leer el marketplace.
+    }
+    try {
+      var query = supabase
+          .from(_table)
+          .select()
+          .eq('disponible', 1)
+          .eq('precios_configurados', 1)
+          .eq('estado_verificacion', 'verificado');
+      if (categoria != null && categoria.isNotEmpty) {
+        query = query.eq('categoria_servicio', categoria);
+      }
+      final rows = await query.order('score_listado', ascending: false).limit(40);
+      return rows.map<WorkerModel>((row) => WorkerModel.fromMap(row)).toList();
+    } catch (_) {
+      return const [];
+    }
   }
 
   /// Indica si el trabajador tiene trabajos activos (para badge «ocupado»).

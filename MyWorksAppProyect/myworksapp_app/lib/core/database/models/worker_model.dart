@@ -116,8 +116,18 @@ class WorkerModel {
       urbanRadiusKm: (map['radio_urbano_km'] as num?)?.toDouble() ?? 5,
       outsideMobilizationFeeClp:
           (map['tarifa_fuera_radio_clp'] as num?)?.toInt() ?? 0,
-      availableHours: parseWorkerHours(map['horarios_disponibles']),
+      availableHours: parseWorkerHours(map['horarios']),
     );
+  }
+
+  /// Fila de `listar_profesionales_catalogo`: ya viene filtrada (disponible,
+  /// precio y verificado). Completa flags que la RPC no devuelve.
+  factory WorkerModel.fromCatalogMap(Map<String, dynamic> map) {
+    return WorkerModel.fromMap({
+      ...map,
+      'disponible': map['disponible'] ?? 1,
+      'precios_configurados': map['precios_configurados'] ?? 1,
+    });
   }
 
   WorkerModel copyWith({

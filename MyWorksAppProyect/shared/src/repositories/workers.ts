@@ -129,12 +129,13 @@ export async function fetchWorkersCatalog(
   let query = supabase
     .from('trabajadores')
     .select(
-      'id_usuario, profesion, descripcion, calificacion, disponible, tarifa_visita, categoria_servicio, precios_configurados, zona_trabajo, latitud_base, longitud_base, radio_servicio_km, origen_base',
+      'id_usuario, profesion, descripcion, calificacion, disponible, tarifa_visita, categoria_servicio, precios_configurados, zona_trabajo, latitud_base, longitud_base, radio_servicio_km, origen_base, trabajos_completados, score_listado, radio_urbano_km, tarifa_fuera_radio_clp, es_elite',
     )
     .eq('categoria_servicio', opts.category)
     .eq('disponible', 1)
     .eq('precios_configurados', 1)
-    .order('calificacion', { ascending: false })
+    .eq('estado_verificacion', 'verificado')
+    .order('score_listado', { ascending: false })
     .order('id_usuario', { ascending: true })
     .limit(limit);
 

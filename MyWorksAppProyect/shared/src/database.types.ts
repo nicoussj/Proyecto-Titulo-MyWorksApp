@@ -1314,6 +1314,11 @@ export type Database = {
           radio_servicio_km: number | null
           origen_base: string | null
           trabajos_completados: number | null
+          score_listado: number | null
+          prioridad_manual: number | null
+          radio_urbano_km: number | null
+          tarifa_fuera_radio_clp: number | null
+          es_elite: boolean | null
         }[]
       }
       publicar_ubicacion_trabajo: {
