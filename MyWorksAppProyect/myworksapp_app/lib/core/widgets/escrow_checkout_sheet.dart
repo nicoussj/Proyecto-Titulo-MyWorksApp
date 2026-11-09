@@ -20,12 +20,14 @@ class EscrowCheckoutSheet extends ConsumerStatefulWidget {
     required this.quote,
     this.workerName,
     this.serviceName,
+    this.changeOrderId,
   });
 
   final String jobId;
   final PriceQuote quote;
   final String? workerName;
   final String? serviceName;
+  final String? changeOrderId;
 
   static Future<bool> show(
     BuildContext context, {
@@ -33,6 +35,7 @@ class EscrowCheckoutSheet extends ConsumerStatefulWidget {
     required PriceQuote quote,
     String? workerName,
     String? serviceName,
+    String? changeOrderId,
   }) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
@@ -47,6 +50,7 @@ class EscrowCheckoutSheet extends ConsumerStatefulWidget {
           quote: quote,
           workerName: workerName,
           serviceName: serviceName,
+          changeOrderId: changeOrderId,
         ),
       ),
     );
@@ -88,6 +92,7 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
           await ref.read(paymentServiceProvider).initiateWebpayPayment(
                 jobId: widget.jobId,
                 amount: widget.quote.totalClp.toDouble(),
+                changeOrderId: widget.changeOrderId,
               );
       final url = session.redirectUrl ?? session.url;
       if (!mounted) return;
@@ -120,6 +125,11 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
   }
 
   Future<void> _payWithSavedCard({bool skipWebFallback = false}) async {
+    // Órdenes de cambio solo por Webpay Plus (RPC dedicado).
+    if (widget.changeOrderId != null && widget.changeOrderId!.isNotEmpty) {
+      await _payWithoutSavingCard();
+      return;
+    }
     setState(() => _processing = true);
     try {
       final user = ref.read(authProvider).user;

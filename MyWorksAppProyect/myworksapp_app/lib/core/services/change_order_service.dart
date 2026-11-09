@@ -60,10 +60,22 @@ class ChangeOrderService {
     return order;
   }
 
-  Future<void> approveAndPay({
+  /// Cotización del cobro extra (monto + fee plataforma 8%).
+  PriceQuote buildQuote(ChangeOrderModel order) {
+    final fee = (order.montoClp * 0.08).round();
+    return PriceQuote(
+      pricingMode: PricingConstants.modeFixedPrice,
+      subtotalClp: order.montoClp,
+      platformFeeClp: fee,
+      totalClp: order.montoClp + fee,
+      breakdown: {'change_order_id': order.id},
+    );
+  }
+
+  /// Valida que el cliente pueda pagar esta orden (Webpay lo cobra aparte).
+  Future<PriceQuote> prepareWebpayCheckout({
     required ChangeOrderModel order,
     required String clientUserId,
-    String? paymentMethod,
   }) async {
     final job = await _jobRepository.getJobById(order.jobId);
     if (job == null) throw AppError.notFound('Trabajo no encontrado');
@@ -73,20 +85,7 @@ class ChangeOrderService {
     if (!order.isPendingClient) {
       throw AppError.validation('La orden de cambio ya fue respondida');
     }
-
-    final quote = PriceQuote(
-      pricingMode: PricingConstants.modeFixedPrice,
-      subtotalClp: order.montoClp,
-      platformFeeClp: (order.montoClp * 0.08).round(),
-      totalClp: order.montoClp + (order.montoClp * 0.08).round(),
-      breakdown: {'change_order_id': order.id},
-    );
-
-    // Pago adicional solo por Webpay (Edge). La UI debe abrir TransbankWebpayGateway.
-    throw AppError.validation(
-      'Para pagar la orden de cambio (\$${quote.totalClp} CLP) usa Webpay. '
-      'El cobro local/mock está deshabilitado.',
-    );
+    return buildQuote(order);
   }
 
   Future<void> reject({
