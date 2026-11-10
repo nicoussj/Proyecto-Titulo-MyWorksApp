@@ -126,7 +126,7 @@ test('demo web: catálogo con coordenada real y pedido sin tarjeta en el sitio',
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByText(/pedido sin sesión/i)).toBeVisible();
   await expect(page.locator('input[autocomplete="cc-number"]')).toHaveCount(0);
-  await expect(page.getByRole('dialog').getByLabel(/dirección/i)).toBeVisible();
+  await expect(page.getByRole('dialog').locator('input[autocomplete="street-address"]')).toBeVisible();
 });
 
 test('oculta un oficio sin profesionales y explica la búsqueda vacía', async ({ page }) => {

@@ -334,11 +334,11 @@ test('con el trabajo cerrado se puede volver al inicio desde el seguimiento', as
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Fuga en la llave' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Inicio', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ir a la página de inicio' })).toBeVisible();
   await expect(
     page.locator('.tracking-complete-card').getByRole('button', { name: 'Volver al inicio' }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Inicio', exact: true }).click();
+  await page.getByRole('button', { name: 'Ir a la página de inicio' }).click();
   await expect(page.getByRole('button', { name: /buscar servicio/i })).toBeVisible();
 });
 
@@ -349,7 +349,7 @@ test('en móvil el inicio del seguimiento cerrado sigue visible', async ({ page 
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Inicio', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Inicio', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Ir a la página de inicio' })).toBeVisible();
+  await page.getByRole('button', { name: 'Ir a la página de inicio' }).click();
   await expect(page.getByRole('button', { name: /buscar servicio/i })).toBeVisible();
 });
