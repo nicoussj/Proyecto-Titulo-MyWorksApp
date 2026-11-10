@@ -69,6 +69,16 @@ class JobDetailActionsSection extends StatelessWidget {
               child: const Text('Rechazar'),
             ),
           ],
+          if (JobDetailHelpers.canOpenChat(job.status)) ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () {
+                context.push('${AppConstants.routeChat}/$jobId');
+              },
+              icon: const Icon(Icons.chat),
+              label: const Text('Abrir Chat'),
+            ),
+          ],
           if (isWorker && job.status == AppConstants.jobStatusAccepted)
             ElevatedButton(
               onPressed: onMarkEnRoute,
@@ -146,18 +156,6 @@ class JobDetailActionsSection extends StatelessWidget {
                 );
               },
             ),
-          if ((job.status == AppConstants.jobStatusAccepted ||
-                  job.status == AppConstants.jobStatusInProgress) &&
-              isOwner) ...[
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () {
-                context.push('${AppConstants.routeChat}/$jobId');
-              },
-              icon: const Icon(Icons.chat),
-              label: const Text('Abrir Chat'),
-            ),
-          ],
           if (isOwner &&
               job.status != AppConstants.jobStatusPending &&
               job.status != AppConstants.jobStatusInProgress) ...[

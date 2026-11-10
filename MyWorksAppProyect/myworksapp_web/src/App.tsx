@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { LandingHome } from './views/LandingHome';
 import type { SearchWorker } from './components/SearchResultsView';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 import { supabase } from './supabaseClient';
 import { useLiveJobLocation } from './hooks/useLiveJobLocation';
 import { queryKeys } from './queryClient';
@@ -26,9 +26,13 @@ import {
   fetchPaymentStatus,
   fetchServiceByCategory,
   fetchWorkersCatalog,
+  fetchWorkerFreeSlots,
+  formatBookingSlotLabel,
   fetchCategoriesWithPros,
   categoriesWithPros,
   fetchJobTrackingSnapshot,
+  fetchJobEvidencePhotos,
+  syncJobEvidencePhotos,
   fetchMyNotifications,
   fetchUserJobs,
   toWebWorkerCard,
@@ -36,6 +40,7 @@ import {
   transportSurcharge,
   withinTravelRange,
   type JobTrackingSnapshot,
+  type JobEvidencePhoto,
   type CatalogCursor,
   type WorkerWithProfile,
 } from '@myworksapp/shared';
@@ -341,6 +346,8 @@ export function App() {
 
   const [checkoutJobId, setCheckoutJobId] = useState<string | null>(null);
   const [scheduledAt, setScheduledAt] = useState<string | null>(null);
+  const [bookingSlots, setBookingSlots] = useState<string[]>([]);
+  const [bookingSlotsLoading, setBookingSlotsLoading] = useState(false);
 
   const [showChat, setShowChat] = useState(false);
 
@@ -355,6 +362,9 @@ export function App() {
   const [guestPasswordToken, setGuestPasswordToken] = useState<string | null>(null);
   const [paymentNotice, setPaymentNotice] = useState<string | null>(null);
   const [jobSnapshot, setJobSnapshot] = useState<JobTrackingSnapshot | null>(null);
+  const [jobEvidence, setJobEvidence] = useState<JobEvidencePhoto[]>([]);
+  const jobEvidenceRef = useRef<JobEvidencePhoto[]>([]);
+  jobEvidenceRef.current = jobEvidence;
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationLines, setNotificationLines] = useState<string[]>([]);
@@ -400,9 +410,34 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (!selectedWorker) {
+      setBookingSlots([]);
+      setBookingSlotsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setBookingSlots([]);
+    setBookingSlotsLoading(true);
+    void fetchWorkerFreeSlots(supabase, selectedWorker.id)
+      .then((slots) => {
+        if (!cancelled) setBookingSlots(slots);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (!cancelled) setBookingSlots([]);
+      })
+      .finally(() => {
+        if (!cancelled) setBookingSlotsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedWorker]);
+
+  useEffect(() => {
     if (view !== 'tracking' || !checkoutJobId) return;
     let cancelled = false;
-    const load = () => {
+    const loadSnapshot = () => {
       void fetchJobTrackingSnapshot(supabase, checkoutJobId)
         .then((snapshot) => {
           if (!cancelled && snapshot) setJobSnapshot(snapshot);
@@ -411,8 +446,24 @@ export function App() {
           // Se conserva el último estado visible si el refresco falla.
         });
     };
-    load();
-    const timer = window.setInterval(load, 8000);
+    void fetchJobEvidencePhotos(supabase, checkoutJobId)
+      .then((photos) => {
+        if (!cancelled) setJobEvidence(photos);
+      })
+      .catch(() => {
+        // Se conserva la última evidencia visible si la carga falla.
+      });
+    loadSnapshot();
+    const timer = window.setInterval(() => {
+      loadSnapshot();
+      void syncJobEvidencePhotos(supabase, checkoutJobId, jobEvidenceRef.current)
+        .then((photos) => {
+          if (!cancelled) setJobEvidence(photos);
+        })
+        .catch(() => {
+          // Se conserva la última evidencia visible si el refresco falla.
+        });
+    }, 8000);
     return () => {
       cancelled = true;
       window.clearInterval(timer);
@@ -429,6 +480,7 @@ export function App() {
     setConfirmError(null);
     setConfirmBusy(false);
     setPaymentNotice(null);
+    setJobEvidence([]);
     setView('landing');
   };
 
@@ -471,6 +523,11 @@ export function App() {
       }
       setCheckoutJobId(snapshot.id);
       setJobSnapshot(snapshot);
+      try {
+        setJobEvidence(await fetchJobEvidencePhotos(supabase, snapshot.id));
+      } catch {
+        setJobEvidence([]);
+      }
       sessionStorage.setItem('mwa-active-job', snapshot.id);
       let worker: SearchWorker = {
         id: snapshot.workerId ?? 'sin-profesional',
@@ -840,6 +897,7 @@ export function App() {
   const requestWorker = (worker: SearchWorker) => {
     setSelectedWorker(worker);
     setBookingError(null);
+    setScheduledAt(null);
   };
 
   const liveSite = clientLocation;
@@ -948,7 +1006,11 @@ export function App() {
       setBookingError('No hay un servicio activo en Supabase para esta categoría.');
       return;
     }
-    if (slotIso) setScheduledAt(slotIso);
+    if (!slotIso) {
+      setBookingError('Elige un horario publicado por el profesional para continuar.');
+      return;
+    }
+    setScheduledAt(slotIso);
     setBookingError(null);
     if (liveTooFar) {
       setBookingError(tooFarToBookCopy());
@@ -1211,6 +1273,8 @@ export function App() {
 
           paymentNotice={paymentNotice}
 
+          evidencePhotos={jobEvidence}
+
           unreadCount={unreadCount}
 
           onGoHome={goHome}
@@ -1386,6 +1450,11 @@ export function App() {
             pricePerHour={selectedWorker.pricePerVisit}
             transportExtraClp={liveQuote?.extraClp ?? 0}
             radarHint={radarHint}
+            loadingSlots={bookingSlotsLoading}
+            slots={bookingSlots.map((iso) => ({
+              iso,
+              label: formatBookingSlotLabel(iso),
+            }))}
 
             onContinue={(slotIso) => void startCheckout(slotIso)}
 

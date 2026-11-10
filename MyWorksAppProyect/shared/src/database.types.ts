@@ -414,6 +414,7 @@ export type Database = {
           creado_en: string
           id: string
           id_trabajo: string
+          imagen_webp: string | null
           ruta_foto: string
           tipo_medio: string
         }
@@ -421,6 +422,7 @@ export type Database = {
           creado_en: string
           id: string
           id_trabajo: string
+          imagen_webp?: string | null
           ruta_foto: string
           tipo_medio?: string
         }
@@ -428,6 +430,7 @@ export type Database = {
           creado_en?: string
           id?: string
           id_trabajo?: string
+          imagen_webp?: string | null
           ruta_foto?: string
           tipo_medio?: string
         }
@@ -977,6 +980,32 @@ export type Database = {
         }
         Relationships: []
       }
+      trabajador_horarios: {
+        Row: {
+          actualizado_en: string
+          horarios: Json
+          id_usuario: string
+        }
+        Insert: {
+          actualizado_en?: string
+          horarios?: Json
+          id_usuario: string
+        }
+        Update: {
+          actualizado_en?: string
+          horarios?: Json
+          id_usuario?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trabajador_horarios_id_usuario_fkey"
+            columns: ["id_usuario"]
+            isOneToOne: true
+            referencedRelation: "trabajadores"
+            referencedColumns: ["id_usuario"]
+          },
+        ]
+      }
       trabajador_servicios: {
         Row: {
           categoria_servicio: string
@@ -1245,6 +1274,18 @@ export type Database = {
       }
       es_parte_trabajo: { Args: { p_trabajo_id: string }; Returns: boolean }
       es_rol_trabajador: { Args: { p_usuario_id: string }; Returns: boolean }
+      horarios_libres_profesional: {
+        Args: { p_id_trabajador: string; p_dias?: number }
+        Returns: { inicio: string }[]
+      }
+      horarios_disponibles_propios: {
+        Args: Record<string, never>
+        Returns: Json
+      }
+      guardar_horarios_propios: {
+        Args: { p_horarios: Json }
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       categorias_con_disponibles: {
         Args: never
@@ -1273,6 +1314,11 @@ export type Database = {
           radio_servicio_km: number | null
           origen_base: string | null
           trabajos_completados: number | null
+          score_listado: number | null
+          prioridad_manual: number | null
+          radio_urbano_km: number | null
+          tarifa_fuera_radio_clp: number | null
+          es_elite: boolean | null
         }[]
       }
       publicar_ubicacion_trabajo: {

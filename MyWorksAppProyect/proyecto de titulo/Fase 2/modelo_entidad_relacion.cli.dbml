@@ -234,6 +234,7 @@ Table "fotos_trabajo" {
   "id_trabajo" text [not null]
   "ruta_foto" text [not null]
   "tipo_medio" text [not null, default: 'foto']
+  "imagen_webp" bytea
   "creado_en" text [not null]
 }
 

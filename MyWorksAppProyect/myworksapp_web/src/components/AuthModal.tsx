@@ -7,7 +7,7 @@ import {
   resendSignupConfirmation,
 } from '@myworksapp/shared';
 import { supabase } from '../supabaseClient';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { TurnstileWidget } from './TurnstileWidget';
 import { turnstileSiteKey } from './turnstileSite';
 

@@ -64,7 +64,7 @@ class JobModel {
       'latitud': latitude,
       'longitud': longitude,
       'descripcion': description,
-      'fecha_programada': scheduledDate?.toIso8601String(),
+      'fecha_programada': scheduledDate?.toUtc().toIso8601String(),
       'metadatos_servicio': serviceMetadata != null ? jsonEncode(serviceMetadata) : null,
       'modalidad_cobro': pricingMode,
       'estado_pago': paymentStatus,

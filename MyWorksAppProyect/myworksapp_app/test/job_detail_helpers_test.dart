@@ -76,4 +76,25 @@ void main() {
       expect(JobDetailHelpers.quoteFromJob(job), isNull);
     });
   });
+
+  group('JobDetailHelpers.canOpenChat', () {
+    test('abre en pendiente, en camino y en curso', () {
+      expect(JobDetailHelpers.canOpenChat(AppConstants.jobStatusPending), isTrue);
+      expect(JobDetailHelpers.canOpenChat(AppConstants.jobStatusEnRoute), isTrue);
+      expect(JobDetailHelpers.canOpenChat(AppConstants.jobStatusInProgress), isTrue);
+      expect(
+        JobDetailHelpers.canOpenChat(PricingConstants.jobAwaitingClientApproval),
+        isTrue,
+      );
+    });
+
+    test('no abre en completado ni cancelado', () {
+      expect(JobDetailHelpers.canOpenChat(AppConstants.jobStatusCompleted), isFalse);
+      expect(JobDetailHelpers.canOpenChat(AppConstants.jobStatusCancelled), isFalse);
+      expect(
+        JobDetailHelpers.canOpenChat(PricingConstants.jobAwaitingPayment),
+        isFalse,
+      );
+    });
+  });
 }

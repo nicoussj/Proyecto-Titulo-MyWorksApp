@@ -12,6 +12,7 @@ import '../../../../core/services/pricing_service.dart';
 import '../../../../core/theme/app_decorations.dart';
 import '../../../../core/utils/comuna_utils.dart';
 import '../../../../core/design_system/layout_utils.dart';
+import '../../../../core/domain/worker_hours.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/services/worker_availability_service.dart';
 import '../../../../core/utils/mock_reserved_slots.dart';
@@ -50,7 +51,7 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
   String? _serviceName;
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay? _selectedTime;
-  Set<String> _reservedLabels = {};
+  List<DateTime> _freeSlots = [];
   bool _loading = true;
   bool _submitting = false;
 
@@ -64,35 +65,26 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
     final worker = await _workerRepository.getWorkerByUserId(widget.workerId);
     final user = await _userRepository.getPublicProfile(widget.workerId);
     final service = await _serviceRepository.getServiceById(widget.serviceId);
-    final reserved = await WorkerAvailabilityService.instance.reservedLabelsForDay(
-      workerId: widget.workerId,
-      day: _selectedDate,
-    );
+    List<DateTime> slots = const [];
+    try {
+      slots = await _workerRepository.fetchFreeSlots(widget.workerId);
+    } catch (_) {
+      slots = const [];
+    }
     if (mounted) {
       setState(() {
         _worker = worker;
         _workerUser = user;
         _serviceName = service?.name;
-        _reservedLabels = reserved;
+        _freeSlots = slots;
         _loading = false;
       });
     }
   }
 
-  Future<void> _refreshReservedSlots() async {
-    final reserved = await WorkerAvailabilityService.instance.reservedLabelsForDay(
-      workerId: widget.workerId,
-      day: _selectedDate,
-    );
-    if (!mounted) return;
-    setState(() {
-      _reservedLabels = reserved;
-      if (_selectedTime != null &&
-          WorkerAvailabilityService.isReserved(_reservedLabels, _selectedTime!)) {
-        _selectedTime = null;
-      }
-    });
-  }
+  List<String> get _hoursForSelectedDate => slotsOnDate(_freeSlots, _selectedDate)
+      .map((slot) => MockReservedSlots.format(TimeOfDay.fromDateTime(slot.toLocal())))
+      .toList();
 
   @override
   void dispose() {
@@ -112,8 +104,10 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
       locale: const Locale('es', 'CL'),
     );
     if (picked != null) {
-      setState(() => _selectedDate = picked);
-      await _refreshReservedSlots();
+      setState(() {
+        _selectedDate = picked;
+        _selectedTime = null;
+      });
     }
   }
 
@@ -132,29 +126,27 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
       await ContentFilter.showBlockedDialog(context);
       return;
     }
-    await _refreshReservedSlots();
-    if (_selectedTime == null ||
-        WorkerAvailabilityService.isReserved(_reservedLabels, _selectedTime!)) {
-      if (!mounted) return;
+    if (_selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _selectedTime == null
-                ? 'Selecciona un horario disponible'
-                : MockReservedSlots.reservedMessage,
-          ),
-        ),
+        const SnackBar(content: Text('Selecciona un horario disponible')),
       );
       return;
     }
 
-    final scheduledDate = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _selectedTime!.hour,
-      _selectedTime!.minute,
+    final scheduledDate = matchingFreeSlot(
+      freeSlots: _freeSlots,
+      date: _selectedDate,
+      hour: _selectedTime!.hour,
+      minute: _selectedTime!.minute,
     );
+    if (scheduledDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(WorkerHourSlot.slotTakenMessage),
+        ),
+      );
+      return;
+    }
 
     setState(() => _submitting = true);
     try {
@@ -270,7 +262,10 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
             const SizedBox(height: 8),
             TimeSlotSelector(
               selected: _selectedTime,
-              reservedLabels: _reservedLabels,
+              availableLabels: _hoursForSelectedDate,
+              emptyHint: _freeSlots.isEmpty
+                  ? 'Este profesional aún no publica horarios de atención.'
+                  : 'Este profesional no tiene horas libres este día.',
               onChanged: (time) => setState(() => _selectedTime = time),
             ),
             const SizedBox(height: 8),

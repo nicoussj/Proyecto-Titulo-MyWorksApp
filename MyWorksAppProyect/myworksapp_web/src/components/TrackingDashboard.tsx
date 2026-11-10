@@ -8,7 +8,7 @@ import {
   MessageCircle,
   ShieldCheck,
 } from 'lucide-react';
-import { jobStatusDetail, jobStatusLabel, paymentStatusLabel } from '@myworksapp/shared';
+import { jobStatusDetail, jobStatusLabel, paymentStatusLabel, type JobEvidencePhoto } from '@myworksapp/shared';
 import { BrandLogo } from './BrandLogo';
 import { profileLabel } from '../profileLabel';
 import { JobLocationMap } from './JobLocationMap';
@@ -43,6 +43,7 @@ interface TrackingDashboardProps {
   confirmError?: string | null;
   onOpenDispute?: (reason: string, detail: string) => Promise<void>;
   onAddDisputeComment?: (comment: string) => Promise<void>;
+  evidencePhotos?: JobEvidencePhoto[];
 }
 
 export function TrackingDashboard({
@@ -75,8 +76,10 @@ export function TrackingDashboard({
   confirmError = null,
   onOpenDispute,
   onAddDisputeComment,
+  evidencePhotos = [],
 }: TrackingDashboardProps) {
   const [showPayment, setShowPayment] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [disputeReason, setDisputeReason] = useState('calidad');
   const [disputeDetail, setDisputeDetail] = useState('');
   const [disputeComment, setDisputeComment] = useState('');
@@ -188,6 +191,30 @@ export function TrackingDashboard({
             </div>
             <p className="tracking-status-detail">{statusDetail}</p>
           </div>
+
+          {evidencePhotos.length > 0 ? (
+            <div className="tracking-evidence-block">
+              <p className="tracking-block-label">EVIDENCIA</p>
+              <div className="tracking-evidence-grid">
+                {evidencePhotos.map((photo) => (
+                  photo.src ? (
+                    <button
+                      type="button"
+                      key={photo.id}
+                      className="tracking-evidence-thumb"
+                      onClick={() => setPreviewSrc(photo.src ?? null)}
+                    >
+                      <img src={photo.src} alt="Evidencia del trabajo" />
+                    </button>
+                  ) : (
+                    <div key={photo.id} className="tracking-evidence-video">Video</div>
+                  )
+                ))}
+              </div>
+            </div>
+          ) : jobStatus === 'esperando_aprobacion_cliente' ? (
+            <p className="tracking-status-detail">Aún no hay fotos del especialista.</p>
+          ) : null}
 
           {jobStatus === 'esperando_aprobacion_cliente' && onConfirmReceipt ? (
             <button
@@ -353,6 +380,16 @@ export function TrackingDashboard({
           )}
         </div>
       </div>
+      {previewSrc ? (
+        <button
+          type="button"
+          className="tracking-evidence-lightbox"
+          onClick={() => setPreviewSrc(null)}
+          aria-label="Cerrar evidencia"
+        >
+          <img src={previewSrc} alt="Evidencia ampliada" />
+        </button>
+      ) : null}
     </div>
   );
 }

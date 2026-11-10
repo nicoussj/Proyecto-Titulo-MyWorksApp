@@ -1,6 +1,10 @@
-import { useState } from 'react';
-import { visitSlotIso } from '@myworksapp/shared';
+import { useState, useEffect } from 'react';
 import { Calendar, X } from 'lucide-react';
+
+export interface BookingSlotOption {
+  iso: string;
+  label: string;
+}
 
 interface QuickBookingBarProps {
   workerName: string;
@@ -8,6 +12,8 @@ interface QuickBookingBarProps {
   pricePerHour: number;
   transportExtraClp?: number;
   radarHint?: string;
+  slots: BookingSlotOption[];
+  loadingSlots?: boolean;
   onContinue: (scheduledAt: string) => void;
   onClose: () => void;
 }
@@ -18,19 +24,20 @@ export function QuickBookingBar({
   pricePerHour,
   transportExtraClp = 0,
   radarHint,
+  slots,
+  loadingSlots = false,
   onContinue,
   onClose,
 }: QuickBookingBarProps) {
-  const now = new Date();
-  const friday = new Date(now);
-  friday.setDate(now.getDate() + ((5 - now.getDay() + 7) % 7 || 7));
+  const [selectedIso, setSelectedIso] = useState(slots[0]?.iso ?? '');
 
-  const dateLabel = friday.toLocaleDateString('es-CL', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-  const [hour, setHour] = useState<'10' | '14' | '18'>('10');
+  useEffect(() => {
+    if (slots.some((slot) => slot.iso === selectedIso)) return;
+    setSelectedIso(slots[0]?.iso ?? '');
+  }, [slots, selectedIso]);
+
+  const hasSlots = slots.length > 0;
+  const canContinue = hasSlots && Boolean(selectedIso) && !loadingSlots;
 
   return (
     <div className="quick-booking-bar modal-rise" role="region" aria-label="Reserva rápida">
@@ -42,20 +49,33 @@ export function QuickBookingBar({
         <div className="quick-booking-copy">
           <p className="quick-booking-kicker">RESERVA RÁPIDA</p>
           <h3>¿Cuándo necesitas el servicio?</h3>
-          <p className="quick-booking-hint">Elige fecha y hora para continuar.</p>
+          <p className="quick-booking-hint">
+            {loadingSlots
+              ? 'Cargando horarios del profesional…'
+              : hasSlots
+                ? 'Elige una hora publicada por el profesional. Cada bloque aparece una sola vez.'
+                : 'Este profesional aún no publica horarios de atención.'}
+          </p>
         </div>
 
         <div className="quick-booking-datetime">
           <Calendar size={18} className="quick-booking-cal-icon" aria-hidden />
           <select
             className="quick-booking-select"
-            value={hour}
+            value={selectedIso}
             aria-label="Fecha y hora"
-            onChange={(event) => setHour(event.target.value as '10' | '14' | '18')}
+            disabled={!hasSlots || loadingSlots}
+            onChange={(event) => setSelectedIso(event.target.value)}
           >
-            <option value="10">{dateLabel} | 10:00</option>
-            <option value="14">{dateLabel} | 14:00</option>
-            <option value="18">{dateLabel} | 18:00</option>
+            {hasSlots ? (
+              slots.map((slot) => (
+                <option key={slot.iso} value={slot.iso}>
+                  {slot.label}
+                </option>
+              ))
+            ) : (
+              <option value="">Sin horarios disponibles</option>
+            )}
           </select>
         </div>
 
@@ -74,7 +94,11 @@ export function QuickBookingBar({
         <button
           type="button"
           className="btn-primary quick-booking-cta"
-          onClick={() => onContinue(visitSlotIso(hour))}
+          disabled={!canContinue}
+          onClick={() => {
+            if (!canContinue) return;
+            onContinue(selectedIso);
+          }}
         >
           Continuar con la reserva →
         </button>

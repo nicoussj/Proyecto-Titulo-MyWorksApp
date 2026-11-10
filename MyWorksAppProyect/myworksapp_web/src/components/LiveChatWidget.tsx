@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Send, X } from 'lucide-react';
 import {
+  contactBlockedMessage,
+  contactBlockedTitle,
   fetchJobMessages,
   formatDbDateTime,
+  jobChatSendError,
+  mapJobMessage,
+  mergeJobMessage,
   sendJobMessage,
   type JobMessage,
 } from '@myworksapp/shared';
@@ -58,27 +63,16 @@ export function LiveChatWidget({
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `id_trabajo=eq.${jobId}` },
-        () => {
-          void fetchJobMessages(supabase, jobId)
-            .then((rows) => {
-              if (!cancelled) setMessages(rows);
-            })
-            .catch(() => undefined);
+        (payload) => {
+          const incoming = mapJobMessage(payload.new as Record<string, unknown>);
+          if (!incoming || cancelled) return;
+          setMessages((prev) => mergeJobMessage(prev, incoming));
         },
       )
       .subscribe();
 
-    const poll = window.setInterval(() => {
-      void fetchJobMessages(supabase, jobId)
-        .then((rows) => {
-          if (!cancelled) setMessages(rows);
-        })
-        .catch(() => undefined);
-    }, 12000);
-
     return () => {
       cancelled = true;
-      window.clearInterval(poll);
       void supabase.removeChannel(channel);
     };
   }, [jobId, senderId]);
@@ -90,7 +84,7 @@ export function LiveChatWidget({
     setSending(true);
     setError(null);
     try {
-      await sendJobMessage(supabase, {
+      const sent = await sendJobMessage(supabase, {
         id: crypto.randomUUID(),
         jobId,
         senderId,
@@ -98,10 +92,9 @@ export function LiveChatWidget({
         content,
       });
       setInputText('');
-      const rows = await fetchJobMessages(supabase, jobId);
-      setMessages(rows);
-    } catch {
-      setError('No se envió. Inicia sesión con la cuenta del pedido.');
+      setMessages((prev) => mergeJobMessage(prev, sent));
+    } catch (err) {
+      setError(jobChatSendError(err));
     } finally {
       setSending(false);
     }
@@ -144,7 +137,18 @@ export function LiveChatWidget({
             </div>
           );
         })}
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <div className="chat-blocked-notice" role="alert">
+            {error === contactBlockedMessage ? (
+              <>
+                <strong>{contactBlockedTitle}</strong>
+                <p>{error}</p>
+              </>
+            ) : (
+              <p>{error}</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="chat-widget-input">

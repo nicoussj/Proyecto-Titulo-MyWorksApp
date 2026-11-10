@@ -53,6 +53,16 @@ class JobDetailHelpers {
     return PricingConstants.jobAwaitingClientApproval;
   }
 
+  /// Chat entre las partes mientras el pedido está vivo (incluye pendiente
+  /// y en camino). No aplica a pagado-sin-abrir, completado ni cancelado.
+  static bool canOpenChat(String status) {
+    return status == AppConstants.jobStatusPending ||
+        status == AppConstants.jobStatusAccepted ||
+        status == AppConstants.jobStatusEnRoute ||
+        status == AppConstants.jobStatusInProgress ||
+        status == PricingConstants.jobAwaitingClientApproval;
+  }
+
   static bool canOpenDispute(JobModel job, DisputeModel? dispute) {
     if (dispute != null &&
         (dispute.status == AppConstants.disputeStatusOpen ||

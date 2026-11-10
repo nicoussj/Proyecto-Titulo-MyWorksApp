@@ -2,7 +2,7 @@
 
 Documento de referencia para **memoria de título**, **presentaciones universitarias**, **financiamiento** y **planificación técnica**.
 
-**Última actualización:** septiembre 2026  
+**Última actualización:** 9 de noviembre de 2026 (pago, chat, evidencia y migraciones revisados contra el código de `main` 3d7c14c)  
 **Versión de producto:** 1.0.0 (MVP con backend Supabase)  
 **Repositorio:** https://github.com/MathiasAlejandr0/MyWorksAppProyect
 
@@ -19,10 +19,10 @@ Documento de referencia para **memoria de título**, **presentaciones universita
 | **Backend** | Supabase (Auth + PostgreSQL + PostgREST + RLS) |
 | **Modo de operación** | Cliente-servidor: datos centralizados en la nube |
 | **Listo para demo en vivo** | Sí (usuario y trabajador en dispositivos distintos o mismo dispositivo) |
-| **Listo para producción / App Store** | Parcial — falta pasarela real, push remoto y publicación en tiendas |
+| **Listo para producción / App Store** | Parcial — falta Transbank en producción, push remoto y publicación en tiendas |
 | **Documentación técnica en repo** | Sí ([README.md](README.md), [DEMO.md](DEMO.md), [INSTALL.md](INSTALL.md), [docs/ARQUITECTURA_MODALIDADES_COBRO.md](docs/ARQUITECTURA_MODALIDADES_COBRO.md)) |
 
-**Mensaje clave:** MyWorksApp demuestra un **marketplace de servicios del hogar** con roles duales (cliente y profesional), ciclo de vida de trabajos, modalidades de cobro, escrow simulado y arquitectura preparada para escalar a producción.
+**Mensaje clave:** MyWorksApp demuestra un **marketplace de servicios del hogar** con roles duales (cliente y profesional), ciclo de vida de trabajos, modalidades de cobro, escrow con Transbank Webpay en ambiente de integración y arquitectura preparada para escalar a producción.
 
 ---
 
@@ -142,7 +142,7 @@ Cada feature sigue: `features/<módulo>/presentation/{pages, widgets, providers}
 | Navegación | go_router | ^13.0.0 |
 | Backend | supabase_flutter | Auth + Postgres + PostgREST |
 | Mapas | google_maps_flutter + OpenStreetMap estático (desktop) | Ubicación de trabajos |
-| Notificaciones | flutter_local_notifications | Locales; push remoto pendiente |
+| Notificaciones | flutter_local_notifications + Supabase Realtime | Locales y en la app por Realtime (`notification_realtime_service.dart`); push remoto (FCM) pendiente |
 | Persistencia local | shared_preferences, flutter_secure_storage | Onboarding, tokens |
 | Seguridad | bcrypt, RLS en Supabase | Contraseñas y políticas por tabla |
 | Fuentes / UI | google_fonts, design system propio | Identidad naranja / azul marino |
@@ -157,7 +157,7 @@ Cada feature sigue: `features/<módulo>/presentation/{pages, widgets, providers}
 2. Solicitud con ubicación (mapa), fecha/hora y descripción opcional → job `pending` en Supabase.
 3. Trabajador acepta o rechaza → al aceptar ve mapa cuadrado, dirección y agenda.
 4. Trabajador inicia trabajo → sube evidencia (foto y/o video) → estado `awaiting_client_approval`.
-5. Usuario revisa evidencia → aprueba y paga (escrow **simulado**) → trabajo `completed` y pago liberado al trabajador.
+5. Usuario revisa evidencia → aprueba y paga (escrow con **Webpay en integración**, vía Edge Functions `webpay-create` / `webpay-commit`) → trabajo `completed` y pago liberado al trabajador.
 
 ### Otras modalidades de cobro
 
@@ -219,14 +219,23 @@ Las cuentas `@demo.com` / `demo123` son legado: el administrador `admin@demo.com
 
 | Área | Estado | Prioridad |
 |------|--------|-----------|
-| Pasarela de pago real (Webpay, Stripe, etc.) | Mock / escrow simulado | Alta |
+| Pasarela de pago | Webpay Plus y Oneclick en **ambiente de integración** (Edge Functions `webpay-*` / `oneclick-*`, `_shared/tbk.ts`); falta pasar a producción (`docs/RUNBOOK_TRANSBANK_PRODUCCION.md`) | Alta |
 | Notificaciones push remotas (FCM / APNs) | Solo locales | Alta |
-| Chat en tiempo real (WebSockets / Realtime) | Polling / local | Media |
-| Supabase Storage para fotos y videos | Rutas locales del dispositivo | Media |
-| Tests automatizados Flutter | Suite en `myworksapp_app/test/` + CI | ✅ Parcial |
+| Chat en tiempo real | ✅ Supabase Realtime (`postgres_changes` sobre `mensajes`): app `chat_page.dart`, web `LiveChatWidget.tsx` | — |
+| Evidencia del trabajo | Fotos en WebP dentro de la base (`fotos_trabajo.imagen_webp`, migración `20261108000001`); el video solo guarda el nombre del archivo | Media (video) |
+| Tests automatizados Flutter | Suite en `myworksapp_app/test/` + CI (`flutter test`: 145 pruebas en verde, 9-nov-2026) | ✅ Parcial |
 | CI/CD (GitHub Actions) | Flutter CI + Web/Desktop CI + Gitleaks | ✅ Parcial |
 | Panel de administración web | `myworksapp_desktop` con Supabase Auth (rol admin) | ✅ MVP |
 | Publicación en tiendas | No publicada | Alta (al lanzar) |
+
+### Historial de migraciones (diagnóstico 9-nov-2026)
+
+- Las migraciones de `myworksapp_app/supabase/migrations/` **no arrancan en una base vacía**. Se probó aplicándolas en orden sobre PostgreSQL 17 local con los esquemas `auth` y `storage` simulados, sin tocar el proyecto remoto.
+- Primer fallo: `20250607000001_security_hardening_roles_profiles.sql` crea un trigger sobre `public.profiles` antes de que exista; la tabla recién la crea el baseline `20250907120000`.
+- Moviendo esas migraciones después del baseline, falla `20250907120002` porque `public.is_admin()` no está en ninguna migración (solo en `schema_remote_dump.sql`).
+- Usando `schema_remote_dump.sql` como migración inicial, falla `20260322000001` porque usa `public.pagos` antes de los renombres a español (`20260914000001`–`04`).
+- Causa: el esquema real se construyó en parte con 24 versiones aplicadas en el remoto que no tienen `.sql` en el repo (lista en `myworksapp_app/supabase/MIGRATIONS_INVENTORY.md`). No se reconstruyen porque no hay fuente.
+- Opción propuesta, **no aplicada**: un baseline nuevo con el esquema vivo (dump `public` de la v2.3), dejando las migraciones anteriores como historial. Requiere un `db dump` del remoto con autorización del dueño.
 
 ---
 
@@ -294,7 +303,7 @@ Esta sección es la **plantilla punto a punto** de cómo debe estructurarse y re
 1. **Contexto:** mercado de servicios del hogar y problemática (informalidad, falta de confianza, coordinación).
 2. **Objetivo:** desarrollar un MVP que conecte clientes con profesionales verificables.
 3. **Método:** desarrollo ágil, Flutter, Supabase, arquitectura modular por features.
-4. **Resultados:** app funcional con dos roles, ciclo de trabajo, cobro simulado y evidencia.
+4. **Resultados:** app funcional con dos roles, ciclo de trabajo, cobro con Webpay en integración y evidencia.
 5. **Conclusión:** viabilidad del modelo; trabajo futuro (pagos reales, tiendas).
 
 **Palabras clave (5–7):** marketplace de servicios, Flutter, Supabase, arquitectura modular, oficios, escrow, aplicación móvil.
@@ -359,7 +368,7 @@ Redactar como pregunta o afirmación medible, por ejemplo:
 
 ### 6.3 Objetivo general
 
-> Desarrollar un producto mínimo viable (MVP) multiplataforma que conecte clientes con trabajadores de oficios, gestionando solicitudes, estados del trabajo, comunicación y un flujo de pago simulado con arquitectura escalable.
+> Desarrollar un producto mínimo viable (MVP) multiplataforma que conecte clientes con trabajadores de oficios, gestionando solicitudes, estados del trabajo, comunicación y un flujo de pago con Transbank Webpay en ambiente de integración, con arquitectura escalable.
 
 ### 6.4 Objetivos específicos
 
@@ -371,7 +380,7 @@ Redactar como pregunta o afirmación medible, por ejemplo:
 
 ### 6.5 Alcance y limitaciones
 
-**Dentro del alcance:** app móvil Flutter, backend Supabase, flujos demo, escrow simulado, evidencia foto/video.
+**Dentro del alcance:** app móvil Flutter, backend Supabase, flujos demo, escrow con Webpay en integración, evidencia foto/video.
 
 **Fuera del alcance (v1):** pasarela real, publicación en tiendas, panel admin, matching geográfico avanzado.
 
@@ -425,7 +434,7 @@ Párrafo que describe qué contiene cada capítulo siguiente ("El Capítulo 2 pr
 - RF-02: El usuario debe solicitar un servicio a un trabajador específico con fecha y ubicación.
 - RF-03: El trabajador debe aceptar/rechazar y ver ubicación exacta tras aceptar.
 - RF-04: El trabajador debe subir evidencia y solicitar cierre del trabajo.
-- RF-05: El usuario debe aprobar la finalización y ejecutar el pago simulado.
+- RF-05: El usuario debe aprobar la finalización y pagar con Webpay (ambiente de integración).
 
 **No funcionales:**
 - RNF-01: Tiempo de respuesta de pantallas < 2 s en red normal.
@@ -514,7 +523,7 @@ Presentar en **tabla** con ID, descripción, prioridad (Alta/Media/Baja).
 | P-01 | Solicitar armado muebles pequeños | Usuario | Job creado en `pending` | ✅ |
 | P-02 | Aceptar y ver mapa cuadrado | Trabajador | Dirección + fecha visibles | ✅ |
 | P-03 | Finalizar con evidencia | Trabajador | Estado `awaiting_client_approval` | ✅ |
-| P-04 | Aprobar y pagar | Usuario | `completed` + pago mock | ✅ |
+| P-04 | Aprobar y pagar | Usuario | `completed` + pago Webpay (integración) | ✅ |
 
 **Señales ✓**
 - [x] Honestidad: hay `flutter test` automatizado (84 pruebas en `myworksapp_app/test/`, octubre 2026) y E2E Playwright en la web; no cubren pagos reales.
@@ -527,7 +536,7 @@ Presentar en **tabla** con ID, descripción, prioridad (Alta/Media/Baja).
 - Qué se logró respecto a cada objetivo específico (tabla objetivo ↔ evidencia).
 - Métricas si existen: número de pantallas, tablas en BD, tiempos de build.
 - Demo en video o capturas del flujo completo.
-- Limitaciones encontradas (RLS, pagos mock, etc.).
+- Limitaciones encontradas (RLS, Webpay solo en integración, etc.).
 
 **Señales ✓**
 - [ ] No confundir "resultados" con "conclusiones".
@@ -647,7 +656,7 @@ ANEXOS
 
 **Flujo de cobro:**
 
-> "El flujo de invitación directa al profesional contempla pago diferido: el cliente solicita sin prepagar; el trabajador ejecuta el servicio y registra evidencia fotográfica o audiovisual; el cliente aprueba la finalización y recién entonces se procesa el pago simulado en garantía (escrow), alineado con modelos de confianza de marketplaces de servicios."
+> "El flujo de invitación directa al profesional contempla pago diferido: el cliente solicita sin prepagar; el trabajador ejecuta el servicio y registra evidencia fotográfica o audiovisual; el cliente aprueba la finalización y recién entonces se libera el pago retenido en garantía (escrow), cobrado con Transbank Webpay en ambiente de integración, alineado con modelos de confianza de marketplaces de servicios."
 
 ---
 

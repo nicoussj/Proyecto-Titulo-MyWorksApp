@@ -11,7 +11,9 @@ class MessageRepository {
   Future<List<MessageModel>> getMessagesByJobId(String jobId) async {
     final rows = await supabase
         .from(_table)
-        .select()
+        .select(
+          'id, id_trabajo, id_remitente, id_destinatario, contenido, tipo, ruta_imagen, leido, creado_en',
+        )
         .eq('id_trabajo', jobId)
         .order('creado_en', ascending: true);
     return rows.map<MessageModel>((m) => MessageModel.fromMap(m)).toList();

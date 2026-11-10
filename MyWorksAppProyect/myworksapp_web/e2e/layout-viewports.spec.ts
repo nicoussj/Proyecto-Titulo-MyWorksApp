@@ -42,6 +42,16 @@ async function mockCatalog(page: import('@playwright/test').Page) {
       });
       return;
     }
+    if (url.includes('/rpc/horarios_libres_profesional')) {
+      const inicio = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      inicio.setMinutes(0, 0, 0);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ inicio: inicio.toISOString() }]),
+      });
+      return;
+    }
     if (url.includes('/rpc/listar_profesionales_catalogo')) {
       await route.fulfill({
         status: 200,
@@ -324,11 +334,11 @@ test('con el trabajo cerrado se puede volver al inicio desde el seguimiento', as
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Fuga en la llave' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Inicio' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inicio', exact: true })).toBeVisible();
   await expect(
     page.locator('.tracking-complete-card').getByRole('button', { name: 'Volver al inicio' }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Inicio' }).click();
+  await page.getByRole('button', { name: 'Inicio', exact: true }).click();
   await expect(page.getByRole('button', { name: /buscar servicio/i })).toBeVisible();
 });
 
@@ -339,7 +349,7 @@ test('en móvil el inicio del seguimiento cerrado sigue visible', async ({ page 
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Inicio' })).toBeVisible();
-  await page.getByRole('button', { name: 'Inicio' }).click();
+  await expect(page.getByRole('button', { name: 'Inicio', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Inicio', exact: true }).click();
   await expect(page.getByRole('button', { name: /buscar servicio/i })).toBeVisible();
 });

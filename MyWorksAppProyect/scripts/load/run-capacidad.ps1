@@ -66,6 +66,9 @@ if ($Full) {
   Run-K6 "scripts\load\k6\catalog.js" "smoke" "catalog-smoke"
   Run-K6 "scripts\load\k6\catalog.js" "baseline" "catalog-baseline"
   Run-K6 "scripts\load\k6\catalog.js" "stress" "catalog-stress"
+  Run-K6 "scripts\load\k6\booking-reads.js" "smoke" "booking-reads-smoke"
+  Run-K6 "scripts\load\k6\booking-reads.js" "baseline" "booking-reads-baseline"
+  Run-K6 "scripts\load\k6\booking-reads.js" "stress" "booking-reads-stress"
   Run-K6 "scripts\load\k6\catalog.js" "free-ceiling" "catalog-free-ceiling"
   Run-K6 "scripts\load\k6\capacity-ceiling.js" "baseline" "capacity-ceiling"
   if ($UserJwt) {

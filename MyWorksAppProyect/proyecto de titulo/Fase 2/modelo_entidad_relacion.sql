@@ -1,17 +1,20 @@
 -- MyWorksApp — modelo entidad-relación (PostgreSQL)
--- Versión 2.2 · 37 tablas public · 4NF + catálogo geográfico · 2026-10-05
+-- Versión 2.3 · 43 tablas public · 4NF + catálogo geográfico + ranking + agenda · 2026-11-08
 --
--- Modelo LÓGICO normalizado (consulta), alineado a
--- 20261004000001_normalizar_y_optimizar.sql
+-- Modelo LÓGICO normalizado (consulta), alineado a la base viva
+-- wxqrfcqifkfgawrnqmnj hasta 20261108000005_trabajador_horarios.sql
 --
 -- Forma 4NF de la oferta:
 --   trabajador_precios (id_usuario, codigo, monto_clp)
 --   trabajador_servicios_extra (id_usuario, id, titulo, monto_clp, unidad)
 -- JSON niveles_precio / servicios_personalizados sigue en trabajadores
 -- solo como formato de ESCRITURA de la app; el trigger lo parte a filas.
+-- La plantilla semanal vive en trabajador_horarios (no en trabajadores).
 --
 -- Copias derivadas (no son fuente):
---   trabajadores.calificacion ← promedio de calificaciones
+--   trabajadores.calificacion ← promedio ponderado de calificaciones
+--   trabajadores.es_elite     ← GENERATED (nota ≥ 4.7 y ≥ 5 completados)
+--   perfiles.reputacion_cliente ← promedio de calificaciones_cliente
 --   trabajos.estado_pago      ← estado del pago principal
 --
 -- En Postgres vivo, trabajador_precios.id_usuario es text (cast del uuid).
@@ -31,6 +34,8 @@ CREATE TABLE perfiles (
   rol text NOT NULL DEFAULT 'usuario',
   estado_cuenta text NOT NULL DEFAULT 'activo',
   ruta_foto_perfil text,
+  reputacion_cliente numeric(3, 2),
+  calificaciones_cliente integer NOT NULL DEFAULT 0,
   creado_en text NOT NULL
 );
 
@@ -76,7 +81,20 @@ CREATE TABLE trabajadores (
   radio_servicio_km numeric NOT NULL DEFAULT 15,
   origen_base text,
   id_comuna text REFERENCES comunas (id) ON DELETE SET NULL,
-  id_region text REFERENCES regiones (id) ON DELETE SET NULL
+  id_region text REFERENCES regiones (id) ON DELETE SET NULL,
+  score_listado numeric(8, 4) NOT NULL DEFAULT 0,
+  prioridad_manual integer NOT NULL DEFAULT 0,
+  score_desglose jsonb NOT NULL DEFAULT '{}'::jsonb,
+  ranking_actualizado_en timestamptz,
+  radio_urbano_km numeric(5, 2) NOT NULL DEFAULT 5,
+  tarifa_fuera_radio_clp integer NOT NULL DEFAULT 0,
+  trabajos_completados integer NOT NULL DEFAULT 0,
+  es_elite boolean GENERATED ALWAYS AS (
+    COALESCE(calificacion, 0) >= 4.7 AND trabajos_completados >= 5
+  ) STORED,
+  CONSTRAINT trabajadores_prioridad_manual_chk CHECK (prioridad_manual BETWEEN -50 AND 50),
+  CONSTRAINT trabajadores_radio_urbano_km_chk CHECK (radio_urbano_km BETWEEN 1 AND 40),
+  CONSTRAINT trabajadores_tarifa_fuera_radio_clp_chk CHECK (tarifa_fuera_radio_clp BETWEEN 0 AND 200000)
 );
 
 CREATE TABLE servicios (
@@ -113,6 +131,12 @@ CREATE TABLE trabajador_servicios_extra (
   monto_clp numeric(12, 0) NOT NULL CHECK (monto_clp >= 0),
   unidad text NOT NULL DEFAULT 'fijo' CHECK (unidad IN ('fijo', 'por_m2')),
   PRIMARY KEY (id_usuario, id)
+);
+
+CREATE TABLE trabajador_horarios (
+  id_usuario uuid PRIMARY KEY REFERENCES trabajadores (id_usuario) ON DELETE CASCADE,
+  horarios jsonb NOT NULL DEFAULT '[]'::jsonb,
+  actualizado_en timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE portafolio_trabajador (
@@ -164,6 +188,13 @@ CREATE TABLE trabajos (
   actualizado_en text NOT NULL
 );
 
+-- En la BD viva el segundo término es public.minuto_utc(fecha_programada::text).
+CREATE UNIQUE INDEX trabajos_trabajador_minuto_activo_uidx
+  ON trabajos (id_trabajador, fecha_programada)
+  WHERE fecha_programada IS NOT NULL
+    AND id_trabajador IS NOT NULL
+    AND estado NOT IN ('cancelado', 'expirado', 'completado', 'no_asistio');
+
 CREATE TABLE propuestas_cotizacion (
   id text PRIMARY KEY,
   id_trabajo text NOT NULL REFERENCES trabajos (id) ON DELETE CASCADE,
@@ -198,13 +229,21 @@ CREATE TABLE pagos (
   handoff_consumido_en timestamptz,
   reembolso_solicitado_en timestamptz,
   orden_detalle_oneclick text,
-  cobro_reclamado_en timestamptz
+  cobro_reclamado_en timestamptz,
+  origen_retorno text,
+  alta_nonce_hash text,
+  alta_jti text,
+  alta_consumido_en timestamptz
 );
 
 CREATE UNIQUE INDEX pagos_un_principal_activo_uidx
   ON pagos (id_trabajo)
   WHERE tipo_pago = 'principal'
     AND estado IN ('pendiente', 'retenido', 'autorizado');
+
+CREATE UNIQUE INDEX pagos_alta_jti_uidx
+  ON pagos (alta_jti)
+  WHERE alta_jti IS NOT NULL;
 
 CREATE TABLE ordenes_cambio (
   id text PRIMARY KEY,
@@ -273,6 +312,7 @@ CREATE TABLE fotos_trabajo (
   id_trabajo text NOT NULL REFERENCES trabajos (id) ON DELETE CASCADE,
   ruta_foto text NOT NULL,
   tipo_medio text NOT NULL DEFAULT 'foto',
+  imagen_webp bytea,
   creado_en text NOT NULL
 );
 
@@ -282,7 +322,22 @@ CREATE TABLE calificaciones (
   id_usuario uuid REFERENCES perfiles (id),
   puntaje integer NOT NULL,
   comentario text,
-  creado_en text NOT NULL
+  creado_en text NOT NULL,
+  peso_confianza numeric(4, 3) NOT NULL DEFAULT 1,
+  estado_revision text NOT NULL DEFAULT 'vigente',
+  motivo_revision text,
+  CONSTRAINT calificaciones_peso_confianza_chk CHECK (peso_confianza >= 0 AND peso_confianza <= 1),
+  CONSTRAINT calificaciones_estado_revision_chk CHECK (estado_revision IN ('vigente', 'en_revision', 'excluida'))
+);
+
+CREATE TABLE calificaciones_cliente (
+  id text PRIMARY KEY,
+  id_trabajo text NOT NULL UNIQUE REFERENCES trabajos (id) ON DELETE CASCADE,
+  id_cliente uuid NOT NULL REFERENCES perfiles (id),
+  id_trabajador uuid NOT NULL REFERENCES trabajadores (id_usuario),
+  puntaje smallint NOT NULL CHECK (puntaje BETWEEN 1 AND 5),
+  comentario text,
+  creado_en timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE disputas (
@@ -451,6 +506,57 @@ CREATE TABLE banderas_funcionalidad (
   actualizado_en text NOT NULL
 );
 
+CREATE TABLE ranking_config (
+  id text PRIMARY KEY DEFAULT 'default',
+  peso_calificacion numeric NOT NULL DEFAULT 0.32,
+  peso_completados numeric NOT NULL DEFAULT 0.18,
+  peso_rechazos numeric NOT NULL DEFAULT 0.12,
+  peso_verificacion numeric NOT NULL DEFAULT 0.10,
+  peso_impulso numeric NOT NULL DEFAULT 0.08,
+  peso_recencia numeric NOT NULL DEFAULT 0.08,
+  peso_confianza numeric NOT NULL DEFAULT 0.12,
+  prior_bayes numeric NOT NULL DEFAULT 3.80,
+  n_bayes numeric NOT NULL DEFAULT 8,
+  umbral_revision numeric NOT NULL DEFAULT 0.55,
+  umbral_auto_excluir numeric NOT NULL DEFAULT 0.90,
+  aprendizaje_activo integer NOT NULL DEFAULT 1,
+  tasa_aprendizaje numeric NOT NULL DEFAULT 0.15,
+  pesos_senal jsonb NOT NULL DEFAULT '{}'::jsonb,
+  actualizado_en timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT ranking_config_unica CHECK (id = 'default')
+);
+
+CREATE TABLE senales_resena (
+  id text PRIMARY KEY,
+  id_calificacion text NOT NULL REFERENCES calificaciones (id) ON DELETE CASCADE,
+  tipo_senal text NOT NULL,
+  puntaje numeric NOT NULL,
+  detalle text,
+  estado text NOT NULL DEFAULT 'pendiente',
+  resuelto_por uuid REFERENCES perfiles (id),
+  resuelto_en timestamptz,
+  creado_en timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (id_calificacion, tipo_senal)
+);
+
+CREATE TABLE ranking_aprendizaje (
+  id text PRIMARY KEY,
+  motivo text NOT NULL,
+  pesos_antes jsonb NOT NULL,
+  pesos_despues jsonb NOT NULL,
+  metricas jsonb,
+  creado_en timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE eventos_ranking (
+  id text PRIMARY KEY,
+  id_trabajador uuid NOT NULL REFERENCES trabajadores (id_usuario),
+  id_trabajo text REFERENCES trabajos (id),
+  tipo_evento text NOT NULL,
+  factores jsonb NOT NULL DEFAULT '{}'::jsonb,
+  creado_en timestamptz NOT NULL DEFAULT now()
+);
+
 ALTER TABLE trabajos
   ADD CONSTRAINT trabajos_cotizacion_seleccionada_fkey
   FOREIGN KEY (id_cotizacion_seleccionada) REFERENCES propuestas_cotizacion (id);
@@ -464,25 +570,36 @@ ALTER TABLE ordenes_cambio
   FOREIGN KEY (id_pago) REFERENCES pagos (id);
 
 COMMENT ON TABLE perfiles IS 'Identidad de app = auth.users.id';
-COMMENT ON TABLE trabajadores IS 'Ficha 1:1. Oferta 4NF en tablas hijas; JSON solo escritura.';
+COMMENT ON COLUMN perfiles.reputacion_cliente IS 'Derivada: promedio de calificaciones_cliente.';
+COMMENT ON TABLE trabajadores IS 'Ficha 1:1. Oferta 4NF en tablas hijas; JSON solo escritura. Agenda en trabajador_horarios.';
 COMMENT ON COLUMN trabajadores.niveles_precio IS 'Escritura. Forma 4NF: trabajador_precios.';
 COMMENT ON COLUMN trabajadores.servicios_personalizados IS 'Escritura. Forma 4NF: trabajador_servicios_extra.';
+COMMENT ON COLUMN trabajadores.score_listado IS 'Orden del marketplace; no es la nota pública.';
+COMMENT ON COLUMN trabajadores.es_elite IS 'GENERATED: calificacion ≥ 4.7 y trabajos_completados ≥ 5.';
+COMMENT ON COLUMN trabajadores.radio_urbano_km IS 'Km alrededor de la base sin recargo de traslado.';
+COMMENT ON TABLE trabajador_horarios IS 'Plantilla semanal {dia:1-7 ISO, hora:HH:MM}. Solo el profesional. El cliente usa horarios_libres_profesional.';
 COMMENT ON TABLE paises IS 'País operativo. Hoy solo CL.';
 COMMENT ON TABLE regiones IS 'Región administrativa chilena.';
 COMMENT ON TABLE comunas IS 'Comuna de cobertura. PK slug = trabajos.id_comuna y trabajadores.id_comuna.';
 COMMENT ON TABLE ubicacion_en_vivo IS 'GPS en vivo del pedido. 1:1 con trabajos.';
 COMMENT ON TABLE app_config IS 'Interruptores de producto (demo_modo, admin_requiere_aal2).';
-COMMENT ON COLUMN trabajadores.calificacion IS 'Derivada: promedio de calificaciones (trigger).';
+COMMENT ON COLUMN trabajadores.calificacion IS 'Derivada: promedio ponderado de calificaciones (trigger).';
 COMMENT ON COLUMN trabajos.estado_pago IS 'Derivada: estado del pago principal (trigger).';
 COMMENT ON TABLE trabajador_precios IS '4NF: un monto por código de tarifa. FK lógica a trabajadores.';
 COMMENT ON TABLE trabajador_servicios_extra IS '4NF: extras tarifados (fijo | por_m2). FK lógica a trabajadores.';
-COMMENT ON TABLE trabajos IS 'Pedido y ciclo de vida. id_trabajador e id_servicio opcionales.';
+COMMENT ON TABLE trabajos IS 'Pedido y ciclo de vida. Un minuto activo por profesional (índice parcial).';
 COMMENT ON TABLE pagos IS 'Escrow Webpay/Oneclick; un principal vivo por trabajo. token_tbk no sale al cliente.';
+COMMENT ON COLUMN pagos.origen_retorno IS 'Origen del navegador contrastado con la allowlist para webpay-commit.';
+COMMENT ON COLUMN pagos.alta_jti IS 'Ticket de un solo uso para que el invitado cree su contraseña.';
 COMMENT ON TABLE liquidaciones IS 'Comprobante de pago al profesional. Un pago → una liquidación.';
 COMMENT ON COLUMN liquidaciones.id_trabajador IS 'text en la BD viva; no FK a trabajadores.id_usuario (uuid)';
 COMMENT ON TABLE metodos_pago_oneclick IS 'Tarjeta inscrita Oneclick; PK text = auth.uid. Solo service_role.';
 COMMENT ON TABLE trabajador_servicios IS 'N:M por slug categoria, no por servicios.id';
 COMMENT ON TABLE cancelaciones_trabajo IS 'Como máximo una cancelación por trabajo (UNIQUE id_trabajo).';
 COMMENT ON TABLE calificaciones IS 'Fuente de trabajadores.calificacion (trigger refrescar_calificacion_trabajador).';
+COMMENT ON TABLE calificaciones_cliente IS 'Doble valoración: el profesional nota al cliente. 1:1 con el trabajo.';
+COMMENT ON COLUMN fotos_trabajo.imagen_webp IS 'Evidencia fotográfica en WebP dentro de la fila.';
+COMMENT ON TABLE ranking_config IS 'Una fila default. Pesos del listado marketplace.';
+COMMENT ON TABLE senales_resena IS 'Cola de reseñas dudosas. Falso positivo baja el peso de la señal.';
 
 COMMIT;

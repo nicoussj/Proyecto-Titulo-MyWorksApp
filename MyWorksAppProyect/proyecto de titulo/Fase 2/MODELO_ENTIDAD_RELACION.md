@@ -4,11 +4,11 @@
 |-------|--------|
 | Proyecto | MyWorksApp |
 | Esquema | PostgreSQL `public` (Supabase) |
-| Tablas | **41** |
+| Tablas | **43** |
 | Convención | español + `snake_case` |
-| Versión | **2.3** — 5 de octubre de 2026 |
+| Versión | **2.3** — 8 de noviembre de 2026 (DBML `Fase 2/modelo_entidad_relacion.dbml`) |
 | Forma | **4NF** en oferta; catálogo **país → región → comuna**; copias derivadas |
-| Fuente | migraciones ES + ranking `20261010000001` |
+| Fuente | migraciones ES hasta `20261108000005` (ranking `20261010000001`, horarios y doble valoración) |
 
 Este archivo es el **modelo entidad-relación del título**, en la **misma forma normal que la base**:
 
@@ -72,7 +72,7 @@ Hubs:
 - `trabajos.id` — pedido y expediente.
 - `pagos.id` — escrow (Webpay / Oneclick).
 
-`perfiles.id` coincide con `auth.users.id` (Auth de Supabase, fuera de las 41 tablas `public`).
+`perfiles.id` coincide con `auth.users.id` (Auth de Supabase, fuera de las 43 tablas `public`).
 
 ---
 
@@ -87,6 +87,19 @@ Ranking de marketplace y confianza de reseñas (`20261010000001_ranking_y_resena
 | `eventos_ranking` / `ranking_aprendizaje` | Aprendizaje auditado por cierres vs disputas |
 | `senales_resena` | Cola de reseñas dudosas; falso positivo baja el peso de la señal |
 | `calificaciones.peso_confianza` / `estado_revision` | vigente / en_revision / excluida |
+
+**Actualización del 8 de noviembre de 2026** (DBML alineado a la BD viva hasta `20261108000005`; commits 5454b94 y 3d7c14c):
+
+| Pieza | Tratamiento |
+|-------|-------------|
+| `trabajador_horarios` (nueva) | Plantilla semanal `[{dia, hora}]`, 1:1 con `trabajadores`. No sale en el REST del catálogo |
+| `calificaciones_cliente` (nueva) | El profesional califica al cliente; alimenta `perfiles.reputacion_cliente` |
+| `perfiles.reputacion_cliente` / `calificaciones_cliente` | Copias que mantiene el trigger al calificar al cliente |
+| `trabajadores.radio_urbano_km` / `tarifa_fuera_radio_clp` | Radio sin recargo y recargo de traslado |
+| `trabajadores.trabajos_completados` / `es_elite` | `es_elite` generada: calificación ≥ 4.7 y ≥ 5 trabajos |
+| `trabajos_trabajador_minuto_activo_uidx` | Índice único parcial: un minuto activo por profesional |
+| `fotos_trabajo.imagen_webp` | Evidencia en WebP (`bytea`) |
+| `pagos.origen_retorno` / `alta_*` | Origen de retorno contra allowlist y ticket de un solo uso para el alta del invitado |
 
 ---
 
@@ -489,7 +502,7 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 
 ---
 
-## Catálogo PK / FK (41 tablas)
+## Catálogo PK / FK (43 tablas)
 
 | Tabla | PK | FK | Apunta a | Null | Cardinalidad |
 |-------|----|----|----------|------|----------------|
@@ -558,10 +571,14 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 | ranking_aprendizaje | id | — | — | — | historial de pesos |
 | eventos_ranking | id | id_trabajador ~ | trabajadores.id_usuario | no | N:1 lógica (SQL sin FK) |
 | eventos_ranking | id | id_trabajo ~ | trabajos.id | sí | N:0..1 lógica (`text`, sin FK) |
+| trabajador_horarios | id_usuario | id_usuario | trabajadores.id_usuario | no | 1:1 (cascade) |
+| calificaciones_cliente | id | id_trabajo | trabajos.id | no | 1:1 (cascade) |
+| calificaciones_cliente | id | id_cliente | perfiles.id | no | N:1 |
+| calificaciones_cliente | id | id_trabajador | trabajadores.id_usuario | no | N:1 |
 
 ---
 
-## Inventario de las 41 tablas
+## Inventario de las 43 tablas
 
 | # | Tabla | Rol en el modelo |
 |---|--------|------------------|
@@ -606,6 +623,8 @@ Ciclos lógicos: `trabajos.id_cotizacion_seleccionada` → `propuestas_cotizacio
 | 39 | senales_resena | Señales de reseña dudosa |
 | 40 | ranking_aprendizaje | Historial de pesos aprendidos |
 | 41 | eventos_ranking | Cierres / disputas para el aprendizaje |
+| 42 | trabajador_horarios | Plantilla semanal del profesional (solo el dueño; el cliente usa la RPC `horarios_libres_profesional`) |
+| 43 | calificaciones_cliente | Doble valoración: el profesional califica al cliente (1:1 con el trabajo) |
 
 ---
 

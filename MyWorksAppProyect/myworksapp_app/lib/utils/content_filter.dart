@@ -6,8 +6,10 @@ import 'package:myworksapp/core/theme/app_colors.dart';
 class ContentFilter {
   ContentFilter._();
 
+  static const String blockedTitle = 'Mensaje no permitido';
+
   static const String blockedMessage =
-      'Por seguridad y garantía de pago (Escrow), no se permite compartir datos de contacto directo.';
+      'Este tipo de mensaje no está permitido. Para proteger a ambas partes y conservar la garantía de pago, no se puede compartir teléfono, correo electrónico, enlaces ni datos de contacto externos. Continúe la conversación dentro de la aplicación.';
 
   /// Correos como `example@email.com`.
   static final RegExp emailPattern = RegExp(
@@ -16,12 +18,17 @@ class ContentFilter {
 
   /// Móviles chilenos: `+56912345678`, `912345678`, con espacios o puntos.
   static final RegExp chileanPhonePattern = RegExp(
-    r'(?<!\d)(?:\+?56[\s.\-]*)?9(?:[\s.\-]?\d){8}(?!\d)',
+    r'(?<!\d)(?:\+?56[\s.\-]*)?[29](?:[\s.\-]?\d){8}(?!\d)',
+  );
+
+  static final RegExp spelledPhonePattern = RegExp(
+    r'(?:cero|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)(?:[\s,\-]+(?:cero|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)){6,}',
+    caseSensitive: false,
   );
 
   /// Palabras usadas para sacar la conversación de la app.
   static final RegExp evasionKeywordsPattern = RegExp(
-    r'(?:whats\s*app|\bwsp\b|ll[aá]mame|h[aá]blame\s+al|telegram|\binsta\b|instagram|wa\.me|t\.me)',
+    r'(?:whats\s*app|w[aá]ts?a+p+|\bwsp\b|guasap|wasap|ll[aá]mame|h[aá]blame\s+al|telegram|\binsta\b|instagram|wa\.me|t\.me|(?:plus|m[aá]s)\s*56)',
     caseSensitive: false,
   );
 
@@ -43,6 +50,7 @@ class ContentFilter {
     return emailPattern.hasMatch(value) ||
         spelledEmailPattern.hasMatch(value) ||
         chileanPhonePattern.hasMatch(value) ||
+        spelledPhonePattern.hasMatch(value) ||
         evasionKeywordsPattern.hasMatch(value) ||
         linkPattern.hasMatch(value);
   }
@@ -54,7 +62,7 @@ class ContentFilter {
       builder: (ctx) => AlertDialog(
         icon: const Icon(Icons.gpp_bad_outlined, color: AppColors.error, size: 36),
         title: const Text(
-          'Mensaje bloqueado',
+          blockedTitle,
           style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700),
         ),
         content: const Text(

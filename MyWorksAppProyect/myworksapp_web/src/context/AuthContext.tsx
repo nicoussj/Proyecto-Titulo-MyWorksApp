@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -18,23 +16,13 @@ import {
   type OAuthProviderId,
 } from '@myworksapp/shared';
 import { supabase } from '../supabaseClient';
+import { AuthContext } from './authContextValue';
 
 /** Mensaje claro cuando un trabajador/admin intenta usar el marketplace web. */
 export const WEB_CLIENT_ROLE_MESSAGE =
   'El sitio web de clientes es solo para cuentas de usuario (cliente). Trabajadores deben usar la app móvil; administradores, el panel desktop.';
 
-interface AuthContextValue {
-  profile: Profile | null;
-  loading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  loginWithOAuth: (provider: OAuthProviderId) => Promise<void>;
-  register: (name: string, email: string, password: string, captchaToken?: string) => Promise<void>;
-  logout: () => Promise<void>;
-  clearError: () => void;
-}
 
-const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
  * El marketplace web solo admite rol `usuario`.
@@ -139,10 +127,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');
-  return ctx;
 }

@@ -14,3 +14,14 @@ class WorkerLoginItem {
     required this.serviceCategory,
   });
 }
+
+List<WorkerLoginItem> sortWorkerLoginItems(List<WorkerLoginItem> items) {
+  final sorted = [...items];
+  sorted.sort((a, b) {
+    final aGas = a.serviceCategory.toLowerCase().contains('gasfit') ? 0 : 1;
+    final bGas = b.serviceCategory.toLowerCase().contains('gasfit') ? 0 : 1;
+    if (aGas != bGas) return aGas - bGas;
+    return a.name.compareTo(b.name);
+  });
+  return sorted;
+}

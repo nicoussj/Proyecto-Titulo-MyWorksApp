@@ -146,6 +146,7 @@ export function PremiumSearchMap({
       13,
     );
     mapRef.current = map;
+    const markers = markersRef.current;
 
     const cartoKey = (import.meta.env.VITE_CARTO_BASEMAPS_KEY ?? '').trim();
     const osmAttribution =
@@ -200,7 +201,7 @@ export function PremiumSearchMap({
       window.removeEventListener('resize', resize);
       observer.disconnect();
       map.off('click', onMapClick);
-      markersRef.current.clear();
+      markers.clear();
       radarRef.current = null;
       clientMarkerRef.current = null;
       mapRef.current = null;
@@ -273,7 +274,8 @@ export function PremiumSearchMap({
       }).addTo(map);
       radarRef.current = circle;
       const marker = markersRef.current.get(selected.id);
-      marker?.setPopupContent(workerPopup(selected, clientLocation));
+      // El efecto de clientLocation refresca este popup cuando cambia la ubicación.
+      marker?.setPopupContent(workerPopup(selected, clientLocRef.current));
       marker?.openPopup();
       const frameRadar = () => {
         map.invalidateSize();
