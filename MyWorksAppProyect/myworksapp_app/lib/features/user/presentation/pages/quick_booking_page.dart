@@ -12,6 +12,7 @@ import '../../../../core/services/pricing_service.dart';
 import '../../../../core/theme/app_decorations.dart';
 import '../../../../core/utils/comuna_utils.dart';
 import '../../../../core/design_system/layout_utils.dart';
+import '../../../../core/domain/booking_schedule.dart';
 import '../../../../core/domain/worker_hours.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/utils/mock_reserved_slots.dart';
@@ -39,7 +40,8 @@ class QuickBookingPage extends ConsumerStatefulWidget {
 }
 
 class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
-  final _addressController = TextEditingController(text: 'Av. Providencia 1234, Santiago');
+  final _addressController =
+      TextEditingController(text: 'Av. Diego Portales 860, Puerto Montt');
   final _notesController = TextEditingController();
   final _workerRepository = WorkerRepository();
   final _userRepository = UserRepository();
@@ -81,7 +83,7 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
     }
   }
 
-  List<String> get _hoursForSelectedDate => slotsOnDate(_freeSlots, _selectedDate)
+  List<String> get _hoursForSelectedDate => openSlotsOnDate(_freeSlots, _selectedDate)
       .map((slot) => MockReservedSlots.format(TimeOfDay.fromDateTime(slot.toLocal())))
       .toList();
 
@@ -93,14 +95,9 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
   }
 
   Future<void> _pickDate() async {
-    // Evita que el teclado se reabra en direccion/notas al cerrar el selector.
-    FocusManager.instance.primaryFocus?.unfocus();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-      locale: const Locale('es', 'CL'),
+    final picked = await pickBookingDate(
+      context,
+      selected: _selectedDate,
     );
     if (picked != null) {
       setState(() {

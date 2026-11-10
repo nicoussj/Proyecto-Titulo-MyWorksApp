@@ -92,6 +92,18 @@ List<DateTime> slotsOnDate(List<DateTime> freeSlots, DateTime date) {
     ..sort();
 }
 
+/// Horas de [date] que todavía no empezaron. Una hora ya pasada no se ofrece.
+List<DateTime> openSlotsOnDate(
+  List<DateTime> freeSlots,
+  DateTime date, {
+  DateTime? now,
+}) {
+  final clock = now ?? DateTime.now();
+  return slotsOnDate(freeSlots, date)
+      .where((slot) => slot.toLocal().isAfter(clock))
+      .toList();
+}
+
 DateTime? matchingFreeSlot({
   required List<DateTime> freeSlots,
   required DateTime date,

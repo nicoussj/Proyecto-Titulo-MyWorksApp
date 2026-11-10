@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/domain/booking_schedule.dart';
 import '../../../../core/domain/worker_hours.dart';
 import '../../../../core/utils/mock_reserved_slots.dart';
 import '../../../../utils/content_filter.dart';
@@ -153,7 +154,7 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
   List<String> get _hoursForSelectedDate {
     final date = _selectedDate;
     if (date == null) return const [];
-    return slotsOnDate(_freeSlots, date)
+    return openSlotsOnDate(_freeSlots, date)
         .map((slot) => MockReservedSlots.format(TimeOfDay.fromDateTime(slot.toLocal())))
         .toList();
   }
@@ -410,18 +411,11 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
       DateTime? scheduledDate;
       if (_selectedDate != null && _selectedTime != null) {
         scheduledDate = matchingFreeSlot(
-              freeSlots: _freeSlots,
-              date: _selectedDate!,
-              hour: _selectedTime!.hour,
-              minute: _selectedTime!.minute,
-            ) ??
-            DateTime(
-              _selectedDate!.year,
-              _selectedDate!.month,
-              _selectedDate!.day,
-              _selectedTime!.hour,
-              _selectedTime!.minute,
-            );
+          freeSlots: _freeSlots,
+          date: _selectedDate!,
+          hour: _selectedTime!.hour,
+          minute: _selectedTime!.minute,
+        );
       }
 
       final comuna = inferComunaKey(_selectedAddress);
@@ -872,15 +866,10 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
                             : DateFormat('dd/MM/yyyy').format(_selectedDate!),
                       ),
                       onTap: () async {
-                        // Sin esto, al cerrar el selector el foco vuelve
-                        // a la descripcion y se reabre el teclado.
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate:
-                              DateTime.now().add(const Duration(days: 365)),
+                        final date = await pickBookingDate(
+                          context,
+                          selected: _selectedDate,
+                          horizonDays: 365,
                         );
                         if (date != null) {
                           setState(() {
