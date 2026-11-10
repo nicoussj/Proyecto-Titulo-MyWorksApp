@@ -83,14 +83,6 @@ class WorkerRepository {
       listed.add(worker);
     }
 
-    // Fallback de integridad: Si el filtro de zona o disponibilidad dejó 0 resultados,
-    // devolver los trabajadores de la categoría para no dejar al cliente sin alternativas demo.
-    if (listed.isEmpty) {
-      for (final worker in workers) {
-        listed.add(worker);
-      }
-    }
-
     WorkerReputationService.instance.sortForListing(
       listed,
       clientLatitude: near?.latitude,

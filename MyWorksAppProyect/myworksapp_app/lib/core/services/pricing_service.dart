@@ -139,6 +139,9 @@ class PricingService {
   }
 
   static const _comunaFactors = <String, double>{
+    'puerto_montt': 1.0,
+    'puerto_varas': 1.0,
+    'osorno': 0.98,
     'providencia': 1.08,
     'las_condes': 1.10,
     'santiago': 1.0,

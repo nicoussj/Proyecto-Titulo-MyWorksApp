@@ -14,7 +14,7 @@ class LiveWorkerRadarWidget extends StatefulWidget {
   const LiveWorkerRadarWidget({
     super.key,
     required this.workers,
-    this.city = 'Santiago / Puerto Montt',
+    this.city = 'Puerto Montt, Los Lagos',
   });
 
   @override

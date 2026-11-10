@@ -321,31 +321,15 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
           service.category,
           near: _userLocation,
         );
-        if (workers.isEmpty) {
-          workers = await _workerRepository.getWorkersByServiceCategory(
-            service.category,
-            near: null,
-          );
-        }
       } else {
         workers = await _workerRepository.getAvailableWorkersWithoutActiveJobs(
           near: _userLocation,
         );
-        if (workers.isEmpty) {
-          workers = await _workerRepository.getAvailableWorkersWithoutActiveJobs(
-            near: null,
-          );
-        }
       }
     } else {
       workers = await _workerRepository.getAvailableWorkersWithoutActiveJobs(
         near: _userLocation,
       );
-      if (workers.isEmpty) {
-        workers = await _workerRepository.getAvailableWorkersWithoutActiveJobs(
-          near: null,
-        );
-      }
     }
 
     _busyWorkerIds = {};
