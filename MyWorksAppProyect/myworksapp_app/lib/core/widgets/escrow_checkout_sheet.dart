@@ -230,8 +230,8 @@ class _EscrowCheckoutSheetState extends ConsumerState<EscrowCheckoutSheet> {
                     Expanded(
                       child: Text(
                         kIsWeb
-                            ? 'Puedes pagar este pedido en Transbank sin guardar la tarjeta, o inscribirla para los siguientes.'
-                            : 'Paga con la tarjeta inscrita, inscríbela ahora o paga este pedido en Transbank sin guardarla.',
+                            ? 'Primera confirmación: el monto queda retenido en Transbank. Se libera solo cuando recibas conforme el trabajo.'
+                            : 'Primera confirmación: el monto queda retenido. Se libera solo cuando recibas conforme el trabajo.',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.brandOrange,

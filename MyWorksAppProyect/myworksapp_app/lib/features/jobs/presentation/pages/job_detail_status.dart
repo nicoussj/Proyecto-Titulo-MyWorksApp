@@ -227,17 +227,15 @@ extension JobDetailStatusActions on _JobDetailPageState {
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pop(context, true);
-                context.push('${AppConstants.routeJobPhotos}/${widget.jobId}');
-              },
+              onPressed: () => Navigator.pop(context, true),
               child: const Text('Subir evidencia'),
             ),
           ],
         ),
       );
 
-      if (confirm != true) return;
+      if (confirm != true || !mounted) return;
+      context.push('${AppConstants.routeJobPhotos}/${widget.jobId}');
       return;
     }
 

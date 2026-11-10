@@ -65,7 +65,7 @@ class JobDetailClientApprovalCard extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onApprove,
               icon: const Icon(Icons.check_circle),
-              label: const Text('Recibo conforme'),
+              label: const Text('Segunda confirmación: recibo conforme'),
             ),
             const SizedBox(height: 8),
             OutlinedButton(

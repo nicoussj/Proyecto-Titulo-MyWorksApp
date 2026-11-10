@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 
 import '../database/models/job_model.dart';
 import '../database/repositories/job_repository.dart';
+import '../domain/escrow_confirmation.dart';
 import '../domain/price_quote.dart';
 import '../domain/pricing_constants.dart';
 import '../domain/worker_service_options_catalog.dart';
@@ -367,6 +368,7 @@ class JobBookingService {
     if (job == null) throw AppError.notFound('Trabajo no encontrado');
     if (job.userId != userId) throw AppError.permission('Sin permiso');
 
+    if (escrowReleaseAlreadyConfirmed(job.status)) return job;
     if (job.status != PricingConstants.jobAwaitingClientApproval) {
       throw AppError.validation('El trabajo no está pendiente de tu aprobación');
     }
@@ -406,7 +408,7 @@ class JobBookingService {
     if (job == null) throw AppError.notFound('Trabajo no encontrado');
     if (job.userId != userId) throw AppError.permission('Sin permiso');
 
-    if (job.status == AppConstants.jobStatusPending) return job;
+    if (escrowHoldAlreadyConfirmed(job.status)) return job;
     if (job.status != PricingConstants.jobAwaitingPayment) {
       throw AppError.validation('El trabajo no está pendiente de pago');
     }
