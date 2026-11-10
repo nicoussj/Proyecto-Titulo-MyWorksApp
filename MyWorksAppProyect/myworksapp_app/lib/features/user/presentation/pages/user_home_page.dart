@@ -22,6 +22,7 @@ import '../../../../core/widgets/design_system/app_brand_logo.dart';
 import '../../../../core/widgets/design_system/auth_soft_background.dart';
 import '../../../../core/widgets/design_system/error_state_widget.dart';
 import '../../../../core/widgets/profile_avatar_picker.dart';
+import '../widgets/testing_feedback_sheet.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../payments/presentation/pages/card_enrollment_page.dart';
 import '../../../../core/providers/service_providers.dart';
@@ -229,6 +230,16 @@ class _UserHomePageState extends ConsumerState<UserHomePage> {
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                   color: mutedColor,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: OutlinedButton.icon(
+                                  onPressed: () =>
+                                      TestingFeedbackSheet.show(context),
+                                  icon: const Icon(Icons.rate_review_outlined),
+                                  label: const Text('Feedback de la prueba'),
                                 ),
                               ),
                               const SizedBox(height: 16),
