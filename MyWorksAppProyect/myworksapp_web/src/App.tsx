@@ -345,6 +345,7 @@ export function App() {
   const [showGuestCheckout, setShowGuestCheckout] = useState(false);
 
   const [checkoutJobId, setCheckoutJobId] = useState<string | null>(null);
+  const [pendingAgreement, setPendingAgreement] = useState<{ id: string; tipo: string } | null>(null);
   const [scheduledAt, setScheduledAt] = useState<string | null>(null);
   const [bookingSlots, setBookingSlots] = useState<string[]>([]);
   const [bookingSlotsLoading, setBookingSlotsLoading] = useState(false);
@@ -452,6 +453,14 @@ export function App() {
       })
       .catch(() => {
         // Se conserva la última evidencia visible si la carga falla.
+      });
+    void supabase.rpc('acuerdo_pendiente', { p_id_trabajo: checkoutJobId })
+      .then(({ data }) => {
+        const row = data?.[0];
+        if (!cancelled) setPendingAgreement(row ? { id: row.id, tipo: row.tipo } : null);
+      })
+      .catch(() => {
+        if (!cancelled) setPendingAgreement(null);
       });
     loadSnapshot();
     const timer = window.setInterval(() => {
@@ -1312,13 +1321,37 @@ export function App() {
             if (error) throw new Error(error.message);
           } : undefined}
 
+          pendingAgreement={pendingAgreement}
+          onProposeAgreement={profile ? async (tipo) => {
+            if (!checkoutJobId) throw new Error('Falta el trabajo.');
+            const { error } = await supabase.rpc('proponer_acuerdo', {
+              p_id: crypto.randomUUID(),
+              p_id_trabajo: checkoutJobId,
+              p_tipo: tipo,
+            });
+            if (error) throw new Error(error.message);
+            const { data } = await supabase.rpc('acuerdo_pendiente', { p_id_trabajo: checkoutJobId });
+            const row = data?.[0];
+            setPendingAgreement(row ? { id: row.id, tipo: row.tipo } : null);
+          } : undefined}
+          onRespondAgreement={profile && pendingAgreement ? async (acepta) => {
+            const { error } = await supabase.rpc('responder_acuerdo', {
+              p_id: pendingAgreement.id,
+              p_acepta: acepta,
+            });
+            if (error) throw new Error(error.message);
+            if (!checkoutJobId) return;
+            const { data } = await supabase.rpc('acuerdo_pendiente', { p_id_trabajo: checkoutJobId });
+            const row = data?.[0];
+            setPendingAgreement(row ? { id: row.id, tipo: row.tipo } : null);
+          } : undefined}
           onAddDisputeComment={profile ? async (comment) => {
             if (!checkoutJobId) throw new Error('Falta el trabajo.');
             const { data, error } = await supabase
               .from('disputas')
               .select('id')
               .eq('id_trabajo', checkoutJobId)
-              .in('estado', ['abierta', 'en_revision'])
+              .in('estado', ['abierta', 'en_revision', 'requiere_humano', 'reembolso_pendiente'])
               .order('creado_en', { ascending: false })
               .limit(1)
               .maybeSingle();

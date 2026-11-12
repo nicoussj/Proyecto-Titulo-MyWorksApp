@@ -43,6 +43,9 @@ interface TrackingDashboardProps {
   confirmError?: string | null;
   onOpenDispute?: (reason: string, detail: string) => Promise<void>;
   onAddDisputeComment?: (comment: string) => Promise<void>;
+  onProposeAgreement?: (tipo: 'aceptar' | 'rehacer' | 'anular') => Promise<void>;
+  onRespondAgreement?: (acepta: boolean) => Promise<void>;
+  pendingAgreement?: { id: string; tipo: string } | null;
   evidencePhotos?: JobEvidencePhoto[];
 }
 
@@ -76,6 +79,9 @@ export function TrackingDashboard({
   confirmError = null,
   onOpenDispute,
   onAddDisputeComment,
+  onProposeAgreement,
+  onRespondAgreement,
+  pendingAgreement = null,
   evidencePhotos = [],
 }: TrackingDashboardProps) {
   const [showPayment, setShowPayment] = useState(false);
@@ -247,6 +253,27 @@ export function TrackingDashboard({
             <MessageCircle size={18} /> Abrir chat
           </button>
 
+          {!closedJob && onProposeAgreement ? (
+            <div className="tracking-escrow-card">
+              <strong>Resolver entre ustedes</strong>
+              <p>Si los dos están de acuerdo, el sistema cierra el caso sin una persona de soporte.</p>
+              {pendingAgreement ? (
+                <p>Hay un acuerdo pendiente: {pendingAgreement.tipo}.</p>
+              ) : null}
+              <div>
+                <button type="button" className="btn-primary" onClick={() => void onProposeAgreement('aceptar').then(() => setDisputeNote('Acuerdo enviado. Falta que la otra parte lo confirme.')).catch((error: unknown) => setDisputeNote(error instanceof Error ? error.message : 'No se pudo proponer el acuerdo.'))}>Aceptar la entrega</button>
+                <button type="button" className="btn-ghost" onClick={() => void onProposeAgreement('rehacer').then(() => setDisputeNote('Acuerdo enviado. Falta que la otra parte lo confirme.')).catch((error: unknown) => setDisputeNote(error instanceof Error ? error.message : 'No se pudo proponer el acuerdo.'))}>Pedir que lo rehaga</button>
+                <button type="button" className="btn-ghost" onClick={() => void onProposeAgreement('anular').then(() => setDisputeNote('Acuerdo enviado. Falta que la otra parte lo confirme.')).catch((error: unknown) => setDisputeNote(error instanceof Error ? error.message : 'No se pudo proponer el acuerdo.'))}>Anular y devolver el pago</button>
+                {pendingAgreement && onRespondAgreement ? (
+                  <>
+                    <button type="button" className="btn-primary" onClick={() => void onRespondAgreement(true)}>Confirmar acuerdo</button>
+                    <button type="button" className="btn-ghost" onClick={() => void onRespondAgreement(false)}>Rechazar acuerdo</button>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           {!closedJob && onOpenDispute ? (
             <form
               className="tracking-escrow-card"
@@ -264,7 +291,7 @@ export function TrackingDashboard({
             >
               <div>
                 <strong>Abrir disputa</strong>
-                <p>Solo atención al cliente la resuelve. Tú puedes dejar el motivo y un comentario.</p>
+                <p>El pago sigue retenido. Si el caso es simple, se cierra solo al vencer el plazo. Conducta, reincidencia o un monto alto los ve una persona.</p>
                 <label>
                   Motivo
                   <select value={disputeReason} onChange={(event) => setDisputeReason(event.target.value)}>

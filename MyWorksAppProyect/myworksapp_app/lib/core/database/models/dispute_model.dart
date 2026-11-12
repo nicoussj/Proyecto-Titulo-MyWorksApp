@@ -12,6 +12,8 @@ class DisputeModel {
   final String? description;
   final String status; // 'abierta', 'en_revision', 'resuelta'
   final String? resolution; // Resolución de la disputa
+  final String? suggestedDecision;
+  final String? rule;
   final String? resolvedBy; // Admin que resolvió
   final DateTime? resolvedAt;
   final DateTime createdAt;
@@ -25,6 +27,8 @@ class DisputeModel {
     this.description,
     required this.status,
     this.resolution,
+    this.suggestedDecision,
+    this.rule,
     this.resolvedBy,
     this.resolvedAt,
     required this.createdAt,
@@ -56,6 +60,8 @@ class DisputeModel {
       description: map['descripcion'] as String?,
       status: map['estado'] as String,
       resolution: map['resolucion'] as String?,
+      suggestedDecision: map['decision_sugerida'] as String?,
+      rule: map['motivo_regla'] as String?,
       resolvedBy: map['resuelta_por'] as String?,
       resolvedAt: map['resuelta_en'] != null
           ? DateTime.parse(map['resuelta_en'] as String)
@@ -86,6 +92,8 @@ class DisputeModel {
       description: description ?? this.description,
       status: status ?? this.status,
       resolution: resolution ?? this.resolution,
+      suggestedDecision: this.suggestedDecision,
+      rule: this.rule,
       resolvedBy: resolvedBy ?? this.resolvedBy,
       resolvedAt: resolvedAt ?? this.resolvedAt,
       createdAt: createdAt ?? this.createdAt,

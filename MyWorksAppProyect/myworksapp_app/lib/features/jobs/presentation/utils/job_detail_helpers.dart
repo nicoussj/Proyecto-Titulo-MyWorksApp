@@ -66,7 +66,9 @@ class JobDetailHelpers {
   static bool canOpenDispute(JobModel job, DisputeModel? dispute) {
     if (dispute != null &&
         (dispute.status == AppConstants.disputeStatusOpen ||
-            dispute.status == AppConstants.disputeStatusUnderReview)) {
+            dispute.status == AppConstants.disputeStatusUnderReview ||
+            dispute.status == AppConstants.disputeStatusNeedsHuman ||
+            dispute.status == AppConstants.disputeStatusRefundPending)) {
       return false;
     }
     return job.status == AppConstants.jobStatusAccepted ||

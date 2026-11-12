@@ -10,6 +10,8 @@ typedef OpenDisputeCallback = Future<void> Function(
 );
 
 typedef AddDisputeCommentCallback = Future<void> Function(String comment);
+typedef ProposeAgreementCallback = Future<void> Function(String type);
+typedef RespondAgreementCallback = Future<void> Function(bool accept);
 
 class DisputeSection extends StatelessWidget {
   const DisputeSection({
@@ -19,6 +21,10 @@ class DisputeSection extends StatelessWidget {
     required this.isParticipant,
     this.onOpenDispute,
     this.onAddComment,
+    this.onProposeAgreement,
+    this.onRespondAgreement,
+    this.pendingAgreementType,
+    this.pendingAgreementId,
   });
 
   final DisputeModel? dispute;
@@ -26,6 +32,10 @@ class DisputeSection extends StatelessWidget {
   final bool isParticipant;
   final OpenDisputeCallback? onOpenDispute;
   final AddDisputeCommentCallback? onAddComment;
+  final ProposeAgreementCallback? onProposeAgreement;
+  final RespondAgreementCallback? onRespondAgreement;
+  final String? pendingAgreementType;
+  final String? pendingAgreementId;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +45,10 @@ class DisputeSection extends StatelessWidget {
       return _DisputeStatusCard(
         dispute: dispute!,
         onAddComment: onAddComment,
+        onProposeAgreement: onProposeAgreement,
+        onRespondAgreement: onRespondAgreement,
+        pendingAgreementType: pendingAgreementType,
+        pendingAgreementId: pendingAgreementId,
       );
     }
 
@@ -61,9 +75,46 @@ class DisputeSection extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Se abre un ticket de atención al cliente. El pago sigue retenido hasta que ellos lo liberen al profesional o lo devuelvan a tu tarjeta.',
+              'Si los dos están de acuerdo, el sistema cierra el caso. Si abres una disputa, el pago queda retenido: los casos simples se cierran solos al vencer el plazo y el resto lo ve una persona.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            if (pendingAgreementType != null) ...[
+              const SizedBox(height: 8),
+              Text('Acuerdo pendiente: $pendingAgreementType'),
+              if (onRespondAgreement != null && pendingAgreementId != null)
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => onRespondAgreement!(true),
+                      child: const Text('Confirmar'),
+                    ),
+                    TextButton(
+                      onPressed: () => onRespondAgreement!(false),
+                      child: const Text('Rechazar'),
+                    ),
+                  ],
+                ),
+            ],
+            if (onProposeAgreement != null) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () => onProposeAgreement!('aceptar'),
+                    child: const Text('Aceptar entrega'),
+                  ),
+                  TextButton(
+                    onPressed: () => onProposeAgreement!('rehacer'),
+                    child: const Text('Rehacer'),
+                  ),
+                  TextButton(
+                    onPressed: () => onProposeAgreement!('anular'),
+                    child: const Text('Anular'),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: () => _openDisputeFlow(context),
@@ -120,10 +171,21 @@ class DisputeSection extends StatelessWidget {
 }
 
 class _DisputeStatusCard extends StatefulWidget {
-  const _DisputeStatusCard({required this.dispute, this.onAddComment});
+  const _DisputeStatusCard({
+    required this.dispute,
+    this.onAddComment,
+    this.onProposeAgreement,
+    this.onRespondAgreement,
+    this.pendingAgreementType,
+    this.pendingAgreementId,
+  });
 
   final DisputeModel dispute;
   final AddDisputeCommentCallback? onAddComment;
+  final ProposeAgreementCallback? onProposeAgreement;
+  final RespondAgreementCallback? onRespondAgreement;
+  final String? pendingAgreementType;
+  final String? pendingAgreementId;
 
   @override
   State<_DisputeStatusCard> createState() => _DisputeStatusCardState();
@@ -157,7 +219,9 @@ class _DisputeStatusCardState extends State<_DisputeStatusCard> {
   @override
   Widget build(BuildContext context) {
     final isOpen = dispute.status == AppConstants.disputeStatusOpen ||
-        dispute.status == AppConstants.disputeStatusUnderReview;
+        dispute.status == AppConstants.disputeStatusUnderReview ||
+        dispute.status == AppConstants.disputeStatusNeedsHuman ||
+        dispute.status == AppConstants.disputeStatusRefundPending;
 
     return Card(
       child: Padding(
@@ -173,13 +237,53 @@ class _DisputeStatusCardState extends State<_DisputeStatusCard> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isOpen ? 'Disputa abierta' : 'Disputa resuelta',
+                  dispute.status == AppConstants.disputeStatusNeedsHuman
+                      ? 'Una persona va a revisar este caso'
+                      : dispute.status == AppConstants.disputeStatusRefundPending
+                          ? 'La devolución a la tarjeta está en curso'
+                          : isOpen
+                              ? 'Disputa abierta'
+                              : 'Disputa resuelta',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text('Motivo: ${_reasonLabel(dispute.reason)}'),
+            if (dispute.rule != null) Text('Regla: ${dispute.rule}'),
+            if (widget.pendingAgreementType != null)
+              Text('Acuerdo pendiente: ${widget.pendingAgreementType}'),
+            if (widget.onProposeAgreement != null)
+              Wrap(
+                spacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () => widget.onProposeAgreement!('aceptar'),
+                    child: const Text('Aceptar entrega'),
+                  ),
+                  TextButton(
+                    onPressed: () => widget.onProposeAgreement!('rehacer'),
+                    child: const Text('Rehacer'),
+                  ),
+                  TextButton(
+                    onPressed: () => widget.onProposeAgreement!('anular'),
+                    child: const Text('Anular'),
+                  ),
+                ],
+              ),
+            if (widget.onRespondAgreement != null && widget.pendingAgreementId != null)
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () => widget.onRespondAgreement!(true),
+                    child: const Text('Confirmar acuerdo'),
+                  ),
+                  TextButton(
+                    onPressed: () => widget.onRespondAgreement!(false),
+                    child: const Text('Rechazar'),
+                  ),
+                ],
+              ),
             if (dispute.description != null && dispute.description!.isNotEmpty)
               Text(dispute.description!),
             if (dispute.resolution != null) ...[

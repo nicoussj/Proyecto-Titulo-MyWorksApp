@@ -76,6 +76,8 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
   JobModel? _job;
   List<ChangeOrderModel> _changeOrders = [];
   DisputeModel? _dispute;
+  String? _pendingAgreementId;
+  String? _pendingAgreementType;
   List<QuoteProposalModel> _quoteProposals = [];
   final WorkerRepository _workerRepository = WorkerRepository();
   String? _invitedWorkerName;
@@ -167,7 +169,51 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
 
   Future<void> _loadDispute(String jobId) async {
     final dispute = await DisputeService.instance.getDisputeByJobId(jobId);
-    if (mounted) setState(() => _dispute = dispute);
+    final agreement = await DisputeService.instance.pendingAgreement(jobId);
+    if (mounted) {
+      setState(() {
+        _dispute = dispute;
+        _pendingAgreementId = agreement?['id'] as String?;
+        _pendingAgreementType = agreement?['tipo'] as String?;
+      });
+    }
+  }
+
+  Future<void> _proposeAgreement(String type) async {
+    final job = _job;
+    if (job == null) return;
+    try {
+      await DisputeService.instance.proposeAgreement(jobId: job.id, type: type);
+      await _loadDispute(job.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Acuerdo enviado. Falta que la otra parte lo confirme.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+      );
+    }
+  }
+
+  Future<void> _respondAgreement(bool accept) async {
+    final id = _pendingAgreementId;
+    final job = _job;
+    if (id == null || job == null) return;
+    try {
+      await DisputeService.instance.respondAgreement(id: id, accept: accept);
+      await _loadJobDetails();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(accept ? 'Acuerdo confirmado.' : 'Acuerdo rechazado.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+      );
+    }
   }
 
   bool _canOpenDispute(JobModel job) =>
@@ -221,7 +267,7 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Ticket abierto. El pago sigue retenido hasta que atención al cliente lo resuelva.',
+            'Disputa abierta. El pago sigue retenido. Si el caso es simple, se cierra solo al vencer el plazo.',
           ),
         ),
       );

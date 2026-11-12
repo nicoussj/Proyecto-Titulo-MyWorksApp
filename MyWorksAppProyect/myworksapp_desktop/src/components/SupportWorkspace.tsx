@@ -26,6 +26,8 @@ interface Ticket {
   escrowAmount: number;
   date: string;
   status: 'Pending' | 'Resolved';
+  rule: string | null;
+  decision: string | null;
 }
 
 interface SupportWorkspaceProps {
@@ -43,6 +45,8 @@ function mapDisputesToTickets(
     escrowAmount: dispute.escrowAmount,
     date: formatDbDateTime(dispute.createdAt),
     status: dispute.status === 'resuelta' ? ('Resolved' as const) : ('Pending' as const),
+    rule: dispute.rule ?? null,
+    decision: dispute.suggestedDecision ?? null,
   }));
 }
 
@@ -106,6 +110,17 @@ export function SupportWorkspace({ adminId }: SupportWorkspaceProps) {
   }, [selectedId, tickets]);
 
   const selectedTicket = tickets.find((t) => t.id === selectedId) ?? null;
+  const evidenceQuery = useQuery({
+    queryKey: ['dispute-evidence', selectedId],
+    enabled: Boolean(selectedId),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('evidencia_disputa', {
+        p_id_disputa: selectedId ?? '',
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const filtered = tickets.filter(
     (t) =>
@@ -331,7 +346,7 @@ export function SupportWorkspace({ adminId }: SupportWorkspaceProps) {
 
             {!loading && filtered.length === 0 && (
 
-              <p className="support-empty">No hay disputas abiertas.</p>
+              <p className="support-empty">No hay casos que requieran una persona.</p>
 
             )}
 
@@ -436,7 +451,7 @@ export function SupportWorkspace({ adminId }: SupportWorkspaceProps) {
 
                   <span>Abierto el {selectedTicket.date}</span>
 
-                  <span><Shield size={12} /> Prioridad: Media</span>
+                  <span><Shield size={12} /> {selectedTicket.rule ?? 'Revisión humana'}</span>
 
                 </div>
 
@@ -474,28 +489,20 @@ export function SupportWorkspace({ adminId }: SupportWorkspaceProps) {
 
               <div className="support-evidence">
 
-                <h3>EVIDENCIA: COMPARACIÓN ANTES / DESPUÉS</h3>
+                <h3>EVIDENCIA DEL TRABAJO</h3>
 
                 <div className="support-evidence-grid">
-
-                  <div className="support-evidence-card">
-
-                    <span className="support-evidence-tag">ANTES (ACORDADO)</span>
-
-                    <div className="support-evidence-img support-evidence-img--before" />
-
-                  </div>
-
-                  <div className="support-evidence-vs">VS</div>
-
-                  <div className="support-evidence-card">
-
-                    <span className="support-evidence-tag support-evidence-tag--after">DESPUÉS (ENTREGADO)</span>
-
-                    <div className="support-evidence-img support-evidence-img--after" />
-
-                  </div>
-
+                  {(evidenceQuery.data ?? []).length === 0 ? (
+                    <p>Este caso no tiene fotos cargadas.</p>
+                  ) : (evidenceQuery.data ?? []).map((photo) => (
+                    <img
+                      key={photo.id}
+                      src={`data:image/webp;base64,${photo.imagen_base64}`}
+                      alt="Evidencia del trabajo"
+                      width={180}
+                      height={140}
+                    />
+                  ))}
                 </div>
 
                 <div className="support-evidence-footer">
@@ -529,7 +536,11 @@ export function SupportWorkspace({ adminId }: SupportWorkspaceProps) {
                   </div>
 
                   <p>{selectedTicket.issue}</p>
-                  <p>La conversación entre cliente y profesional está en la app. Aquí solo se decide el pago.</p>
+                  <p>
+                    Regla: {selectedTicket.rule ?? 'revisión manual'}.
+                    Decisión sugerida: {selectedTicket.decision ?? 'humano'}.
+                    El chat completo sigue en la app. Aquí solo se mueve el pago.
+                  </p>
                 </div>
               </div>
 

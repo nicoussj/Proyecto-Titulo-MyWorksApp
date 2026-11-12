@@ -42,6 +42,38 @@ class DisputeRepository {
     await supabase.from(_table).update(dispute.toMap()).eq('id', dispute.id);
   }
 
+  Future<Map<String, dynamic>?> pendingAgreement(String jobId) async {
+    final rows = await supabase.rpc('acuerdo_pendiente', params: {
+      'p_id_trabajo': jobId,
+    });
+    if (rows is List && rows.isNotEmpty && rows.first is Map) {
+      return Map<String, dynamic>.from(rows.first as Map);
+    }
+    return null;
+  }
+
+  Future<void> proposeAgreement({
+    required String id,
+    required String jobId,
+    required String type,
+  }) async {
+    await supabase.rpc('proponer_acuerdo', params: {
+      'p_id': id,
+      'p_id_trabajo': jobId,
+      'p_tipo': type,
+    });
+  }
+
+  Future<void> respondAgreement({
+    required String id,
+    required bool accept,
+  }) async {
+    await supabase.rpc('responder_acuerdo', params: {
+      'p_id': id,
+      'p_acepta': accept,
+    });
+  }
+
   Future<List<DisputeModel>> getOpenDisputes() async {
     final rows = await supabase
         .from(_table)

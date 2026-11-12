@@ -34,6 +34,10 @@ function mapDispute(row: Record<string, unknown>): DisputeRow {
     description: row.descripcion as string | null,
     status: row.estado as DisputeStatus,
     resolution: row.resolucion as string | null,
+    origin: row.origen as string | null,
+    suggestedDecision: row.decision_sugerida as DisputeRow['suggestedDecision'],
+    rule: row.motivo_regla as string | null,
+    dueAt: row.vence_en as string | null,
     createdAt: row.creado_en as string,
     updatedAt: row.actualizado_en as string,
   };
@@ -44,8 +48,8 @@ export async function fetchOpenDisputes(
 ): Promise<DisputeWithContext[]> {
   const { data, error } = await supabase
     .from('disputas')
-    .select('id, id_trabajo, abierta_por, motivo, descripcion, estado, resolucion, creado_en, actualizado_en')
-    .in('estado', ['abierta', 'en_revision'])
+    .select('id, id_trabajo, abierta_por, motivo, descripcion, estado, resolucion, origen, decision_sugerida, motivo_regla, vence_en, creado_en, actualizado_en')
+    .in('estado', ['requiere_humano', 'reembolso_pendiente'])
     .order('creado_en', { ascending: false });
 
   if (error) throw error;

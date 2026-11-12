@@ -134,7 +134,10 @@ class DisputeService {
     try {
       final dispute = await _disputeRepository.getDisputeByJobId(jobId);
       return dispute != null &&
-          (dispute.status == 'abierta' || dispute.status == 'en_revision');
+          (dispute.status == 'abierta' ||
+              dispute.status == 'en_revision' ||
+              dispute.status == 'requiere_humano' ||
+              dispute.status == 'reembolso_pendiente');
     } catch (e) {
       AppLogger.e('Error verificando disputa', e);
       return false;
@@ -145,6 +148,28 @@ class DisputeService {
   Future<bool> canRateJob(String jobId) async {
     final hasDispute = await hasOpenDispute(jobId);
     return !hasDispute;
+  }
+
+  Future<void> proposeAgreement({
+    required String jobId,
+    required String type,
+  }) async {
+    await _disputeRepository.proposeAgreement(
+      id: const Uuid().v4(),
+      jobId: jobId,
+      type: type,
+    );
+  }
+
+  Future<Map<String, dynamic>?> pendingAgreement(String jobId) {
+    return _disputeRepository.pendingAgreement(jobId);
+  }
+
+  Future<void> respondAgreement({
+    required String id,
+    required bool accept,
+  }) {
+    return _disputeRepository.respondAgreement(id: id, accept: accept);
   }
 
   /// Obtiene la disputa de un job

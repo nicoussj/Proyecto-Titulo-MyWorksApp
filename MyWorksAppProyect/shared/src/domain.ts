@@ -92,6 +92,8 @@ export const PRICING_MODES = Object.values(PricingModes);
 export const DisputeStatuses = {
   open: 'abierta',
   underReview: 'en_revision',
+  needsHuman: 'requiere_humano',
+  refundPending: 'reembolso_pendiente',
   resolved: 'resuelta',
 } as const;
 

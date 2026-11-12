@@ -8,7 +8,7 @@ export async function jobHasOpenDispute(
     .from("disputas")
     .select("id")
     .eq("id_trabajo", jobId)
-    .in("estado", ["abierta", "en_revision"])
+    .in("estado", ["abierta", "en_revision", "requiere_humano", "reembolso_pendiente"])
     .limit(1);
   if (error) throw new Error(error.message);
   return Array.isArray(data) && data.length > 0;

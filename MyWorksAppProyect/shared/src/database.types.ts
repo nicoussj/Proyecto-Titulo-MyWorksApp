@@ -301,6 +301,10 @@ export type Database = {
           id: string
           id_trabajo: string
           motivo: string
+          motivo_regla: string | null
+          origen: string
+          decision_sugerida: string | null
+          vence_en: string | null
           resolucion: string | null
           resuelta_en: string | null
           resuelta_por: string | null
@@ -314,6 +318,10 @@ export type Database = {
           id: string
           id_trabajo: string
           motivo: string
+          motivo_regla?: string | null
+          origen?: string
+          decision_sugerida?: string | null
+          vence_en?: string | null
           resolucion?: string | null
           resuelta_en?: string | null
           resuelta_por?: string | null
@@ -327,6 +335,10 @@ export type Database = {
           id?: string
           id_trabajo?: string
           motivo?: string
+          motivo_regla?: string | null
+          origen?: string
+          decision_sugerida?: string | null
+          vence_en?: string | null
           resolucion?: string | null
           resuelta_en?: string | null
           resuelta_por?: string | null
@@ -1271,6 +1283,28 @@ export type Database = {
       comentar_disputa: {
         Args: { p_id: string; p_comentario: string }
         Returns: undefined
+      }
+      proponer_acuerdo: {
+        Args: { p_id: string; p_id_trabajo: string; p_tipo: string }
+        Returns: Json
+      }
+      responder_acuerdo: {
+        Args: { p_id: string; p_acepta: boolean }
+        Returns: Json
+      }
+      acuerdo_pendiente: {
+        Args: { p_id_trabajo: string }
+        Returns: {
+          id: string
+          tipo: string
+          estado: string
+          acepta_cliente: boolean | null
+          acepta_trabajador: boolean | null
+        }[]
+      }
+      evidencia_disputa: {
+        Args: { p_id_disputa: string }
+        Returns: { id: string; imagen_base64: string }[]
       }
       es_parte_trabajo: { Args: { p_trabajo_id: string }; Returns: boolean }
       es_rol_trabajador: { Args: { p_usuario_id: string }; Returns: boolean }

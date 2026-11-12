@@ -28,6 +28,9 @@ verify_jwt = true
 [functions.webpay-resolve-dispute]
 verify_jwt = true
 
+[functions.soporte-automatico]
+verify_jwt = false
+
 [functions.webpay-refund-rejection]
 verify_jwt = true
 

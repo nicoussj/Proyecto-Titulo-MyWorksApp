@@ -21,6 +21,8 @@ class AppConstants {
   // Estados de disputa
   static const String disputeStatusOpen = 'abierta';
   static const String disputeStatusUnderReview = 'en_revision';
+  static const String disputeStatusNeedsHuman = 'requiere_humano';
+  static const String disputeStatusRefundPending = 'reembolso_pendiente';
   static const String disputeStatusResolved = 'resuelta';
 
   // Estados de reporte / reclamo

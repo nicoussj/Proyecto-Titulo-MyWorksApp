@@ -54,6 +54,8 @@ describe('domain constants', () => {
     assert.deepEqual(DISPUTE_STATUSES, [
       'abierta',
       'en_revision',
+      'requiere_humano',
+      'reembolso_pendiente',
       'resuelta',
     ]);
   });

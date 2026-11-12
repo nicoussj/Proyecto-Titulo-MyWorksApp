@@ -668,6 +668,10 @@ extension JobDetailWorkflows on _JobDetailPageState {
               canOpenDispute: _canOpenDispute(_job!),
               onOpenDispute: _openDispute,
               onAddComment: _addDisputeComment,
+              onProposeAgreement: _proposeAgreement,
+              onRespondAgreement: _respondAgreement,
+              pendingAgreementId: _pendingAgreementId,
+              pendingAgreementType: _pendingAgreementType,
             ),
             JobDetailActionsSection(
               jobId: widget.jobId,

@@ -1,6 +1,11 @@
 export type UserRole = 'usuario' | 'trabajador' | 'administrador';
 export type AccountStatus = 'activo' | 'suspendido' | 'bloqueado';
-export type DisputeStatus = 'abierta' | 'en_revision' | 'resuelta';
+export type DisputeStatus =
+  | 'abierta'
+  | 'en_revision'
+  | 'requiere_humano'
+  | 'reembolso_pendiente'
+  | 'resuelta';
 
 export interface Profile {
   id: string;
@@ -69,6 +74,10 @@ export interface DisputeRow {
   description?: string | null;
   status: DisputeStatus;
   resolution?: string | null;
+  origin?: string | null;
+  suggestedDecision?: 'liberar' | 'reembolsar' | 'humano' | null;
+  rule?: string | null;
+  dueAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

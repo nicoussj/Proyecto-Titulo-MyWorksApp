@@ -44,7 +44,7 @@ class JobDetailClientApprovalCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'El profesional avisó que terminó. Si recibes conforme, se liberan los fondos que ya están retenidos. Si no estás conforme, se abre un ticket y el dinero queda quieto hasta que atención al cliente decida.',
+              'El profesional avisó que terminó. Si recibes conforme, se liberan los fondos. Si no respondes dentro del plazo, también se liberan. Si no estás conforme, pueden acordarlo entre ustedes o abrir una disputa.',
             ),
             if (quote != null) ...[
               const SizedBox(height: 12),
