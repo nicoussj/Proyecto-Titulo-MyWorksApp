@@ -121,7 +121,7 @@ class AnalyticsService {
       userId: userId,
       role: role,
       metadata: {
-        'platform': 'mobile', // TODO: Usar dart:io Platform cuando sea necesario
+        'platform': kIsWeb ? 'web' : defaultTargetPlatform.name,
         'timestamp': DateTime.now().toIso8601String(),
       },
     );

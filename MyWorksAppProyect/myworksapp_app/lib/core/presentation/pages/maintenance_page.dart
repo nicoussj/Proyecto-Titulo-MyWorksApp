@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../config/support_config.dart';
 import '../../services/app_health_service.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/app_logger.dart';
@@ -220,16 +222,29 @@ class _MaintenancePageState extends State<MaintenancePage> {
     } catch (e) {
       AppLogger.e('Error durante recuperación', e);
       setState(() {
-        _recoveryMessage = 'Error: $e';
+        _recoveryMessage = 'No se pudo reconectar. Intenta de nuevo en un momento.';
         _isRecovering = false;
       });
     }
   }
 
-  void _handleContactSupport() {
-    // TODO: Implementar contacto con soporte
-    // Por ahora, mostrar información de diagnóstico
-    showDialog(
+  /// Abre el correo de soporte con el diagnóstico ya escrito. Si no hay
+  /// correo configurado (SUPPORT_EMAIL), muestra el diagnóstico para copiarlo.
+  Future<void> _handleContactSupport() async {
+    final diagnostics = _healthService
+        .getDiagnostics()
+        .entries
+        .map((e) => '${e.key}: ${e.value}')
+        .join('\n');
+    if (SupportConfig.hasEmail) {
+      final uri = SupportConfig.emailUri(
+        subject: 'My Works App no carga',
+        body: 'Cuéntanos qué pasó:\n\n\n--- Diagnóstico ---\n$diagnostics',
+      );
+      if (await canLaunchUrl(uri) && await launchUrl(uri)) return;
+    }
+    if (!mounted) return;
+    await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Contactar Soporte'),

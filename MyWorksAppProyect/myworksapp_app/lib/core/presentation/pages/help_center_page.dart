@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myworksapp/core/widgets/design_system/app_gradient_app_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../config/support_config.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/constants.dart';
 
@@ -103,33 +104,37 @@ class _HelpCenterPageState extends State<HelpCenterPage> {
             const SizedBox(height: 32),
             
             // Contacto de soporte
-            Text(
-              'Contacto de Soporte',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+            if (SupportConfig.hasEmail || SupportConfig.hasWhatsapp) ...[
+              Text(
+                'Contacto de Soporte',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            
-            Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.email, color: AppColors.primaryLight),
-                    title: const Text('Email'),
-                    subtitle: const Text('soporte@myworksapp.com'),
-                    onTap: () => _launchEmail(),
-                  ),
-                  const Divider(),
-                  ListTile(
-                    leading: const Icon(Icons.chat, color: AppColors.primaryLight),
-                    title: const Text('WhatsApp'),
-                    subtitle: const Text('+56 9 1234 5678'),
-                    onTap: () => _launchWhatsApp(),
-                  ),
-                ],
+              const SizedBox(height: 16),
+              Card(
+                child: Column(
+                  children: [
+                    if (SupportConfig.hasEmail)
+                      ListTile(
+                        leading: const Icon(Icons.email, color: AppColors.primaryLight),
+                        title: const Text('Email'),
+                        subtitle: const Text(SupportConfig.email),
+                        onTap: () => _launchEmail(),
+                      ),
+                    if (SupportConfig.hasEmail && SupportConfig.hasWhatsapp)
+                      const Divider(),
+                    if (SupportConfig.hasWhatsapp)
+                      ListTile(
+                        leading: const Icon(Icons.chat, color: AppColors.primaryLight),
+                        title: const Text('WhatsApp'),
+                        subtitle: Text(SupportConfig.whatsappLabel),
+                        onTap: () => _launchWhatsApp(),
+                      ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -222,9 +227,7 @@ class _HelpCenterPageState extends State<HelpCenterPage> {
   }
 
   Future<void> _launchEmail() async {
-    const email = 'soporte@myworksapp.com';
-    const subject = 'Soporte My Works App';
-    final uri = Uri.parse('mailto:$email?subject=${Uri.encodeComponent(subject)}');
+    final uri = SupportConfig.emailUri();
     
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -238,9 +241,7 @@ class _HelpCenterPageState extends State<HelpCenterPage> {
   }
 
   Future<void> _launchWhatsApp() async {
-    const phone = '56912345678'; // Sin + ni espacios
-    const message = 'Hola, necesito ayuda con My Works App';
-    final uri = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(message)}');
+    final uri = SupportConfig.whatsappUri('Hola, necesito ayuda con My Works App');
     
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

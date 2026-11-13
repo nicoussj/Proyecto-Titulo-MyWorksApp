@@ -143,16 +143,6 @@ class JobStateMachine {
     }
   }
 
-  bool _validatePermission(JobModel job, String newStatus, String userId) {
-    return actorMayTransition(
-      jobWorkerId: job.workerId,
-      jobClientId: job.userId,
-      jobStatus: job.status,
-      newStatus: newStatus,
-      actorId: userId,
-    );
-  }
-
   Future<void> processTimeouts() async {
     try {
       AppLogger.i('Procesando timeouts de jobs...');
