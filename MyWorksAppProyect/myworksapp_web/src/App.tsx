@@ -454,9 +454,11 @@ export function App() {
       .catch(() => {
         // Se conserva la última evidencia visible si la carga falla.
       });
-    void supabase.rpc('acuerdo_pendiente', { p_id_trabajo: checkoutJobId })
-      .then(({ data }) => {
-        const row = data?.[0];
+    // supabase.rpc devuelve un PromiseLike (sin .catch): se envuelve en una Promise real.
+    // Si la función aún no existe en la base, el acuerdo queda en null sin romper la vista.
+    void Promise.resolve(supabase.rpc('acuerdo_pendiente', { p_id_trabajo: checkoutJobId }))
+      .then(({ data, error }) => {
+        const row = error ? undefined : data?.[0];
         if (!cancelled) setPendingAgreement(row ? { id: row.id, tipo: row.tipo } : null);
       })
       .catch(() => {
