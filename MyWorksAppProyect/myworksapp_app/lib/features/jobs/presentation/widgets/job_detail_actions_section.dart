@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/database/models/job_model.dart';
 import '../../../../core/domain/pricing_constants.dart';
-import '../../../../core/services/dispute_service.dart';
 import '../../../ratings/presentation/widgets/client_reputation_card.dart';
 import '../../../ratings/presentation/widgets/rate_client_button.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -24,6 +23,9 @@ class JobDetailActionsSection extends StatelessWidget {
   final VoidCallback onRequestOvertimeHours;
   final VoidCallback onCompleteJob;
 
+  /// La página ya cargó la disputa; no se vuelve a pedir en cada build.
+  final bool ratingBlockedByDispute;
+
   const JobDetailActionsSection({
     super.key,
     required this.jobId,
@@ -39,6 +41,7 @@ class JobDetailActionsSection extends StatelessWidget {
     required this.onStartJob,
     required this.onRequestOvertimeHours,
     required this.onCompleteJob,
+    this.ratingBlockedByDispute = false,
   });
 
   @override
@@ -138,24 +141,18 @@ class JobDetailActionsSection extends StatelessWidget {
             const SizedBox(height: 8),
           ],
           if (!isWorker && job.status == AppConstants.jobStatusCompleted)
-            FutureBuilder<bool>(
-              future: DisputeService.instance.canRateJob(jobId),
-              builder: (context, snapshot) {
-                final canRate = snapshot.data ?? true;
-                if (!canRate) {
-                  return const Text(
-                    'Calificación bloqueada por disputa abierta.',
-                    style: TextStyle(color: AppColors.warning),
-                  );
-                }
-                return ElevatedButton(
-                  onPressed: () {
-                    context.push('${AppConstants.routeRating}/$jobId');
-                  },
-                  child: const Text('Calificar Trabajo'),
-                );
-              },
-            ),
+            if (ratingBlockedByDispute)
+              const Text(
+                'Calificación bloqueada por disputa abierta.',
+                style: TextStyle(color: AppColors.warning),
+              )
+            else
+              ElevatedButton(
+                onPressed: () {
+                  context.push('${AppConstants.routeRating}/$jobId');
+                },
+                child: const Text('Calificar Trabajo'),
+              ),
           if (isOwner &&
               job.status != AppConstants.jobStatusPending &&
               job.status != AppConstants.jobStatusInProgress) ...[

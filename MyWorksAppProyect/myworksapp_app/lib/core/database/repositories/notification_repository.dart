@@ -8,6 +8,14 @@ class NotificationRepository {
     await supabase.from(_table).insert(notification.toMap());
   }
 
+  /// Un solo INSERT para varias notificaciones.
+  Future<void> createNotifications(List<NotificationModel> notifications) async {
+    if (notifications.isEmpty) return;
+    await supabase
+        .from(_table)
+        .insert(notifications.map((n) => n.toMap()).toList());
+  }
+
   Future<List<NotificationModel>> getNotificationsByUserId(String userId) async {
     final rows = await supabase
         .from(_table)

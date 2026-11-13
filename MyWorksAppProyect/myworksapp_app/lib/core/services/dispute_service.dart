@@ -129,15 +129,18 @@ class DisputeService {
     await _disputeRepository.addComment(disputeId, text);
   }
 
+  /// Estados en los que la disputa sigue abierta (bloquea calificar).
+  static bool isOpenStatus(String? status) =>
+      status == 'abierta' ||
+      status == 'en_revision' ||
+      status == 'requiere_humano' ||
+      status == 'reembolso_pendiente';
+
   /// Verifica si un job tiene disputa abierta
   Future<bool> hasOpenDispute(String jobId) async {
     try {
       final dispute = await _disputeRepository.getDisputeByJobId(jobId);
-      return dispute != null &&
-          (dispute.status == 'abierta' ||
-              dispute.status == 'en_revision' ||
-              dispute.status == 'requiere_humano' ||
-              dispute.status == 'reembolso_pendiente');
+      return dispute != null && isOpenStatus(dispute.status);
     } catch (e) {
       AppLogger.e('Error verificando disputa', e);
       return false;

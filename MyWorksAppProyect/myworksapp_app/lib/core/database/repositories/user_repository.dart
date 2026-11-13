@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart' show UserAttributes;
 import '../../exceptions/auth_exceptions.dart';
+import '../../utils/memo_cache.dart';
 import '../../utils/validators.dart';
 import '../models/user_model.dart';
 import '../supabase_db.dart';
@@ -11,15 +12,26 @@ import '../supabase_db.dart';
 class UserRepository {
   static const String _table = 'perfiles';
 
+  /// Al abrir la app, auth, home y perfil piden el mismo perfil casi a la
+  /// vez (antes salían 3 requests). Vence en 20 s y se borra al escribir.
+  static final MemoCache<UserModel?> _byId =
+      MemoCache(ttl: const Duration(seconds: 20));
+
+  static void invalidateCachedUser(String id) => _byId.invalidate(id);
+
   Future<String> createUser(UserModel user) async {
     // El perfil normalmente lo crea un trigger al registrarse en Supabase Auth.
     // Este upsert cubre el caso de completar/actualizar datos del propio perfil.
     final data = user.toMap()..remove('password');
     await supabase.from(_table).upsert(data);
+    _byId.invalidate(user.id);
     return user.id;
   }
 
-  Future<UserModel?> getUserById(String id) async {
+  Future<UserModel?> getUserById(String id) =>
+      _byId.get(id, () => _fetchUserById(id));
+
+  Future<UserModel?> _fetchUserById(String id) async {
     final row = await supabase.from(_table).select().eq('id', id).maybeSingle();
     if (row == null) return null;
     return UserModel.fromMap(row);
@@ -64,12 +76,14 @@ class UserRepository {
       ..remove('rol')
       ..remove('estado_cuenta');
     await supabase.from(_table).update(data).eq('id', user.id);
+    _byId.invalidate(user.id);
   }
 
   Future<void> updateProfilePhotoPath(String userId, String? photoPath) async {
     await supabase
         .from(_table)
         .update({'ruta_foto_perfil': photoPath}).eq('id', userId);
+    _byId.invalidate(userId);
   }
 
   /// La contraseña la gestiona Supabase Auth; se mantiene por compatibilidad.
@@ -83,10 +97,12 @@ class UserRepository {
     await supabase
         .from(_table)
         .update({'estado_cuenta': status}).eq('id', userId);
+    _byId.invalidate(userId);
   }
 
   Future<void> deleteUser(String id) async {
     await supabase.from(_table).delete().eq('id', id);
+    _byId.invalidate(id);
   }
 
   Future<List<UserModel>> getAllUsers() async {
