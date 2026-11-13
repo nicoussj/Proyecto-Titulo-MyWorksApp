@@ -1,3 +1,4 @@
+import '../../../../core/database/repositories/notification_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,14 +46,32 @@ class _UserHomePageState extends ConsumerState<UserHomePage> {
   List<ServiceModel> _allServices = [];
   String _query = '';
   late Future<List<ServiceModel>> _servicesFuture;
+  bool _hasUnreadNotices = false;
 
   @override
   void initState() {
     super.initState();
     _servicesFuture = _serviceRepository.getMainServices();
+    _refreshUnreadNotices();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _askForCardOnce();
     });
+  }
+
+  Future<void> _refreshUnreadNotices() async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+    try {
+      final unread = await NotificationRepository().hasUnread(user.id);
+      if (mounted) setState(() => _hasUnreadNotices = unread);
+    } catch (_) {
+      // Sin el punto no se pierde nada: los avisos siguen en su pantalla.
+    }
+  }
+
+  Future<void> _openNotices() async {
+    await context.push(AppConstants.routeNotifications);
+    await _refreshUnreadNotices();
   }
 
   Future<void> _askForCardOnce() async {
@@ -139,7 +158,8 @@ class _UserHomePageState extends ConsumerState<UserHomePage> {
           backgroundColor: AppDecorations.canvasOf(context),
           bottomNavigationBar: _UserBottomNav(
             onProjects: () => context.push(AppConstants.routeJobHistory),
-            onMessages: () => context.push(AppConstants.routeNotifications),
+            onNotices: _openNotices,
+            hasUnreadNotices: _hasUnreadNotices,
             onProfile: () => context.push(AppConstants.routeUserProfile),
           ),
           body: AuthSoftBackground(
@@ -671,12 +691,14 @@ class _AdminConsoleTile extends StatelessWidget {
 class _UserBottomNav extends StatelessWidget {
   const _UserBottomNav({
     required this.onProjects,
-    required this.onMessages,
+    required this.onNotices,
+    required this.hasUnreadNotices,
     required this.onProfile,
   });
 
   final VoidCallback onProjects;
-  final VoidCallback onMessages;
+  final VoidCallback onNotices;
+  final bool hasUnreadNotices;
   final VoidCallback onProfile;
 
   @override
@@ -721,19 +743,15 @@ class _UserBottomNav extends StatelessWidget {
                 muted: muted,
                 onTap: onProjects,
               ),
+              // Abre los avisos (notificaciones). Los chats están dentro de
+              // cada trabajo, no hay una bandeja de mensajes aparte.
               _NavItem(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: 'Mensajes',
+                icon: Icons.notifications_none_rounded,
+                label: 'Avisos',
                 active: false,
                 muted: muted,
-                onTap: onMessages,
-                showDot: true,
-              ),
-              _NavItem(
-                icon: Icons.favorite_border_rounded,
-                label: 'Favoritos',
-                active: false,
-                muted: muted,
+                onTap: onNotices,
+                showDot: hasUnreadNotices,
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
