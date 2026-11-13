@@ -595,19 +595,19 @@ class _ServiceRequestPageState extends ConsumerState<ServiceRequestPage> {
         service.category,
         near: near,
       );
-      for (final worker in workers) {
-        await NotificationService.instance.showNotification(
+      // Un solo INSERT para todos (antes: un request y un banner local por
+      // profesional, en serie) y la asignación en paralelo.
+      await Future.wait([
+        NotificationService.instance.notifyUsers(
+          userIds: workers.map((w) => w.userId),
           title: 'Nueva solicitud',
           body: 'Hay una nueva solicitud de servicio disponible',
-          userId: worker.userId,
           type: 'new_job',
           relatedId: job.id,
-        );
-      }
-
-      if (_selectedWorkerId != null) {
-        await jobRepository.assignWorker(job.id, _selectedWorkerId!);
-      }
+        ),
+        if (_selectedWorkerId != null)
+          jobRepository.assignWorker(job.id, _selectedWorkerId!),
+      ]);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

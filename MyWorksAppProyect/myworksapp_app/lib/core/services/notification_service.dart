@@ -93,6 +93,39 @@ class NotificationService {
     await _showLocalBanner(title: title, body: body, id: notification.id.hashCode);
   }
 
+  /// Avisa a otros usuarios (por ejemplo, a los profesionales de una
+  /// categoría) con un solo INSERT. No muestra banner en este equipo: el
+  /// aviso es para ellos, no para quien lo envía.
+  Future<void> notifyUsers({
+    required Iterable<String> userIds,
+    required String title,
+    required String body,
+    required String type,
+    String? relatedId,
+  }) async {
+    final now = DateTime.now();
+    final notifications = userIds
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .map(
+          (userId) => NotificationModel(
+            id: const Uuid().v4(),
+            userId: userId,
+            type: type,
+            title: title,
+            body: body,
+            relatedId: relatedId,
+            createdAt: now,
+          ),
+        )
+        .toList();
+    try {
+      await _notificationRepository.createNotifications(notifications);
+    } catch (e) {
+      AppLogger.e('Error guardando notificaciones en Supabase', e);
+    }
+  }
+
   /// Muestra banner local para una notificación recibida por Realtime (sin reinsertar).
   Future<void> showIncomingNotification(NotificationModel notification) async {
     await _showLocalBanner(

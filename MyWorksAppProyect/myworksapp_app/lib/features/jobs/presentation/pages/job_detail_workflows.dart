@@ -693,6 +693,8 @@ extension JobDetailWorkflows on _JobDetailPageState {
                   ),
               onRequestOvertimeHours: _requestOvertimeHours,
               onCompleteJob: () => JobDetailStatusActions(this)._completeJob(),
+              ratingBlockedByDispute:
+                  DisputeService.isOpenStatus(_dispute?.status),
             ),
           ],
         ),

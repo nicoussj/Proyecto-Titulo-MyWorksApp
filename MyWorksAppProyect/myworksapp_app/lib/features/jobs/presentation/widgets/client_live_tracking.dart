@@ -40,29 +40,25 @@ class _ClientLiveTrackingState extends State<ClientLiveTracking> {
     _listen();
   }
 
+  /// El stream de Realtime ya entrega la fila actual al suscribirse: no hace
+  /// falta un SELECT aparte (antes se pedía 2 veces al abrir el detalle).
   Future<void> _listen() async {
-    try {
-      final row = await supabase
-          .from('ubicacion_en_vivo')
-          .select('latitud, longitud')
-          .eq('id_trabajo', widget.jobId)
-          .maybeSingle();
-      _apply(row);
-    } catch (e) {
-      _error = 'No se pudo leer la ubicación en este momento.';
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-
     _live = supabase
         .from('ubicacion_en_vivo')
         .stream(primaryKey: ['id_trabajo'])
         .eq('id_trabajo', widget.jobId)
         .listen((rows) {
       if (!mounted) return;
-      setState(() => _apply(rows.isEmpty ? null : rows.first));
+      setState(() {
+        _apply(rows.isEmpty ? null : rows.first);
+        _loading = false;
+      });
     }, onError: (_) {
-      if (mounted) setState(() => _error = 'El canal en vivo no está disponible.');
+      if (!mounted) return;
+      setState(() {
+        _error = 'No se pudo leer la ubicación en este momento.';
+        _loading = false;
+      });
     });
   }
 
