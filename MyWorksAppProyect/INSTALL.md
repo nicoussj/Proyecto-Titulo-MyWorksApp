@@ -8,25 +8,42 @@ Guía para instalar la app en **Android** e **iPhone** sin depender del emulador
 
 ### Compilar la APK (Windows / macOS / Linux)
 
+Release exige la URL y la clave publicable de Supabase. Copia
+`myworksapp_app/dart_defines.example.json` a `dart_defines.json` (está en
+`.gitignore`) y completa los valores.
+
 ```bash
 cd myworksapp_app
 flutter pub get
-flutter build apk --release
+flutter build apk --release --split-per-abi \
+  --obfuscate --split-debug-info=build/symbols \
+  --dart-define-from-file=dart_defines.json
 ```
+
+`--split-per-abi` genera una APK por arquitectura en vez de una universal de
+~75 MB:
+
+| Archivo | Para | Tamaño (medido 13-11-2026) |
+|---|---|---|
+| `app-arm64-v8a-release.apk` | Casi todos los teléfonos (2017 en adelante) | 29,8 MB |
+| `app-armeabi-v7a-release.apk` | Teléfonos viejos de 32 bits | 27,0 MB |
+| `app-x86_64-release.apk` | Emuladores | 31,4 MB |
+
+Para Google Play sube un bundle (`flutter build appbundle --release ...`):
+Play entrega a cada equipo solo su arquitectura. Guarda `build/symbols` de
+cada versión publicada: sin eso no se pueden leer los errores ofuscados.
 
 Para distribuir, firma con el keystore de release (no con debug): ver `docs/FIRMA_RELEASE_ANDROID.md`. El id de la app es `cl.myworksapp.app`; quien tenga instalada la versión `com.example.myworksapp` debe desinstalarla primero.
 
-Salida:
+Salida: `myworksapp_app/build/app/outputs/flutter-apk/app-*-release.apk`
 
-```
-myworksapp_app/build/app/outputs/flutter-apk/app-release.apk
-```
-
-También en Windows:
+En Windows, el script hace lo mismo y copia el resultado a `releases/`:
 
 ```powershell
 cd myworksapp_app
-.\scripts\build-apk.ps1
+.\scripts\build-apk.ps1                  # una APK por arquitectura
+.\scripts\build-apk.ps1 -Mode universal  # una sola APK que sirve en todo
+.\scripts\build-apk.ps1 -Mode aab        # bundle para Google Play
 ```
 
 ### Instalar en el teléfono

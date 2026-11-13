@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Valores de --dart-define-from-file (ver dart_defines.example.json)
+dart_defines.json

@@ -125,6 +125,6 @@ cp ios/Flutter/Secrets.xcconfig.example ios/Flutter/Secrets.xcconfig
 | Script | Plataforma | Descripción |
 |--------|------------|-------------|
 | `run.ps1` | Windows | Flutter run en emulador Android |
-| `scripts/build-apk.ps1` | Windows | Compila APK release → `../releases/` |
+| `scripts/build-apk.ps1` | Windows | APK release por arquitectura (`-Mode universal` / `aab`) → `../releases/` |
 | `scripts/run_ios.sh` | macOS | Flutter run en simulador iOS |
 | `scripts/install_ios_device.sh` | macOS | Instala en iPhone físico (release) |
