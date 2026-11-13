@@ -309,6 +309,14 @@ export function LandingHome({
 
               alt="Técnico profesional en domicilio"
 
+              width={640}
+
+              height={400}
+
+              fetchPriority="high"
+
+              decoding="async"
+
             />
 
             <div className="hero-float-card hero-float-trust">
