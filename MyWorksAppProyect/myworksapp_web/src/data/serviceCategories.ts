@@ -18,7 +18,7 @@ export const ALL_SERVICE_CATEGORIES: ServiceCategory[] = [
     id: 'ensamblaje',
     title: 'Armado',
     subtitle: 'Muebles, estanterías y más',
-    photo: '/categories/armado.png',
+    photo: '/categories/armado.webp',
     searchQuery: 'armado muebles',
   },
   {
@@ -32,21 +32,21 @@ export const ALL_SERVICE_CATEGORIES: ServiceCategory[] = [
     id: 'plomeria',
     title: 'Plomería',
     subtitle: 'Fugas, instalaciones y más',
-    photo: '/categories/plomeria.png',
+    photo: '/categories/plomeria.webp',
     searchQuery: 'plomería',
   },
   {
     id: 'gasfiteria',
     title: 'Gasfitería',
     subtitle: 'Conexiones, revisiones y más',
-    photo: '/categories/gasfiteria.png',
+    photo: '/categories/gasfiteria.webp',
     searchQuery: 'gasfitería',
   },
   {
     id: 'limpieza',
     title: 'Limpieza',
     subtitle: 'Hogar, oficina y profunda',
-    photo: '/categories/limpieza.png',
+    photo: '/categories/limpieza.webp',
     searchQuery: 'limpieza',
   },
   {
@@ -67,7 +67,7 @@ export const ALL_SERVICE_CATEGORIES: ServiceCategory[] = [
     id: 'cerrajeria',
     title: 'Cerrajería',
     subtitle: 'Aperturas y cambio de chapas',
-    photo: '/categories/cerrajeria.png',
+    photo: '/categories/cerrajeria.webp',
     searchQuery: 'cerrajería',
   },
   {
