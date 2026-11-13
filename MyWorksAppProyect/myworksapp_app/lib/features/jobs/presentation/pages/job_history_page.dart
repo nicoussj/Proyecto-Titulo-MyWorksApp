@@ -20,21 +20,69 @@ class JobHistoryPage extends ConsumerStatefulWidget {
 }
 
 class _JobHistoryPageState extends ConsumerState<JobHistoryPage> {
-  late Future<List<JobModel>> _jobsFuture;
+  static const _pageSize = 20;
+
+  final _jobs = <JobModel>[];
+  final _scroll = ScrollController();
+  bool _loading = false;
+  bool _hasMore = true;
+  Object? _error;
 
   @override
   void initState() {
     super.initState();
-    _jobsFuture = _loadJobs();
+    _scroll.addListener(_onScroll);
+    _loadMore();
   }
 
-  Future<List<JobModel>> _loadJobs() {
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scroll.hasClients) return;
+    final position = _scroll.position;
+    if (position.pixels >= position.maxScrollExtent - 400) _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    if (_loading || !_hasMore) return;
     final user = ref.read(authProvider).user;
-    if (user == null) return Future.value([]);
-    final jobRepository = ref.read(jobRepositoryProvider);
-    return user.role == AppConstants.roleWorker
-        ? jobRepository.getJobsByWorkerId(user.id)
-        : jobRepository.getJobsByUserId(user.id);
+    if (user == null) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final page = await ref.read(jobRepositoryProvider).getJobsPage(
+            userId: user.id,
+            asWorker: user.role == AppConstants.roleWorker,
+            offset: _jobs.length,
+            limit: _pageSize,
+          );
+      if (!mounted) return;
+      setState(() {
+        _jobs.addAll(page);
+        _hasMore = page.length == _pageSize;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _reload() async {
+    setState(() {
+      _jobs.clear();
+      _hasMore = true;
+    });
+    await _loadMore();
   }
 
   @override
@@ -53,74 +101,95 @@ class _JobHistoryPageState extends ConsumerState<JobHistoryPage> {
       appBar: const AppGradientAppBar(
         title: Text('Historial de Trabajos'),
       ),
-      body: FutureBuilder<List<JobModel>>(
-        future: _jobsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingWidget();
-          }
+      body: _buildBody(user.role == AppConstants.roleWorker),
+    );
+  }
 
-          if (snapshot.hasError) {
-            return ErrorStateWidget(
-              title: 'Error al cargar historial',
-              message: ErrorHandler.getErrorMessage(snapshot.error),
-              actionLabel: 'Reintentar',
-              onRetry: () {
-                setState(() {
-                  _jobsFuture = _loadJobs();
-                });
+  Widget _buildBody(bool isWorker) {
+    if (_jobs.isEmpty && _loading) return const LoadingWidget();
+
+    if (_jobs.isEmpty && _error != null) {
+      return ErrorStateWidget(
+        title: 'Error al cargar historial',
+        message: ErrorHandler.getErrorMessage(_error),
+        actionLabel: 'Reintentar',
+        onRetry: _reload,
+      );
+    }
+
+    if (_jobs.isEmpty) {
+      return EmptyStateWidget(
+        icon: Icons.history,
+        title: 'No hay trabajos',
+        message: isWorker
+            ? 'Tus trabajos asignados aparecerán aquí cuando aceptes solicitudes.'
+            : 'Tu historial de trabajos aparecerá aquí cuando solicites servicios',
+      );
+    }
+
+    final showFooter = _hasMore || _error != null;
+    return RefreshIndicator(
+      onRefresh: _reload,
+      child: ListView.builder(
+        controller: _scroll,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: _jobs.length + (showFooter ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _jobs.length) return _buildFooter();
+          final job = _jobs[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: ListTile(
+              title: Text(
+                job.description ?? 'Sin descripción',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(job.address),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${_formatDate(job.createdAt)} - ${_getStatusText(job.status)}',
+                  ),
+                ],
+              ),
+              trailing: Icon(
+                _getStatusIcon(job.status),
+                color: _getStatusColor(job.status),
+              ),
+              onTap: () {
+                context.push('${AppConstants.routeJobDetail}/${job.id}');
               },
-            );
-          }
-
-          final jobs = snapshot.data ?? [];
-
-          if (jobs.isEmpty) {
-            return EmptyStateWidget(
-              icon: Icons.history,
-              title: 'No hay trabajos',
-              message: user.role == AppConstants.roleWorker
-                  ? 'Tus trabajos asignados aparecerán aquí cuando aceptes solicitudes.'
-                  : 'Tu historial de trabajos aparecerá aquí cuando solicites servicios',
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: jobs.length,
-            itemBuilder: (context, index) {
-              final job = jobs[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: ListTile(
-                  title: Text(
-                    job.description ?? 'Sin descripción',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Text(job.address),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${_formatDate(job.createdAt)} - ${_getStatusText(job.status)}',
-                      ),
-                    ],
-                  ),
-                  trailing: Icon(
-                    _getStatusIcon(job.status),
-                    color: _getStatusColor(job.status),
-                  ),
-                  onTap: () {
-                    context.push('${AppConstants.routeJobDetail}/${job.id}');
-                  },
-                ),
-              );
-            },
+            ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    if (_error != null) {
+      return Center(
+        child: TextButton(
+          onPressed: _loadMore,
+          child: const Text('No se pudieron cargar más. Reintentar'),
+        ),
+      );
+    }
+    if (_loading) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return Center(
+      child: TextButton(
+        onPressed: _loadMore,
+        child: const Text('Cargar más'),
       ),
     );
   }
