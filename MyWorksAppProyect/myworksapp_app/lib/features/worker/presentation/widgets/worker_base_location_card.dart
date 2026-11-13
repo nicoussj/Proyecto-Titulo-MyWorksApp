@@ -92,7 +92,7 @@ class _WorkerBaseLocationCardState extends State<WorkerBaseLocationCard> {
       await widget.onSave(_lat!, _lng!, _radius);
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'No se guardó. Aplica la migración de ubicación base.');
+        setState(() => _error = 'No se pudo guardar la ubicación. Intenta de nuevo.');
       }
     } finally {
       if (mounted) setState(() => _saving = false);

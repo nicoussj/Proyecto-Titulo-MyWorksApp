@@ -97,7 +97,7 @@ class _WorkerGpsPublisherState extends State<WorkerGpsPublisher> with WidgetsBin
         });
         if (mounted) setState(() => _notice = 'Ubicación compartida con el cliente de este pedido.');
       } catch (e) {
-        if (mounted) setState(() => _notice = 'No se pudo publicar la ubicación. Revisa la migración de GPS.');
+        if (mounted) setState(() => _notice = 'No se pudo publicar la ubicación en este momento.');
       }
     }, onError: (_) {
       if (mounted) setState(() => _notice = 'El GPS del teléfono no entregó una posición.');

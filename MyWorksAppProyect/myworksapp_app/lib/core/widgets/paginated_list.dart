@@ -1,3 +1,4 @@
+import 'package:myworksapp/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 
 /// Widget para listas paginadas
@@ -95,7 +96,7 @@ class _PaginatedListState<T> extends State<PaginatedList<T>> {
     } catch (e) {
       setState(() {
         _hasError = true;
-        _errorMessage = e.toString();
+        _errorMessage = ErrorHandler.userMessage(e);
         _isLoading = false;
       });
     }
@@ -122,7 +123,7 @@ class _PaginatedListState<T> extends State<PaginatedList<T>> {
               children: [
                 const Icon(Icons.error_outline, size: 48, color: Colors.red),
                 const SizedBox(height: 16),
-                Text('Error: $_errorMessage'),
+                Text(_errorMessage ?? 'Algo salió mal.'),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _loadInitialData,
