@@ -19,6 +19,18 @@ class NotificationRepository {
         .toList();
   }
 
+  /// Solo dice si hay alguna sin leer (no baja las filas).
+  Future<bool> hasUnread(String userId) async {
+    final row = await supabase
+        .from(_table)
+        .select('id')
+        .eq('id_usuario', userId)
+        .eq('leido', 0)
+        .limit(1)
+        .maybeSingle();
+    return row != null;
+  }
+
   Future<List<NotificationModel>> getUnreadNotifications(String userId) async {
     final rows = await supabase
         .from(_table)
