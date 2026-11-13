@@ -35,7 +35,7 @@ test('la invitación de RRHH exige la misma política de contraseña', async ({ 
   await submit.click();
   await expect(page.getByRole('alert')).toHaveText('Incluye al menos una letra');
 
-  await password.fill('Demo2026!');
+  await password.fill('Prueba2026x');
   await confirm.fill('Otra2026!');
   await submit.click();
   await expect(page.getByRole('alert')).toHaveText('Las contraseñas no coinciden');

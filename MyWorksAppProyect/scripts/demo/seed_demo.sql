@@ -4,7 +4,9 @@
 -- Aplicar en el SQL Editor DESPUÉS de las migraciones de GPS y de las de
 -- 20261007. Si ya corriste 20261008000001, este script sigue siendo válido:
 -- entra como postgres, sin JWT.
--- Contraseña de todas las cuentas: Demo2026!
+-- Contraseña: NO se publica. Antes de correr este script, en la misma sesión:
+--   SET demo.password = '<clave-demo>';
+-- (pídela al equipo; el repo es público)
 -- Reejecutar deja las mismas cuentas y reinicia solo filas id demo-*.
 -- =============================================================================
 
@@ -30,11 +32,15 @@ BEGIN
     RAISE EXCEPTION 'Falta latitud_base. Aplica 20261006000001_gps_y_base_profesional.sql antes de este seed.';
   END IF;
 
+  IF coalesce(current_setting('demo.password', true), '') = '' THEN
+    RAISE EXCEPTION 'Falta la clave demo. Ejecuta antes: SET demo.password = ''<clave-demo>'';';
+  END IF;
+
   BEGIN
-    v_hash := extensions.crypt('Demo2026!', extensions.gen_salt('bf'));
+    v_hash := extensions.crypt(current_setting('demo.password'), extensions.gen_salt('bf'));
   EXCEPTION
     WHEN undefined_function THEN
-      v_hash := crypt('Demo2026!', gen_salt('bf'));
+      v_hash := crypt(current_setting('demo.password'), gen_salt('bf'));
   END;
 
   CREATE TEMP TABLE demo_cuentas (

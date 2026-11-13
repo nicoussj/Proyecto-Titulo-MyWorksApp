@@ -166,7 +166,7 @@ Con `app_config.demo_modo = 1` (la demo y la integración) esa función marca el
 
 Un pago con tarjeta de prueba y la liberación de la garantía ya se probaron de punta a punta en vivo: Webpay autorizó, el cobro quedó `retenido` y la conformidad lo pasó a `liberado`. Ese camino no se anula.
 
-## 3. Cuentas (contraseña `Demo2026!` en todas)
+## 3. Cuentas (misma contraseña en todas; la entrega el equipo, no se publica)
 
 | Quién | Correo | Rol |
 |---|---|---|
@@ -198,7 +198,7 @@ Un pago con tarjeta de prueba y la liberación de la garantía ya se probaron de
 
 El escritorio pide un segundo factor la primera vez: escanea el QR con una app de códigos (Authenticator o similar) y guarda ese dispositivo para la demo.
 
-Registro (web y app) y cambio de clave piden al menos 8 caracteres, con una letra y un número. El login de estas cuentas no cambia: `Demo2026!` ya cumple. La misma regla está en `myworksapp_app/supabase/config.toml` (`minimum_password_length = 8`, `password_requirements = "letters_digits"`). Ese archivo no modifica el proyecto en la nube: en el dashboard, Authentication → Password, deja el mínimo en 8 y el requisito en letras y dígitos. Hasta que lo guardes ahí, el servidor puede aceptar una clave más débil; las pantallas de la demo ya no.
+Registro (web y app) y cambio de clave piden al menos 8 caracteres, con una letra y un número. La clave de estas cuentas debe cumplir esa regla. La misma regla está en `myworksapp_app/supabase/config.toml` (`minimum_password_length = 8`, `password_requirements = "letters_digits"`). Ese archivo no modifica el proyecto en la nube: en el dashboard, Authentication → Password, deja el mínimo en 8 y el requisito en letras y dígitos. Hasta que lo guardes ahí, el servidor puede aceptar una clave más débil; las pantallas de la demo ya no.
 
 La invitación de RRHH abre la consola y pide esa contraseña antes del segundo factor. Si el enlace cae en otro puerto, la persona no ve esa pantalla.
 
@@ -332,7 +332,7 @@ Para no depender del GPS del salón, el seed ya trae `demo-job-en-camino`: Camil
 | `demo-job-cerrado` | completado, pago liberado, nota 5 | Métricas |
 | `demo-job-disputa` | en curso + disputa abierta | Escritorio |
 
-Volver a correr `scripts/demo/seed_demo.sql` repone esos pedidos y la contraseña `Demo2026!`. No borra otras filas. Deja `disponible = 0` en todo trabajador cuyo correo no termina en `@demo.myworksapp.cl`, y pasa a `rechazado` los que seguían `pendiente`.
+Volver a correr `scripts/demo/seed_demo.sql` repone esos pedidos y la contraseña que fijes con `SET demo.password = '<clave-demo>';` antes de correrlo. No borra otras filas. Deja `disponible = 0` en todo trabajador cuyo correo no termina en `@demo.myworksapp.cl`, y pasa a `rechazado` los que seguían `pendiente`.
 
 ## 8. Plan B
 

@@ -239,8 +239,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         setState(() {
                           _selectedWorker = w;
                           _emailController.text = w.email;
+                          // Nunca rellenar la clave en release.
                           _passwordController.text =
-                              DemoCredentials.demoPassword;
+                              kDebugMode ? DemoCredentials.demoPassword : '';
                         });
                       },
                     ),

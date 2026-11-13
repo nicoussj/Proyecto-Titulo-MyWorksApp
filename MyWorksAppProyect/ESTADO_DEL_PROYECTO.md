@@ -207,9 +207,9 @@ Detalle en [docs/ARQUITECTURA_MODALIDADES_COBRO.md](docs/ARQUITECTURA_MODALIDADE
 
 | Rol | Email | Contraseña |
 |-----|-------|------------|
-| Cliente | `camila.soto@demo.myworksapp.cl` | `Demo2026!` |
-| Trabajadores | `*@demo.myworksapp.cl` (ej. `carmen.lagos@…`) | `Demo2026!` |
-| Administración | `admin.ops@demo.myworksapp.cl` | `Demo2026!` |
+| Cliente | `camila.soto@demo.myworksapp.cl` | (la entrega el equipo; no se publica) |
+| Trabajadores | `*@demo.myworksapp.cl` (ej. `carmen.lagos@…`) | (la entrega el equipo; no se publica) |
+| Administración | `admin.ops@demo.myworksapp.cl` | (la entrega el equipo; no se publica) |
 
 Las cuentas `@demo.com` / `demo123` son legado: el administrador `admin@demo.com` está suspendido (auditoría 2026-10-05).
 

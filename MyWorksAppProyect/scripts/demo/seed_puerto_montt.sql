@@ -1,7 +1,9 @@
 -- Profesionales de muestra en Puerto Montt y alrededores.
 -- No es una migración. Correr en el SQL Editor DESPUÉS de
 -- 20261025000001_revision_patrocinante.sql.
--- Contraseña de todas: Demo2026!
+-- Contraseña: NO se publica. Antes de correr este script, en la misma sesión:
+--   SET demo.password = '<clave-demo>';
+-- (pídela al equipo; el repo es público)
 -- Reejecutar actualiza las mismas fichas y no toca las cuentas de Santiago.
 
 BEGIN;
@@ -21,11 +23,15 @@ BEGIN
     RAISE EXCEPTION 'Falta radio_urbano_km. Aplica 20261025000001_revision_patrocinante.sql antes.';
   END IF;
 
+  IF coalesce(current_setting('demo.password', true), '') = '' THEN
+    RAISE EXCEPTION 'Falta la clave demo. Ejecuta antes: SET demo.password = ''<clave-demo>'';';
+  END IF;
+
   BEGIN
-    v_hash := extensions.crypt('Demo2026!', extensions.gen_salt('bf'));
+    v_hash := extensions.crypt(current_setting('demo.password'), extensions.gen_salt('bf'));
   EXCEPTION
     WHEN undefined_function THEN
-      v_hash := crypt('Demo2026!', gen_salt('bf'));
+      v_hash := crypt(current_setting('demo.password'), gen_salt('bf'));
   END;
 
   CREATE TEMP TABLE pm_cuentas (
