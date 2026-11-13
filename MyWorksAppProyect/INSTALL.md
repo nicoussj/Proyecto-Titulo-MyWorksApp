@@ -14,6 +14,8 @@ flutter pub get
 flutter build apk --release
 ```
 
+Para distribuir, firma con el keystore de release (no con debug): ver `docs/FIRMA_RELEASE_ANDROID.md`. El id de la app es `cl.myworksapp.app`; quien tenga instalada la versión `com.example.myworksapp` debe desinstalarla primero.
+
 Salida:
 
 ```
