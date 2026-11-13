@@ -38,6 +38,7 @@ export interface WorkerRow {
   workZone?: string | null;
   verificationStatus?: string | null;
   verificationNote?: string | null;
+  /** Sin sesión, el catálogo la entrega redondeada (~1 km). Exacta solo con sesión. */
   baseLatitude?: number | null;
   baseLongitude?: number | null;
   serviceRadiusKm?: number | null;
