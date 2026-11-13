@@ -284,8 +284,45 @@ class JobRepository {
     );
   }
 
+  /// Cancelaciones y última actividad de varios profesionales en una sola
+  /// consulta (solo 3 columnas), en vez de bajar todo el historial por cada uno.
+  Future<Map<String, WorkerJobStats>> getWorkerJobStats(
+    List<String> workerIds,
+  ) async {
+    final ids = workerIds.where((id) => id.isNotEmpty).toSet().toList();
+    if (ids.isEmpty) return {};
+    final rows = await supabase
+        .from(_table)
+        .select('id_trabajador, estado, creado_en')
+        .inFilter('id_trabajador', ids);
+    final out = <String, WorkerJobStats>{};
+    for (final row in rows) {
+      final id = row['id_trabajador'] as String?;
+      if (id == null) continue;
+      final current = out[id] ?? const WorkerJobStats();
+      final created = DateTime.tryParse(row['creado_en'] as String? ?? '');
+      out[id] = WorkerJobStats(
+        cancelled: current.cancelled +
+            (row['estado'] == AppConstants.jobStatusCancelled ? 1 : 0),
+        lastActivity: created == null ||
+                (current.lastActivity != null &&
+                    !created.isAfter(current.lastActivity!))
+            ? current.lastActivity
+            : created,
+      );
+    }
+    return out;
+  }
+
   /// Obtiene todos los trabajos de un trabajador (alias para getJobsByWorkerId)
   Future<List<JobModel>> getWorkerJobs(String workerId) async {
     return await getJobsByWorkerId(workerId);
   }
+}
+
+class WorkerJobStats {
+  const WorkerJobStats({this.cancelled = 0, this.lastActivity});
+
+  final int cancelled;
+  final DateTime? lastActivity;
 }

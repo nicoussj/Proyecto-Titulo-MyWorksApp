@@ -9,7 +9,6 @@ import '../domain/distance_match.dart';
 import '../domain/transport_surcharge.dart';
 import '../domain/zone_match.dart';
 import '../utils/app_logger.dart';
-import '../utils/constants.dart';
 import 'worker_reputation_service.dart';
 
 /// Resultado de matching con score y metadata
@@ -92,14 +91,16 @@ class MatchingService {
         return [];
       }
 
-      // 4. Calcular scores para cada trabajador
+      // 4. Calcular scores para cada trabajador (datos precargados en lote)
+      final context = await _prefetch(workers);
       final matches = <MatchResult>[];
       for (final worker in workers) {
-        final match = await _calculateMatchScore(
+        final match = _calculateMatchScore(
           worker: worker,
           job: job,
           userLatitude: userLatitude,
           userLongitude: userLongitude,
+          context: context,
         );
         if (match != null) {
           matches.add(match);
@@ -158,14 +159,16 @@ class MatchingService {
         workers = workers.where((w) => w.rating >= minRating).toList();
       }
 
-      // 5. Calcular scores
+      // 5. Calcular scores (datos precargados en lote)
+      final context = await _prefetch(workers);
       final matches = <MatchResult>[];
       for (final worker in workers) {
-        final match = await _calculateMatchScore(
+        final match = _calculateMatchScore(
           worker: worker,
           job: job,
           userLatitude: userLatitude,
           userLongitude: userLongitude,
+          context: context,
         );
 
         if (match == null) continue;
@@ -189,16 +192,31 @@ class MatchingService {
     }
   }
 
+  /// Precarga en 2 llamadas (perfiles + trabajos) lo que antes se pedía
+  /// 3 veces por cada profesional, en serie.
+  Future<_MatchContext> _prefetch(List<WorkerModel> workers) async {
+    final ids = workers.map((w) => w.userId).toList();
+    final results = await Future.wait<Object>([
+      _userRepository.getPublicProfilesByIds(ids),
+      _jobRepository.getWorkerJobStats(ids),
+    ]);
+    return _MatchContext(
+      users: results[0] as Map<String, UserModel>,
+      stats: results[1] as Map<String, WorkerJobStats>,
+    );
+  }
+
   /// Calcula el score de matching para un trabajador
-  Future<MatchResult?> _calculateMatchScore({
+  MatchResult? _calculateMatchScore({
     required WorkerModel worker,
     required JobModel job,
     required double userLatitude,
     required double userLongitude,
-  }) async {
+    required _MatchContext context,
+  }) {
     try {
       // 1. Obtener datos del usuario trabajador
-      final user = await _userRepository.getPublicProfile(worker.userId);
+      final user = context.users[worker.userId];
       if (user == null) return null;
 
       final jobLat = job.latitude ?? userLatitude;
@@ -215,11 +233,10 @@ class MatchingService {
       }
       final double? distanceKm = distance?.distanceKm;
 
-      // 3. Obtener cancelaciones previas (solo del trabajador, no del usuario)
-      final cancellationCount = await _getCancellationCount(worker.userId);
-
-      // 4. Obtener última actividad
-      final lastActivity = await _getLastActivity(worker.userId);
+      // 3-4. Cancelaciones previas y última actividad (precargadas)
+      final stats = context.stats[worker.userId];
+      final cancellationCount = stats?.cancelled ?? 0;
+      final lastActivity = stats?.lastActivity;
 
       // 5. Calcular score
       double score = 0.0;
@@ -277,33 +294,6 @@ class MatchingService {
       );
     } catch (e) {
       AppLogger.e('Error calculando score para worker: ${worker.userId}', e);
-      return null;
-    }
-  }
-
-  /// Obtiene el número de cancelaciones de un trabajador
-  Future<int> _getCancellationCount(String workerId) async {
-    try {
-      // Obtener trabajos cancelados por este trabajador
-      final jobs = await _jobRepository.getWorkerJobs(workerId);
-      return jobs.where((j) => j.status == AppConstants.jobStatusCancelled).length;
-    } catch (e) {
-      AppLogger.e('Error obteniendo cancelaciones', e);
-      return 0;
-    }
-  }
-
-  /// Obtiene la última actividad de un trabajador
-  Future<DateTime?> _getLastActivity(String workerId) async {
-    try {
-      // Obtener el trabajo más reciente del trabajador
-      final jobs = await _jobRepository.getWorkerJobs(workerId);
-      if (jobs.isEmpty) return null;
-
-      jobs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return jobs.first.createdAt;
-    } catch (e) {
-      AppLogger.e('Error obteniendo última actividad', e);
       return null;
     }
   }
@@ -400,3 +390,9 @@ class MatchingService {
   }
 }
 
+class _MatchContext {
+  const _MatchContext({required this.users, required this.stats});
+
+  final Map<String, UserModel> users;
+  final Map<String, WorkerJobStats> stats;
+}
