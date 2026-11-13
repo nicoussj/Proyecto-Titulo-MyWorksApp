@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 import '../../domain/pricing_constants.dart';
 import '../../utils/app_error.dart';
@@ -26,8 +27,7 @@ class JobRepository {
   }
 
   Future<JobModel?> getJobById(String id) async {
-    final row =
-        await supabase.from(_table).select().eq('id', id).maybeSingle();
+    final row = await supabase.from(_table).select().eq('id', id).maybeSingle();
     if (row != null) return JobModel.fromMap(row);
     final pub = await supabase.rpc(
       'obtener_trabajo_sin_direccion',
@@ -74,10 +74,9 @@ class JobRepository {
         .select()
         .eq('id_trabajador', workerId)
         .inFilter('estado', [
-          AppConstants.jobStatusPending,
-          PricingConstants.jobAwaitingPayment,
-        ])
-        .order('creado_en', ascending: false);
+      AppConstants.jobStatusPending,
+      PricingConstants.jobAwaitingPayment,
+    ]).order('creado_en', ascending: false);
     return rows.map<JobModel>((m) => JobModel.fromMap(m)).toList();
   }
 
@@ -105,25 +104,58 @@ class JobRepository {
   }
 
   /// IDs de profesionales con al menos un trabajo activo (una consulta, no N+1).
+  ///
+  /// Usa la RPC `profesionales_ocupados`, que ve los trabajos de todos los
+  /// clientes y devuelve solo ids. Si la RPC aún no existe en la base, cae a
+  /// la consulta directa (que por RLS solo ve los trabajos propios).
   Future<Set<String>> getBusyWorkerIds(List<String> workerIds) async {
     if (workerIds.isEmpty) return {};
-    const chunkSize = 80;
+    const chunkSize = 200;
     final busy = <String>{};
     for (var i = 0; i < workerIds.length; i += chunkSize) {
       final end =
           i + chunkSize > workerIds.length ? workerIds.length : i + chunkSize;
       final chunk = workerIds.sublist(i, end);
-      final rows = await supabase
-          .from(_table)
-          .select('id_trabajador')
-          .inFilter('id_trabajador', chunk)
-          .inFilter('estado', WorkerJobStatus.busyStatuses);
-      for (final row in rows) {
-        final id = row['id_trabajador'] as String?;
-        if (id != null) busy.add(id);
+      try {
+        final rows = await supabase.rpc(
+          'profesionales_ocupados',
+          params: {'p_ids': chunk},
+        );
+        busy.addAll(parseBusyWorkerIds(rows));
+      } catch (_) {
+        busy.addAll(await _busyWorkerIdsDirect(chunk));
       }
     }
     return busy;
+  }
+
+  Future<Set<String>> _busyWorkerIdsDirect(List<String> chunk) async {
+    final rows = await supabase
+        .from(_table)
+        .select('id_trabajador')
+        .inFilter('id_trabajador', chunk)
+        .inFilter('estado', WorkerJobStatus.busyStatuses);
+    return {
+      for (final row in rows)
+        if (row['id_trabajador'] is String) row['id_trabajador'] as String,
+    };
+  }
+
+  /// La RPC devuelve `SETOF uuid`: PostgREST lo entrega como lista de
+  /// strings (o de mapas `{profesionales_ocupados: id}` según la versión).
+  @visibleForTesting
+  static Set<String> parseBusyWorkerIds(dynamic rows) {
+    if (rows is! List) return {};
+    final ids = <String>{};
+    for (final row in rows) {
+      if (row is String && row.isNotEmpty) {
+        ids.add(row);
+      } else if (row is Map) {
+        final value = row['profesionales_ocupados'] ?? row.values.firstOrNull;
+        if (value is String && value.isNotEmpty) ids.add(value);
+      }
+    }
+    return ids;
   }
 
   /// Conteos de historial sin bajar filas completas.
