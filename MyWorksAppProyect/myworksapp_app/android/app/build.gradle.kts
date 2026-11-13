@@ -41,8 +41,10 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.myworksapp"
+        // Identidad de la app en Android y Google Play. Cambiarla después de
+        // publicar equivale a crear otra app. `namespace` (paquete Kotlin/R)
+        // puede seguir siendo com.example.myworksapp: no se ve en la tienda.
+        applicationId = "cl.myworksapp.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -66,10 +68,23 @@ android {
 
     buildTypes {
         release {
-            // Usar signing config si existe, sino usar debug (para desarrollo)
+            // Release firmado con android/key.properties (no versionado; ver
+            // docs/FIRMA_RELEASE_ANDROID.md). Sin ese archivo se firma con la
+            // clave debug SOLO para pruebas locales, y con
+            // REQUIRE_RELEASE_SIGNING=true el build falla en vez de hacerlo.
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
+                if (System.getenv("REQUIRE_RELEASE_SIGNING") == "true") {
+                    throw GradleException(
+                        "Falta android/key.properties: no se puede firmar el release. " +
+                            "Ver docs/FIRMA_RELEASE_ANDROID.md"
+                    )
+                }
+                logger.warn(
+                    "ADVERTENCIA: android/key.properties no existe; el release se firma " +
+                        "con la clave DEBUG. No distribuyas esta APK."
+                )
                 signingConfigs.getByName("debug")
             }
         }

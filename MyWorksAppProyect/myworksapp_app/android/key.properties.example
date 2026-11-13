@@ -1,5 +1,8 @@
-storePassword=your_store_password
-keyPassword=your_key_password
+# Copia este archivo a android/key.properties (está en .gitignore; NUNCA lo subas).
+# El keystore (.jks) tampoco se versiona: guárdalo con respaldo fuera del repo.
+# Instrucciones: docs/FIRMA_RELEASE_ANDROID.md
+storePassword=CAMBIAR
+keyPassword=CAMBIAR
 keyAlias=myworksapp
-storeFile=../keystore/myworksapp.jks
-
+# Ruta relativa a android/app/ (o absoluta)
+storeFile=../keystore/myworksapp-release.jks
