@@ -1,3 +1,4 @@
+import 'package:myworksapp/core/utils/error_handler.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -118,7 +119,10 @@ class _WorkerVerificationCardState extends State<WorkerVerificationCard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'No se pudo enviar. Aplica la migración de verificación en Supabase. $e',
+            ErrorHandler.userMessage(
+              e,
+              fallback: 'No se pudo enviar la solicitud. Intenta de nuevo.',
+            ),
           ),
         ),
       );

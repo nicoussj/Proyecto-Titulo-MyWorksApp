@@ -92,7 +92,7 @@ extension JobDetailStatusActions on _JobDetailPageState {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(ErrorHandler.userMessage(e)),
           backgroundColor: AppColors.error,
         ),
       );
@@ -182,7 +182,7 @@ extension JobDetailStatusActions on _JobDetailPageState {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(ErrorHandler.userMessage(e)),
           backgroundColor: AppColors.error,
         ),
       );
@@ -302,7 +302,7 @@ extension JobDetailStatusActions on _JobDetailPageState {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(ErrorHandler.userMessage(e)),
           backgroundColor: AppColors.error,
         ),
       );
@@ -375,7 +375,7 @@ extension JobDetailStatusActions on _JobDetailPageState {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text(ErrorHandler.userMessage(e)),
             backgroundColor: AppColors.error,
           ),
         );

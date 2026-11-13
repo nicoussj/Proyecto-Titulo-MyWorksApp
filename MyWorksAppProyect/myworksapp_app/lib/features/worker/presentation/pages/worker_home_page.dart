@@ -1,3 +1,4 @@
+import 'package:myworksapp/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -143,7 +144,7 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No se pudo actualizar el panel: $e'),
+          content: Text(ErrorHandler.userMessage(e, fallback: 'No se pudo actualizar el panel.')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -198,7 +199,7 @@ class _WorkerHomePageState extends ConsumerState<WorkerHomePage>
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: $e')));
+          .showSnackBar(SnackBar(content: Text(ErrorHandler.userMessage(e))));
     }
   }
 

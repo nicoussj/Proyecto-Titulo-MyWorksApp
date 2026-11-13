@@ -1,3 +1,4 @@
+import 'package:myworksapp/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:myworksapp/core/widgets/design_system/app_gradient_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,7 +127,10 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
       }
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = ErrorHandler.userMessage(
+          e,
+          fallback: 'No pudimos cargar este trabajo. Intenta de nuevo.',
+        );
         _isLoading = false;
       });
     }
@@ -218,7 +222,7 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+        SnackBar(content: Text(ErrorHandler.userMessage(e)), backgroundColor: AppColors.error),
       );
     }
   }
@@ -237,7 +241,7 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+        SnackBar(content: Text(ErrorHandler.userMessage(e)), backgroundColor: AppColors.error),
       );
     }
   }
