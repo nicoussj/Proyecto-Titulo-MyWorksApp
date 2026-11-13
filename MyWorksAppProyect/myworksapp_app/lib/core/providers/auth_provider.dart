@@ -8,6 +8,7 @@ import '../domain/user_role.dart';
 import '../exceptions/auth_exceptions.dart';
 import '../services/auth_service.dart';
 import '../services/notification_realtime_service.dart';
+import '../services/push_service.dart';
 import '../utils/app_logger.dart';
 import 'repository_providers.dart';
 
@@ -91,6 +92,7 @@ class AuthNotifier extends Notifier<AuthState> {
       }
 
       await NotificationRealtimeService.instance.subscribe(user.id);
+      unawaited(PushService.instance.register(user.id));
       state = state.copyWith(user: user, isLoading: false);
       return true;
     } on AppAuthException catch (e) {
@@ -113,6 +115,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final user = await _authService.login(email: email, password: password);
       await NotificationRealtimeService.instance.subscribe(user.id);
+      unawaited(PushService.instance.register(user.id));
       state = state.copyWith(user: user, isLoading: false);
       return true;
     } on AppAuthException catch (e) {
@@ -155,6 +158,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final user = await _authService.completeOAuthSession();
       await NotificationRealtimeService.instance.subscribe(user.id);
+      unawaited(PushService.instance.register(user.id));
       state = state.copyWith(user: user, isLoading: false);
       return true;
     } on AppAuthException catch (e) {
@@ -173,6 +177,7 @@ class AuthNotifier extends Notifier<AuthState> {
     _handlingRemoteSignOut = true;
     try {
       await NotificationRealtimeService.instance.unsubscribe();
+      await PushService.instance.unregister();
       await _authService.logout();
     } finally {
       state = const AuthState();
@@ -189,6 +194,7 @@ class AuthNotifier extends Notifier<AuthState> {
         return false;
       }
       await NotificationRealtimeService.instance.subscribe(user.id);
+      unawaited(PushService.instance.register(user.id));
       state = state.copyWith(user: user, isLoading: false);
       return true;
     } on AppAuthException catch (e) {
