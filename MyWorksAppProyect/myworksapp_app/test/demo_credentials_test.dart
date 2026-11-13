@@ -12,7 +12,12 @@ void main() {
     for (final email in emails) {
       expect(email, endsWith('@demo.myworksapp.cl'));
     }
-    expect(DemoCredentials.demoPassword, 'Demo2026!');
+    // Sin --dart-define=DEMO_PASSWORD la clave queda vacía: nunca se compila
+    // una contraseña real dentro de la app.
+    expect(
+      DemoCredentials.demoPassword,
+      const String.fromEnvironment('DEMO_PASSWORD'),
+    );
     expect(emails.any((e) => e.endsWith('@demo.com')), isFalse);
     expect(
       DemoCredentials.isDemoEmail('ricardo.cheuquepan@demo.myworksapp.cl'),

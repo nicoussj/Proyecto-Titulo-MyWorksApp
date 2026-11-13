@@ -47,7 +47,7 @@ test('el registro web exige 8 caracteres, una letra y un número', async ({ page
     });
   });
 
-  await password.fill('Demo2026!');
+  await password.fill('Prueba2026x');
   await submit.click();
   await expect.poll(() => signupCalls).toBe(1);
 });
@@ -87,7 +87,7 @@ test('el login reenvía la confirmación si el correo no está confirmado', asyn
   await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 
   await page.getByPlaceholder('Email').fill('invitado@demo.myworksapp.cl');
-  await page.getByPlaceholder('Contraseña').fill('Demo2026!');
+  await page.getByPlaceholder('Contraseña').fill('Prueba2026x');
   await page.getByRole('button', { name: 'Entrar' }).click();
   await expect(page.getByRole('alert')).toContainText(/confirma tu correo/i);
   await page.getByRole('button', { name: 'Reenviar correo de confirmación' }).click();

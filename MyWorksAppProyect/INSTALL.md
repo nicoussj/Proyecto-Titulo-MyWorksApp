@@ -122,7 +122,7 @@ npm run dev
 
 Acceso: `http://localhost:5173`
 
-Cuentas de la demo (contraseña `Demo2026!`): `camila.soto@demo.myworksapp.cl` y el resto de `DEMO.md`. No uses `usuario@demo.com` ni `demo123`.
+Cuentas de la demo (la contraseña la entrega el equipo; no se publica en el repo): `camila.soto@demo.myworksapp.cl` y el resto de `DEMO.md`. No uses `usuario@demo.com` ni `demo123`.
 
 ---
 
@@ -152,7 +152,7 @@ npm run dev
 
 Acceso: `http://127.0.0.1:3001`
 
-Cuenta admin de la demo: `admin.ops@demo.myworksapp.cl` / `Demo2026!` (Valentina Riquelme). El segundo factor pide un QR la primera vez.
+Cuenta admin de la demo: `admin.ops@demo.myworksapp.cl` (Valentina Riquelme; clave fuera del repo). El segundo factor pide un QR la primera vez.
 
 ### App nativa con Tauri (Windows / macOS / Linux)
 

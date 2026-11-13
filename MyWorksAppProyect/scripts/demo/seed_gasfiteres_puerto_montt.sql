@@ -5,7 +5,9 @@
 --   3 bajo la media (2.5, 3.0, 3.4)
 --   3 en la media   (4.0, 4.1, 4.2)
 --   3 sobre la media (4.6, 4.8, 4.9)
--- Contraseña: Demo2026!
+-- Contraseña: NO se publica. Antes de correr este script, en la misma sesión:
+--   SET demo.password = '<clave-demo>';
+-- (pídela al equipo; el repo es público)
 -- Reejecutar es seguro: actualiza las mismas 9 cuentas.
 -- =============================================================================
 
@@ -27,11 +29,15 @@ BEGIN
     RAISE EXCEPTION 'Falta latitud_base. Aplica las migraciones de GPS antes de este seed.';
   END IF;
 
+  IF coalesce(current_setting('demo.password', true), '') = '' THEN
+    RAISE EXCEPTION 'Falta la clave demo. Ejecuta antes: SET demo.password = ''<clave-demo>'';';
+  END IF;
+
   BEGIN
-    v_hash := extensions.crypt('Demo2026!', extensions.gen_salt('bf'));
+    v_hash := extensions.crypt(current_setting('demo.password'), extensions.gen_salt('bf'));
   EXCEPTION
     WHEN undefined_function THEN
-      v_hash := crypt('Demo2026!', gen_salt('bf'));
+      v_hash := crypt(current_setting('demo.password'), gen_salt('bf'));
   END;
 
   CREATE TEMP TABLE demo_cuentas_pm (

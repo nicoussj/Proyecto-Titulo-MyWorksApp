@@ -9,7 +9,10 @@ import '../domain/worker_login_item.dart';
 /// legado está suspendido (migración 20261008000012) y la contraseña estaba
 /// publicada en el repo.
 class DemoCredentials {
-  static const demoPassword = 'Demo2026!';
+  /// La contraseña de las cuentas demo NO va en el repo (es público).
+  /// Solo para depuración local: `--dart-define=DEMO_PASSWORD=...`.
+  /// Sin ese define queda vacía y el login no autocompleta la clave.
+  static const demoPassword = String.fromEnvironment('DEMO_PASSWORD');
   static const demoEmailDomain = '@demo.myworksapp.cl';
 
   static bool isDemoEmail(String email) =>
