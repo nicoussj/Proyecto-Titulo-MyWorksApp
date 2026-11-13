@@ -16,6 +16,7 @@ import '../../../../core/design_system/layout_utils.dart';
 import '../../../../core/domain/booking_schedule.dart';
 import '../../../../core/domain/worker_hours.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../../core/services/worker_availability_service.dart';
 import '../../../../core/utils/mock_reserved_slots.dart';
 import '../../../../utils/content_filter.dart';
 import '../widgets/time_slot_selector.dart';

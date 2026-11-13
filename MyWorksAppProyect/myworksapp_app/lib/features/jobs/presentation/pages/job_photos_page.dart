@@ -2,10 +2,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/database/models/job_photo_model.dart';
 import '../../../../core/database/repositories/job_photo_repository.dart';
+import '../../../../core/database/supabase_db.dart';
 import '../../../../core/design_system/app_spacing.dart';
 import '../../../../core/services/evidence_webp.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -29,6 +31,8 @@ class JobPhotosPage extends StatefulWidget {
 }
 
 class _JobPhotosPageState extends State<JobPhotosPage> {
+  static const _bucket = 'evidencias-trabajo';
+
   final JobPhotoRepository _photoRepository = JobPhotoRepository();
   final ImagePicker _imagePicker = ImagePicker();
   List<JobPhotoModel> _photos = [];
@@ -61,14 +65,42 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     }
   }
 
-  Future<void> _savePhoto(Uint8List bytes) async {
+  Future<String> _uploadEvidenceFile({
+    required Uint8List bytes,
+    required String ext,
+    required String mediaType,
+  }) async {
+    final objectPath = '${widget.jobId}/${const Uuid().v4()}.$ext';
+    final contentType = mediaType == JobPhotoModel.mediaVideo
+        ? 'video/mp4'
+        : 'image/webp';
+
+    await supabase.storage.from(_bucket).uploadBinary(
+          objectPath,
+          bytes,
+          fileOptions: FileOptions(
+            upsert: false,
+            contentType: contentType,
+          ),
+        );
+
+    return supabase.storage.from(_bucket).getPublicUrl(objectPath);
+  }
+
+  Future<void> _savePhoto(Uint8List webpBytes) async {
+    final remoteUrl = await _uploadEvidenceFile(
+      bytes: webpBytes,
+      ext: 'webp',
+      mediaType: JobPhotoModel.mediaPhoto,
+    );
+
     final photo = JobPhotoModel(
       id: const Uuid().v4(),
       jobId: widget.jobId,
-      photoPath: 'evidencia.webp',
+      photoPath: remoteUrl,
       mediaType: JobPhotoModel.mediaPhoto,
       createdAt: DateTime.now(),
-      webpBytes: bytes,
+      webpBytes: webpBytes,
     );
 
     await _photoRepository.createJobPhoto(photo);
@@ -77,7 +109,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     if (!mounted) return;
     showAppSnackBar(
       context,
-      'Foto guardada en la base',
+      'Foto subida',
       type: AppSnackBarType.success,
     );
   }
@@ -101,7 +133,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       if (!mounted) return;
       showAppSnackBar(
         context,
-        'No se pudo guardar la evidencia: $e',
+        'No se pudo subir la evidencia. Revisa Storage (bucket evidencias-trabajo). $e',
         type: AppSnackBarType.error,
       );
     } finally {
@@ -119,22 +151,29 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       if (video == null) return;
 
       setState(() => _uploading = true);
+      final videoBytes = await video.readAsBytes();
+      final remoteUrl = await _uploadEvidenceFile(
+        bytes: videoBytes,
+        ext: 'mp4',
+        mediaType: JobPhotoModel.mediaVideo,
+      );
+
       final photo = JobPhotoModel(
         id: const Uuid().v4(),
         jobId: widget.jobId,
-        photoPath: video.name.isEmpty ? 'evidencia.mp4' : video.name,
+        photoPath: remoteUrl,
         mediaType: JobPhotoModel.mediaVideo,
         createdAt: DateTime.now(),
       );
       await _photoRepository.createJobPhoto(photo);
       await _loadPhotos();
       if (!mounted) return;
-      showAppSnackBar(context, 'Video agregado', type: AppSnackBarType.success);
+      showAppSnackBar(context, 'Video subido', type: AppSnackBarType.success);
     } catch (e) {
       if (!mounted) return;
       showAppSnackBar(
         context,
-        'No se pudo guardar el video: $e',
+        'No se pudo subir el video. Revisa Storage (bucket evidencias-trabajo). $e',
         type: AppSnackBarType.error,
       );
     } finally {
@@ -143,6 +182,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
   }
 
   void _showAddEvidenceSheet() {
+    if (_uploading) return;
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -213,7 +253,13 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
         actions: [
           if (widget.canAddPhotos)
             IconButton(
-              icon: const Icon(Icons.add_a_photo),
+              icon: _uploading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.add_a_photo),
               onPressed: _uploading ? null : _showAddEvidenceSheet,
               tooltip: 'Agregar evidencia',
             ),

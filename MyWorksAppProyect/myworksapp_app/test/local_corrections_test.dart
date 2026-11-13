@@ -50,14 +50,11 @@ void main() {
     });
   });
 
-  group('MockReservedSlots', () {
-    test('marca como ocupadas solo las horas de prueba', () {
-      expect(MockReservedSlots.isReserved(const TimeOfDay(hour: 9, minute: 0)), isTrue);
-      expect(MockReservedSlots.isReserved(const TimeOfDay(hour: 11, minute: 0)), isTrue);
-      expect(MockReservedSlots.isReserved(const TimeOfDay(hour: 15, minute: 0)), isTrue);
-      expect(MockReservedSlots.isReserved(const TimeOfDay(hour: 18, minute: 0)), isTrue);
-      expect(MockReservedSlots.isReserved(const TimeOfDay(hour: 10, minute: 0)), isFalse);
-      expect(mockReservedSlots, containsAll(['09:00', '11:00', '15:00', '18:00']));
+  group('MockReservedSlots helpers', () {
+    test('formatea y parsea etiquetas HH:mm', () {
+      expect(MockReservedSlots.format(const TimeOfDay(hour: 9, minute: 0)), '09:00');
+      expect(MockReservedSlots.parse('15:00'), const TimeOfDay(hour: 15, minute: 0));
+      expect(mockBookableSlots, containsAll(['09:00', '11:00', '15:00', '18:00']));
     });
   });
 

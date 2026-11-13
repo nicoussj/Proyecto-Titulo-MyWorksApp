@@ -126,6 +126,7 @@ export function TrackingDashboard({
             type="button"
             className="tracking-nav-home"
             onClick={onGoHome}
+            aria-label="Ir a la página de inicio"
           >
             <Home size={16} />
             Inicio
