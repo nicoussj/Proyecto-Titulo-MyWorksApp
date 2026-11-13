@@ -56,6 +56,24 @@ class JobRepository {
     return rows.map<JobModel>((m) => JobModel.fromMap(m)).toList();
   }
 
+  /// Una página del historial (más recientes primero). Para «Mis Proyectos»:
+  /// un cliente con 88 trabajos ya no baja todo de una vez.
+  Future<List<JobModel>> getJobsPage({
+    required String userId,
+    required bool asWorker,
+    required int offset,
+    int limit = 20,
+  }) async {
+    final rows = await supabase
+        .from(_table)
+        .select()
+        .eq(asWorker ? 'id_trabajador' : 'id_usuario', userId)
+        .order('creado_en', ascending: false)
+        .order('id', ascending: false)
+        .range(offset, offset + limit - 1);
+    return rows.map<JobModel>((m) => JobModel.fromMap(m)).toList();
+  }
+
   Future<List<JobModel>> getPendingJobsForWorker(String workerId) async {
     final rows = await supabase
         .from(_table)
