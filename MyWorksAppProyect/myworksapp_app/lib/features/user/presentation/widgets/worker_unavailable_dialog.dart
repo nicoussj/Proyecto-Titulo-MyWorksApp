@@ -52,8 +52,15 @@ class _WorkerUnavailableDialogState extends State<WorkerUnavailableDialog> {
   }
 
   Future<void> _loadUsers() async {
-    for (final worker in widget.alternatives) {
-      _users[worker.userId] = await _userRepository.getPublicProfile(worker.userId);
+    try {
+      final found = await _userRepository.getPublicProfilesByIds(
+        widget.alternatives.map((w) => w.userId).toList(),
+      );
+      for (final worker in widget.alternatives) {
+        _users[worker.userId] = found[worker.userId];
+      }
+    } catch (_) {
+      // Sin perfiles igual se muestran las alternativas con nombre genérico.
     }
     if (mounted) setState(() {});
   }

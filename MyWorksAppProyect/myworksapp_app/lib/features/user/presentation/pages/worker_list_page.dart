@@ -224,27 +224,48 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
     await _loadWorkers();
   }
 
+  /// Tope para que la lista nunca quede en el esqueleto de carga.
+  static const _locationTimeout = Duration(seconds: 8);
+  static const _loadTimeout = Duration(seconds: 20);
+  int _loadGeneration = 0;
+
   Future<void> _loadWorkers() async {
     if (!mounted) return;
+    final generation = ++_loadGeneration;
     setState(() => _isLoading = true);
 
     try {
-      await _resolveUserLocation();
+      try {
+        await _resolveUserLocation().timeout(_locationTimeout);
+      } catch (_) {
+        // GPS o geocodificación lentos: seguimos con la ciudad de la demo.
+        _userLocation ??= const UserLocationContext(
+          city: 'Puerto Montt',
+          region: 'Los Lagos',
+          latitude: UserLocationService.demoFallbackLatitude,
+          longitude: UserLocationService.demoFallbackLongitude,
+        );
+      }
+      if (!mounted || generation != _loadGeneration) return;
       if (_isAutomaticMode && widget.jobId != null && widget.serviceId != null) {
-        await _loadAutomaticMatching();
+        await _loadAutomaticMatching().timeout(_loadTimeout);
       } else {
-        await _loadManualWorkers();
+        await _loadManualWorkers().timeout(_loadTimeout);
       }
     } catch (e) {
-      if (!mounted) return;
-      // En caso de cualquier excepción, asegurar fallback manual de seguridad
-      _userLocation ??= const UserLocationContext(
-        city: 'Puerto Montt',
-        region: 'Los Lagos',
-        latitude: UserLocationService.demoFallbackLatitude,
-        longitude: UserLocationService.demoFallbackLongitude,
+      if (!mounted || generation != _loadGeneration) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'La búsqueda tardó demasiado. Revisa tu conexión y desliza para reintentar.',
+          ),
+        ),
       );
-      await _loadManualWorkers();
+    } finally {
+      // Pase lo que pase, nunca dejamos la pantalla pegada en "cargando".
+      if (mounted && generation == _loadGeneration && _isLoading) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -334,14 +355,10 @@ class _WorkerListPageState extends ConsumerState<WorkerListPage> {
 
     _busyWorkerIds = {};
 
-    // Cargar información de usuarios
-    final users = <String, UserModel>{};
-    for (var worker in workers) {
-      final user = await _userRepository.getPublicProfile(worker.userId);
-      if (user != null) {
-        users[worker.userId] = user;
-      }
-    }
+    // Perfiles públicos en una sola llamada (antes era 1 llamada por profesional).
+    final users = await _userRepository.getPublicProfilesByIds(
+      workers.map((w) => w.userId).toList(),
+    );
 
     if (!mounted) return;
     setState(() {
