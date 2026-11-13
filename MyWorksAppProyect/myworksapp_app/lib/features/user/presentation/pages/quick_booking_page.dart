@@ -1,3 +1,4 @@
+import 'package:myworksapp/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -199,7 +200,7 @@ class _QuickBookingPageState extends ConsumerState<QuickBookingPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text(ErrorHandler.userMessage(e))),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);

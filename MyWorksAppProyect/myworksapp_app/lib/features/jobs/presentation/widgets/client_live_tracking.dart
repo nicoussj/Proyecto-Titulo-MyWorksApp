@@ -49,7 +49,7 @@ class _ClientLiveTrackingState extends State<ClientLiveTracking> {
           .maybeSingle();
       _apply(row);
     } catch (e) {
-      _error = 'No se pudo leer la ubicación. Aplica la migración de GPS.';
+      _error = 'No se pudo leer la ubicación en este momento.';
     } finally {
       if (mounted) setState(() => _loading = false);
     }

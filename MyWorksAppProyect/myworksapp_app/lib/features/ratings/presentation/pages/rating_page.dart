@@ -79,7 +79,7 @@ class _RatingPageState extends State<RatingPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text(ErrorHandler.userMessage(e))),
       );
     } finally {
       if (mounted) {

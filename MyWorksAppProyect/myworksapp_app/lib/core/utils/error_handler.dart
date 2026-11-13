@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthException, PostgrestException;
 import 'package:myworksapp/utils/content_filter.dart';
 
 import '../theme/app_colors.dart';
+import '../exceptions/auth_exceptions.dart';
+import '../services/crash_reporting_service.dart';
 import 'app_error.dart';
 import 'app_logger.dart';
 
@@ -83,6 +87,76 @@ class ErrorHandler {
 
     // Error genérico
     return AppError(message: 'Ocurrió un error inesperado. Por favor intenta nuevamente', originalError: error);
+  }
+
+  /// Texto para mostrar al usuario. Nunca devuelve el detalle técnico
+  /// (nombres de funciones, códigos PGRST, SQL): eso va al log y a Sentry.
+  ///
+  /// Sí muestra los mensajes de negocio que escribimos en Postgres con
+  /// `RAISE EXCEPTION` (SQLSTATE P0001), por ejemplo «El trabajo queda a
+  /// más de 30 km del profesional».
+  static String userMessage(
+    Object error, {
+    String fallback = 'Algo salió mal. Intenta de nuevo en un momento.',
+    StackTrace? stackTrace,
+  }) {
+    final text = userMessageFor(error, fallback: fallback);
+    if (error is! AppError && error is! AppAuthException) {
+      AppLogger.e('Error mostrado como mensaje amigable', error, stackTrace);
+      CrashReportingService.instance.recordError(error, stackTrace);
+    }
+    return text;
+  }
+
+  /// Versión pura de [userMessage] (sin log), para tests.
+  static String userMessageFor(
+    Object error, {
+    String fallback = 'Algo salió mal. Intenta de nuevo en un momento.',
+  }) {
+    if (error is AppError) return error.message;
+    if (error is AppAuthException) return error.userMessage;
+    if (error is PostgrestException) {
+      final message = error.message.trim();
+      if (error.code == 'P0001' && _looksLikeUserText(message)) return message;
+      final mapped = handle(error);
+      if (mapped.type == ErrorType.validation ||
+          mapped.type == ErrorType.network ||
+          mapped.type == ErrorType.authentication) {
+        return mapped.message;
+      }
+      return fallback;
+    }
+    if (error is AuthException) {
+      return 'No pudimos validar tu sesión. Vuelve a iniciar sesión.';
+    }
+    final mapped = handle(error);
+    if (mapped.type == ErrorType.unknown || mapped.type == ErrorType.database) {
+      return fallback;
+    }
+    return mapped.message;
+  }
+
+  /// Un mensaje de RAISE EXCEPTION escrito para personas: corto y sin
+  /// pistas de SQL o de PostgREST.
+  static bool _looksLikeUserText(String message) {
+    if (message.isEmpty || message.length > 200) return false;
+    final lower = message.toLowerCase();
+    const technical = [
+      'pgrst',
+      'sqlstate',
+      'violates',
+      'relation ',
+      'column ',
+      'function ',
+      'syntax',
+      'null value',
+      'permission denied',
+      'jwt',
+      'operator does not',
+      'public.',
+      '()',
+    ];
+    return !technical.any(lower.contains);
   }
 
   /// Obtiene mensaje amigable del error

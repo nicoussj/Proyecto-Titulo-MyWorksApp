@@ -1,3 +1,4 @@
+import 'package:myworksapp/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/database/repositories/client_rating_repository.dart';
@@ -86,7 +87,7 @@ class RateClientButton extends StatelessWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo calificar: $e')),
+        SnackBar(content: Text(ErrorHandler.userMessage(e, fallback: 'No se pudo enviar la calificación.'))),
       );
     }
   }

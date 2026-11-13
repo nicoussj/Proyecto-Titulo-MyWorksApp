@@ -1,3 +1,4 @@
+import 'package:myworksapp/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -83,7 +84,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo actualizar la foto: $e')),
+        SnackBar(content: Text(ErrorHandler.userMessage(e, fallback: 'No se pudo actualizar la foto.'))),
       );
     } finally {
       if (mounted) setState(() => _photoLoading = false);
@@ -109,7 +110,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text(ErrorHandler.userMessage(e))),
       );
     } finally {
       if (mounted) setState(() => _photoLoading = false);
@@ -147,7 +148,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text(ErrorHandler.userMessage(e))),
       );
     }
   }
