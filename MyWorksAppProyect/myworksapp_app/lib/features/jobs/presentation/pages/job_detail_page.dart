@@ -19,6 +19,8 @@ import '../../../../core/widgets/design_system/error_state_widget.dart';
 import '../../../../core/utils/location_utils.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/job_state_machine.dart';
+import '../../../../core/services/job_transition_matrix.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../../../core/services/job_booking_service.dart';
 import '../../../../core/services/change_order_service.dart';
 import '../../../../core/services/dispute_service.dart';
@@ -112,12 +114,14 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
       if (job != null) {
         _loadAddress(job);
         _loadValidTransitions(job);
-        await _loadChangeOrders(job.id);
-        await _loadDispute(job.id);
-        if (job.pricingMode == PricingConstants.modeOpenQuote) {
-          await _loadQuoteProposals(job.id);
-          await _loadInvitedWorkerName(job);
-        }
+        await Future.wait([
+          _loadChangeOrders(job.id),
+          _loadDispute(job.id),
+          if (job.pricingMode == PricingConstants.modeOpenQuote) ...[
+            _loadQuoteProposals(job.id),
+            _loadInvitedWorkerName(job),
+          ],
+        ]);
         await _maybeShowRejectionDialog(job);
       }
     } catch (e) {
@@ -148,15 +152,22 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
       PricingConstants.jobPausedChangeOrder,
     ];
 
-    for (final status in possibleStatuses) {
-      final canTransition = await _stateMachine.isValidTransition(
+    // Una sola consulta: antes se pedía la misma lista una vez por estado.
+    List<String> allowed;
+    try {
+      allowed = await JobTransitionMatrix.allowedTargets(
+        job.pricingMode,
         job.status,
-        status,
-        pricingMode: job.pricingMode,
       );
-      transitions[status] = canTransition;
+    } catch (e) {
+      AppLogger.e('No se pudieron cargar las transiciones del trabajo', e);
+      allowed = const [];
+    }
+    for (final status in possibleStatuses) {
+      transitions[status] = allowed.contains(status);
     }
 
+    if (!mounted) return;
     setState(() {
       _canTransition = transitions;
     });
@@ -168,14 +179,29 @@ class _JobDetailPageState extends ConsumerState<JobDetailPage> {
   }
 
   Future<void> _loadDispute(String jobId) async {
-    final dispute = await DisputeService.instance.getDisputeByJobId(jobId);
-    final agreement = await DisputeService.instance.pendingAgreement(jobId);
+    final results = await Future.wait<Object?>([
+      DisputeService.instance.getDisputeByJobId(jobId),
+      _safePendingAgreement(jobId),
+    ]);
+    final dispute = results[0] as DisputeModel?;
+    final agreement = results[1] as Map<String, dynamic>?;
     if (mounted) {
       setState(() {
         _dispute = dispute;
         _pendingAgreementId = agreement?['id'] as String?;
         _pendingAgreementType = agreement?['tipo'] as String?;
       });
+    }
+  }
+
+  /// El acuerdo pendiente es opcional: si la función de soporte aún no existe
+  /// en la base (o falla), el detalle del trabajo debe abrir igual.
+  Future<Map<String, dynamic>?> _safePendingAgreement(String jobId) async {
+    try {
+      return await DisputeService.instance.pendingAgreement(jobId);
+    } catch (e) {
+      AppLogger.w('Acuerdo pendiente no disponible: $e');
+      return null;
     }
   }
 
