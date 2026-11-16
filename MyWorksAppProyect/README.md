@@ -144,7 +144,8 @@ graph TD
 | Firma “SHA-256 / Ley 19.799” (desktop) | **Demo** (no es firma legal) |
 | Panel DevSecOps de un clic | **Demo** (no dispara las suites) |
 | Cifras del panel ejecutivo en la demo | **De ejemplo**, salvo cuando el seed de Puerto Montt se corre a mano |
-| Carga | Sí hay scripts y resultados: `docs/pruebas/prueba_carga_rendimiento.md` y `docs/pruebas/estres_base_datos.md`. No se estresaron los pagos |
+| Carga | Sí hay scripts y resultados: `docs/pruebas/prueba_carga_rendimiento.md` y `docs/pruebas/estres_base_datos.md`. Anda bien hasta 200 personas a la vez. No se estresaron los pagos ni se buscó el quiebre por encima del cupo Realtime del plan Free |
+| Mercado | `docs/ESTUDIO_MERCADO_Y_CAPACIDAD.md` | País, Los Lagos, Puerto Montt, competencia e impacto. Fuentes del INE y de los sitios, sin cifras inventadas |
 | Tests automatizados | Flutter 242; módulo compartido 159; escritorio 5 de roles; web 20 Playwright (16 de noviembre de 2026) |
 
 ---

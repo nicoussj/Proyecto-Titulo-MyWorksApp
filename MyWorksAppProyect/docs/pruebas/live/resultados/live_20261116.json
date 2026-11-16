@@ -1,0 +1,102 @@
+{
+  "cuando": "2026-11-16T06:43:47.362Z",
+  "web": "https://myworksapp-cl.vercel.app",
+  "proyecto": "wxqrfcqifkfgawrnqmnj.supabase.co",
+  "portada": {
+    "name": "portada",
+    "ms": 136,
+    "status": 200,
+    "bytes": 3067,
+    "tieneRoot": true,
+    "pideTarjeta": false,
+    "cache": "HIT"
+  },
+  "oficios": {
+    "ms": 829,
+    "status": 200,
+    "lista": [
+      "cerrajeria",
+      "climatizacion",
+      "construccion",
+      "electricidad",
+      "ensamblaje",
+      "gasfiteria",
+      "jardineria",
+      "limpieza",
+      "mudanza",
+      "pintura",
+      "plomeria",
+      "soporte_tecnico"
+    ]
+  },
+  "profesionalesDistintosEnCatalogo": 42,
+  "porOficio": [
+    {
+      "oficio": "cerrajeria",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "climatizacion",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "construccion",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "electricidad",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "ensamblaje",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "gasfiteria",
+      "filas": 8,
+      "paginas": 1
+    },
+    {
+      "oficio": "jardineria",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "limpieza",
+      "filas": 4,
+      "paginas": 1
+    },
+    {
+      "oficio": "mudanza",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "pintura",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "plomeria",
+      "filas": 3,
+      "paginas": 1
+    },
+    {
+      "oficio": "soporte_tecnico",
+      "filas": 3,
+      "paginas": 1
+    }
+  ],
+  "unaConsultaGasfiteria": {
+    "name": "catalogo_primer_oficio",
+    "ms": 267,
+    "status": 200,
+    "filas": 3
+  },
+  "nota": "Conteo de fichas visibles en el catálogo público. No es una prueba de carga ni el máximo que la base puede guardar."
+}

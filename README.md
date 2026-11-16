@@ -174,6 +174,7 @@ Esto es un proyecto de título. No se lanza al mercado y no se sube a tiendas. W
 | Diccionario (52 tablas) | `MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md` | Generado desde la base viva el 16 de noviembre |
 | Casos de uso y UML | `MyWorksAppProyect/docs/casos_de_uso.md` y `docs/uml/` | 34 casos. Web y escritorio tienen diagrama propio (08 y 09) |
 | Pruebas | Informe final, sección de análisis, y `MyWorksAppProyect/docs/pruebas/` | Explicadas una por una. El teléfono físico no se recorrió |
+| Capacidad y mercado | `MyWorksAppProyect/docs/ESTUDIO_MERCADO_Y_CAPACIDAD.md` | 200 personas a la vez medidas, sin quiebre. 42 fichas visibles el 16 de noviembre. Mercado con fuentes del INE |
 | Instalación | `MyWorksAppProyect/INSTALL.md` | Lista |
 | Webpay de integración | `MyWorksAppProyect/docs/RUNBOOK_TRANSBANK_PRODUCCION.md` | Runbook de cómo sería producción. No se usa en este título |
 
