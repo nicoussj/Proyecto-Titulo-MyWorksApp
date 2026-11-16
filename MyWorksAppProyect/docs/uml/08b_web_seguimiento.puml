@@ -1,0 +1,55 @@
+@startuml
+skinparam shadowing false
+skinparam dpi 160
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 16
+skinparam ActorFontSize 16
+skinparam UseCaseFontSize 16
+skinparam PackageFontSize 16
+skinparam RectangleFontSize 16
+skinparam ArrowFontSize 14
+skinparam linetype ortho
+left to right direction
+hide circle
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #00205B
+  FontColor #00205B
+}
+skinparam rectangle {
+  BackgroundColor #FCFCFD
+  BorderColor #00205B
+  FontColor #00205B
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #00205B
+  FontColor #00205B
+}
+
+title Casos de uso — Página web\nSeguimiento y cierre
+
+actor "Cliente registrado" as CR
+
+rectangle "Página web — seguimiento y cierre" {
+  usecase "CU-13 Seguir el pedido en vivo" as UC13
+  usecase "CU-17 Recibir conforme\ny liberar el pago" as UC17
+  usecase "CU-18 Calificar al profesional" as UC18
+  usecase "CU-20 Cancelar una solicitud\ncon reembolso" as UC20
+  usecase "CU-21 Abrir disputa\ny proponer un acuerdo" as UC21
+  usecase "CU-23 Chatear sobre un trabajo" as UC23
+  usecase "CU-24 Recibir y gestionar\nnotificaciones" as UC24
+  usecase "CU-33 Reagendar la visita" as UC33
+}
+
+CR -- UC13
+CR -- UC17
+CR -- UC18
+CR -- UC20
+CR -- UC21
+CR -- UC23
+CR -- UC24
+CR -- UC33
+UC18 ..> UC17 : <<extend>>
+UC21 ..> UC17 : <<extend>>
+@enduml

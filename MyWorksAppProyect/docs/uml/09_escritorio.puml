@@ -1,0 +1,56 @@
+@startuml
+skinparam shadowing false
+skinparam dpi 160
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 16
+skinparam ActorFontSize 16
+skinparam UseCaseFontSize 16
+skinparam PackageFontSize 16
+skinparam RectangleFontSize 16
+skinparam ArrowFontSize 14
+skinparam linetype ortho
+left to right direction
+hide circle
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #00205B
+  FontColor #00205B
+}
+skinparam rectangle {
+  BackgroundColor #FCFCFD
+  BorderColor #00205B
+  FontColor #00205B
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #00205B
+  FontColor #00205B
+}
+
+title Casos de uso — Software de escritorio\nHub de operación
+
+actor "Administrador" as A
+actor "Colaborador interno\n(soporte / QA)" as C
+actor "Sistema (planificador)" as S <<planificador>>
+
+rectangle "Software de escritorio — hub" {
+  usecase "CU-28 Acceder a la consola\ncon segundo factor" as UC28
+  usecase "CU-29 Verificar profesionales" as UC29
+  usecase "CU-30 Supervisar métricas, pagos\ny liquidar al profesional" as UC30
+  usecase "CU-31 Invitar colaborador interno" as UC31
+  usecase "CU-34 Atender la cola de soporte\ncon mínimo privilegio" as UC34
+  usecase "CU-22 Resolver una disputa" as UC22
+}
+
+usecase "CU-21 Abrir disputa y\nproponer un acuerdo" as UC21
+
+A -- UC28
+C -- UC28
+A -- UC29
+A -- UC30
+A -- UC31
+C -- UC34
+A -- UC22
+S -- UC22
+UC22 ..> UC21 : <<extend>>
+@enduml

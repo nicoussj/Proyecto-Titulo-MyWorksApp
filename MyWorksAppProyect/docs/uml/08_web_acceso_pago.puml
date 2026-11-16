@@ -1,0 +1,63 @@
+@startuml
+skinparam shadowing false
+skinparam dpi 160
+skinparam defaultFontName Liberation Sans
+skinparam defaultFontSize 16
+skinparam ActorFontSize 16
+skinparam UseCaseFontSize 16
+skinparam PackageFontSize 16
+skinparam RectangleFontSize 16
+skinparam ArrowFontSize 14
+skinparam linetype ortho
+left to right direction
+hide circle
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #00205B
+  FontColor #00205B
+}
+skinparam rectangle {
+  BackgroundColor #FCFCFD
+  BorderColor #00205B
+  FontColor #00205B
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #00205B
+  FontColor #00205B
+}
+
+title Casos de uso — Página web\nAcceso, búsqueda y pago
+
+actor "Visitante" as V
+actor "Cliente invitado" as CI
+actor "Cliente registrado" as CR
+actor "Transbank Webpay" as TBK <<sistema externo>>
+
+rectangle "Página web — acceso, búsqueda y pago" {
+  usecase "CU-01 Registrarse" as UC01
+  usecase "CU-02 Iniciar sesión" as UC02
+  usecase "CU-03 Recuperar contraseña" as UC03
+  usecase "CU-05 Buscar profesionales\ncon mapa y filtros" as UC05
+  usecase "CU-06 Ver perfil del profesional\ny horas libres" as UC06
+  usecase "CU-07 Solicitar servicio\ny reservar hora" as UC07
+  usecase "CU-08 Pagar con Webpay\nen garantía" as UC08
+  usecase "CU-09 Comprar como invitado" as UC09
+  usecase "CU-10 Definir contraseña\ntras pagar como invitado" as UC10
+}
+
+V -- UC01
+V -- UC05
+V -- UC06
+CR -- UC02
+CR -- UC03
+CR -- UC07
+CR -- UC08
+CI -- UC09
+CI -- UC10
+TBK -- UC08
+TBK -- UC09
+UC07 ..> UC08 : <<include>>
+UC09 ..> UC08 : <<include>>
+UC10 ..> UC09 : <<extend>>
+@enduml
