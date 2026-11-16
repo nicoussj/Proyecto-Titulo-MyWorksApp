@@ -5,7 +5,7 @@
 [![Backend](https://img.shields.io/badge/Backend-Supabase%20PostgreSQL-orange.svg)]()
 
 Marketplace de servicios del hogar (cliente + profesional) para Chile, con hub web y escritorio admin.  
-**Estado:** listo para lanzar comercial con Webpay en integración; flip a producción al crear la empresa (ver runbook Transbank).
+**Estado:** prototipo de título. Webpay solo en integración. No se publica en tiendas ni se cobra de verdad.
 
 Documento técnico de referencia: [`ESTADO_DEL_PROYECTO.md`](ESTADO_DEL_PROYECTO.md).  
 Diccionario de datos: [`docs/DICCIONARIO_BASE_DATOS.md`](docs/DICCIONARIO_BASE_DATOS.md).  
@@ -87,7 +87,7 @@ Detalle: [`docs/DICCIONARIO_BASE_DATOS.md`](docs/DICCIONARIO_BASE_DATOS.md) y [`
 | Sí aplicamos | Cómo se ve en el proyecto |
 |--------------|---------------------------|
 | **Ágil / iterativo-incremental** | Se entrega por ciclos: auth → trabajos → RLS → Webpay → liquidación → hardening. |
-| **MVP primero** | Priorizamos lo demostrable y comercializable; lo demorado (MFA, payout automático) queda explícito como pendiente. |
+| **MVP primero** | Priorizamos lo demostrable en la defensa. Webpay queda en integración. No hay salida a tiendas. |
 | **Fases Capstone (APT)** | Fase 1 definición; Fase 2 y siguientes con evidencias académicas; el código vive en el monorepo. |
 | **Trabajo por dominio** | Cada incremento toca un flujo (reserva, pago, admin) de punta a punta, no “páginas sueltas”. |
 | **Calidad continua** | CI (analyze/test Flutter, lint/build web-desktop), runbooks, diccionario de BD, auditorías de seguridad. |
@@ -140,12 +140,12 @@ graph TD
 | Auth Supabase + perfiles / roles | Real |
 | Jobs, matching, estado de trabajos (Flutter) | Real (con reglas de dominio) |
 | Escrow / pagos | **Webpay Plus** (integración Transbank; flip a prod vía secrets) |
-| GPS en vivo (web) | **Simulado** (animación UI) |
-| Firma “SHA-256 / Ley 19.799” (desktop) | **Demo** (no es firma criptográfica legal) |
-| DevSecOps “test runner 1-click” | **Demo UI** (no ejecuta suites reales) |
-| CSAT 99.4% / GMV $14.85M | **Datos de ejemplo**, no métricas medidas |
-| Stress tests 15k VUs | **No hay scripts** de carga en este repo |
-| Tests automatizados | Flutter unit/widget; web/desktop sin suite aún |
+| GPS en vivo (web) | **Simulado** (animación en la interfaz, no un GPS de flota) |
+| Firma “SHA-256 / Ley 19.799” (desktop) | **Demo** (no es firma legal) |
+| Panel DevSecOps de un clic | **Demo** (no dispara las suites) |
+| Cifras del panel ejecutivo en la demo | **De ejemplo**, salvo cuando el seed de Puerto Montt se corre a mano |
+| Carga | Sí hay scripts y resultados: `docs/pruebas/prueba_carga_rendimiento.md` y `docs/pruebas/estres_base_datos.md`. No se estresaron los pagos |
+| Tests automatizados | Flutter 242; módulo compartido 159; escritorio 5 de roles; web 20 Playwright (16 de noviembre de 2026) |
 
 ---
 
@@ -170,7 +170,7 @@ flutter run                    # debug: usa el Supabase de la demo, no requiere 
 ```bash
 flutter build apk --release \
   --dart-define=SUPABASE_URL=https://wxqrfcqifkfgawrnqmnj.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=sb_publishable_WN_cTANRJ4nCuPw_6HWd7w_iDJjRA8O
+  --dart-define=SUPABASE_ANON_KEY=<clave publicable de myworksapp_web/.env.example>
 # APK: build/app/outputs/flutter-apk/app-release.apk
 ```
 

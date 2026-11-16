@@ -101,29 +101,19 @@ Diccionario de datos (fácil de explicar): [`MyWorksAppProyect/docs/DICCIONARIO_
 
 ---
 
-## 5. Metodología de trabajo
+## 5. Metodología y sprints
 
-### En una frase
+Trabajamos por entregas cortas: un flujo se implementa, se prueba y se sube. No hubo Scrum ceremonial (sin tablero diario ni puntos de historia). El plan de la guía 2.4 usa las semanas 1 a 18. El repositorio empieza el 10 de agosto de 2026. Estos cinco sprints son los mismos que el informe final.
 
-> **Desarrollo ágil iterativo e incremental**, orientado a un **MVP**, organizado por las **fases del Capstone APT (Duoc UC)**. Cada ciclo entrega un flujo usable (por ejemplo auth, trabajos, Webpay, liquidación), se prueba y se documenta.
+| Sprint | Cuándo | Qué se entregó | Cómo se probó | Estado |
+|--------|--------|----------------|---------------|--------|
+| 1. Definición | Semanas 1 a 4. Agosto 2026 | Problema, objetivos y evidencias de la Fase 1 | Entrega documental. Aún no había producto | Cerrado |
+| 2. Datos y seguridad | Semanas 5 a 8. Septiembre 2026 | Base en Supabase y políticas RLS | Auditoría del 16 de noviembre: 181 casos útiles, 0 fallas | Cerrado. La prueba formal es posterior al código |
+| 3. Tres clientes y cobro | Semanas 7 a 14. Octubre 2026 | App, web, hub y Webpay en integración | El recorrido de punta a punta quedó para el sprint 4 | Código entregado |
+| 4. Pruebas del flujo | 13 al 16 de noviembre de 2026 | Reagendar, cancelar, calificar, roles de consola, carga y Lighthouse | Web: 20 pruebas Playwright el 16 de noviembre (la de invitación del escritorio incluida). Teléfono físico: no | Parcial a propósito en el teléfono |
+| 5. Cierre | 16 de noviembre de 2026 | Auditoría de la base, diccionario de 52 tablas, informe final | Cada cifra tiene archivo. La demo oral es de la defensa | Informe cerrado |
 
-### Cómo trabajamos
-
-| Práctica | En el proyecto |
-|----------|----------------|
-| Ágil / iterativo-incremental | Entregas por dominio: definición → backend/RLS → clientes → pagos → hardening |
-| MVP primero | Primero lo demostrable; pendientes explícitos (MFA, payout automático, prod Transbank) |
-| Fases Capstone | Fase 1 definición APT; Fase 2 y siguientes con evidencias; software en `MyWorksAppProyect/` |
-| Calidad continua | CI, runbooks, diccionario BD, auditorías de seguridad |
-
-**No** es cascada pura ni Scrum ceremonial estricto: priorizamos entregas demostrables y evidencia académica sobre rituales formales.
-
-### Ciclo de una iteración
-
-```text
-Priorizar un flujo → acordar estados en BD → implementar (apps + Edge + SQL)
-→ probar → documentar → commit / CI
-```
+Un ciclo, en simple: elegir un flujo, acordar el estado en la base, implementarlo, probarlo, explicarlo y subirlo.
 
 ---
 
@@ -172,15 +162,20 @@ Configurar variables Supabase según `.env.example` de web/desktop y `--dart-def
 
 ---
 
-## 9. Estado respecto al título y al producto
+## 9. Estado del título
 
-| Dimensión | Estado actual |
-|-----------|----------------|
-| Definición / evidencia Fase 1 | Presente en carpetas académicas |
-| MVP técnico multiplataforma | Implementado (`MyWorksAppProyect/`) |
-| Pagos Webpay (integración) | Implementado (Edge + clientes) |
-| Liquidación al profesional | Manual por admin (automatización futura) |
-| Lanzamiento comercial fin de año | Condicionado a empresa, secrets de producción y cierre de pendientes (MFA, E2E vivo, etc.) |
+Esto es un proyecto de título. No se lanza al mercado y no se sube a tiendas. Webpay queda en ambiente de integración: la tarjeta de prueba demuestra la retención, la liberación y el reembolso.
+
+| Qué | Dónde está | Estado |
+|-----|------------|--------|
+| Informe final | `Fase 2/Myworksapp_Informe_Final - APT.docx` | Cerrado, con sprints y análisis de cada prueba |
+| Definición Fase 1 | `Fase 1/` | Entregada |
+| Informe de avance | `Fase 2/2.4_DesarrolloProyecto_APT_MyWorksApp.docx` | Entregado. Ahí la matriz de las tres interfaces aún figuraba en curso |
+| Diccionario (52 tablas) | `MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md` | Generado desde la base viva el 16 de noviembre |
+| Casos de uso y UML | `MyWorksAppProyect/docs/casos_de_uso.md` y `docs/uml/` | 34 casos. Web y escritorio tienen diagrama propio (08 y 09) |
+| Pruebas | Informe final, sección de análisis, y `MyWorksAppProyect/docs/pruebas/` | Explicadas una por una. El teléfono físico no se recorrió |
+| Instalación | `MyWorksAppProyect/INSTALL.md` | Lista |
+| Webpay de integración | `MyWorksAppProyect/docs/RUNBOOK_TRANSBANK_PRODUCCION.md` | Runbook de cómo sería producción. No se usa en este título |
 
 ---
 
