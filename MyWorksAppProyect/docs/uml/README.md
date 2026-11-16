@@ -19,6 +19,9 @@ En su lugar hay un **diagrama de contexto** (actores ↔ paquetes) y **un diagra
 | `05_reagendamiento` | CU-33. |
 | `06_administracion` | CU-22, CU-28, CU-29, CU-30, CU-31, CU-32, CU-34. CU-21 aparece fuera del límite (extend 22→21). |
 | `07_seguridad_auth` | CU-01, CU-02, CU-03, CU-04. |
+| `08_web_acceso_pago` | Página web: CU-01, CU-02, CU-03, CU-05 a CU-10. Include 07→08 y 09→08; extend 10→09. |
+| `08b_web_seguimiento` | Página web: CU-13, CU-17, CU-18, CU-20, CU-21, CU-23, CU-24, CU-33. Extend 18→17 y 21→17. |
+| `09_escritorio` | Hub de escritorio: CU-22, CU-28, CU-29, CU-30, CU-31, CU-34. CU-21 queda fuera del límite (extend). CU-32 no es pantalla del hub: lo ejecuta el planificador. |
 
 Cada diagrama tiene fuente PlantUML (`.puml`), figura de impresión PNG (2400 px de ancho) y SVG.
 
