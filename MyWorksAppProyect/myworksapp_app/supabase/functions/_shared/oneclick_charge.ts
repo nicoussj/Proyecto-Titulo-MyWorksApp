@@ -10,10 +10,49 @@ import {
   tbkOneclickStatus,
 } from "./tbk.ts";
 import { asCoord, transportExtraClp } from "./transport.ts";
+import {
+  invitationBaseAmount,
+  parseJobServiceMeta,
+  PRICE_ALIASES,
+} from "./oneclick_expected_amount.ts";
 
 type Admin = ReturnType<typeof serviceClient>;
 
 export { cardLast4 } from "./oneclick_inscription.ts";
+
+async function publishedRateFor(
+  admin: Admin,
+  workerId: string,
+  tierId: string,
+): Promise<number | null> {
+  if (!tierId || tierId === "visita") return null;
+  const { data: price } = await admin
+    .from("trabajador_precios")
+    .select("monto_clp")
+    .eq("id_usuario", workerId)
+    .eq("codigo", tierId)
+    .maybeSingle();
+  if (price?.monto_clp != null) return Number(price.monto_clp);
+
+  const alias = PRICE_ALIASES[tierId];
+  if (alias) {
+    const { data: aliased } = await admin
+      .from("trabajador_precios")
+      .select("monto_clp")
+      .eq("id_usuario", workerId)
+      .eq("codigo", alias)
+      .maybeSingle();
+    if (aliased?.monto_clp != null) return Number(aliased.monto_clp);
+  }
+
+  const { data: extra } = await admin
+    .from("trabajador_servicios_extra")
+    .select("monto_clp")
+    .eq("id_usuario", workerId)
+    .eq("id", tierId)
+    .maybeSingle();
+  return extra?.monto_clp != null ? Number(extra.monto_clp) : null;
+}
 
 async function markHeld(
   admin: Admin,
@@ -208,7 +247,9 @@ export async function expectedJobAmount(
 ): Promise<number> {
   const { data: job } = await admin
     .from("trabajos")
-    .select("id_trabajador, id_cotizacion_seleccionada, modalidad_cobro, latitud, longitud")
+    .select(
+      "id_trabajador, id_cotizacion_seleccionada, modalidad_cobro, latitud, longitud, metadatos_servicio",
+    )
     .eq("id", jobId)
     .maybeSingle();
   if (!job) return 0;
@@ -244,5 +285,22 @@ export async function expectedJobAmount(
     jobLng: asCoord(job.longitud),
     radiusKm: asCoord(worker?.radio_servicio_km),
   });
-  return visit + extra;
+  const meta = parseJobServiceMeta(job.metadatos_servicio);
+  if (!meta) return visit + extra;
+
+  const published = await publishedRateFor(
+    admin,
+    String(job.id_trabajador),
+    meta.tierId,
+  );
+  const base = invitationBaseAmount({
+    tierId: meta.tierId,
+    unit: meta.unit,
+    squareMeters: meta.squareMeters,
+    visitFee: visit,
+    publishedRate: published,
+  });
+  // 0 hace fallar crear_intencion_pago_servicio (el SQL también rechaza).
+  if (base <= 0) return 0;
+  return base + extra;
 }
