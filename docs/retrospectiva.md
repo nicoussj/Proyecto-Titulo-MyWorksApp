@@ -17,4 +17,6 @@ Fecha: 19 de noviembre de 2026. Equipo: Mathias Jara Alvarado, Gabriel Valderas 
 
 ## Qué queda
 
-Aplicar en el proyecto Supabase las migraciones nuevas de esta auditoría (`resumen_cobro_trabajo` y el freno de contacto antes del pago) para que el servidor y la app coincidan en la demostración.
+Las migraciones `20261119163000_resumen_cobro_trabajo` y `20261119170000_contacto_antes_de_garantia` quedaron aplicadas en `wxqrfcqifkfgawrnqmnj` el 19 de noviembre de 2026 (20:45, hora de Santiago).
+
+Sigue fuera de esta entrega: payout automático al banco, Transbank en producción y MFA para clientes y profesionales.

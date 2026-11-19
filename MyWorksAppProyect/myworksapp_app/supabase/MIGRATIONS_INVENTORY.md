@@ -3,7 +3,7 @@
 La base viva es `wxqrfcqifkfgawrnqmnj`. Cada versión de
 `supabase_migrations.schema_migrations` tiene su archivo en
 `supabase/migrations/` con el mismo número, y cada archivo tiene su fila en la
-base. Hoy hay 115 versiones en los dos lados (verificado el 18-nov-2026).
+base. Hoy hay 119 versiones en los dos lados (verificado el 19-nov-2026).
 
 Los archivos se ordenan por número. Para un entorno nuevo basta `supabase db push`.
 Para una base que ya tiene el historial no hay nada que reparar.
@@ -64,6 +64,15 @@ archivos llevan ese mismo número.
 | 20261117223850 | `quitar_indice_duplicado_servicios.sql` | Quita `servicios_categoria_idx`, que repetía `idx_servicios_categoria`. |
 | 20261118050658 | `invitacion_tarifa_visita.sql` | `monto_esperado_trabajo`: la opción `visita` de una invitación por tarifa cobra `trabajadores.tarifa_visita`; las demás variantes salen de `trabajador_precios` o `trabajador_servicios_extra`. |
 | 20261118053913 | `cobros_profesional_neto.sql` | Función `comision_servicio_clp` (5 %, mínimo $1.000, nunca mayor que el pago) y vista `cobros_profesional` (security invoker) con bruto, comisión y neto por pago; en órdenes de cambio el neto es el monto de la orden. |
+
+## Aplicadas en vivo el 18 y 19-nov-2026
+
+| Versión | Archivo | Qué hace |
+|---------|---------|----------|
+| 20261118230000 | `agenda_por_defecto_trabajador_nuevo.sql` | Un profesional nuevo publica lunes a viernes de 09:00 a 17:00 y queda con horario activo. |
+| 20261118233000 | `reserva_respeta_ventanas.sql` | Un día con la ventana apagada no se ofrece ni se reserva, aunque queden horas sueltas. |
+| 20261119163000 | `resumen_cobro_trabajo.sql` | RPC `resumen_cobro_trabajo`: total, tarifa, traslado, comisión y neto en CLP enteros, el mismo monto que acepta el pago, sin devolver la coordenada real. |
+| 20261119170000 | `contacto_antes_de_garantia.sql` | `texto_tiene_contacto` incluye Facebook y TikTok. El trigger `pagos_exigir_sin_contacto` frena un pago principal si la descripción o un mensaje del trabajo trae teléfono, correo, enlace o red. |
 
 ## Dump del esquema
 
