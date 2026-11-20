@@ -353,7 +353,7 @@ test('a 390 el formulario de invitado no corta el monto', async ({ page }) => {
   await expect(dialog).toBeVisible();
   await expect(dialog.getByText('Pedido sin sesión')).toBeVisible();
   await expect(dialog.getByTestId('academic-demo-note')).toHaveText(
-    'Sitio académico de demostración. No realices pagos con datos reales.',
+    'Sitio académico de demostración. Los pagos se realizan con tarjetas de prueba de Transbank (ambiente de integración); no se cobra dinero real. No ingreses datos de tarjetas reales.',
   );
   const amount = dialog.getByText('35.000 CLP');
   await expect(amount).toBeVisible();

@@ -2,7 +2,11 @@ import { Link } from 'react-router-dom';
 import { SiteFooter } from '../components/SiteFooter';
 import { openTestingSurvey } from '../components/testingSurveyEvents';
 import { usePageMeta } from '../hooks/usePageMeta';
-import { ACADEMIC_BANNER_TEXT, ACADEMIC_META_DESCRIPTION } from '../legal/academicCopy';
+import {
+  ACADEMIC_BANNER_TEXT,
+  ACADEMIC_META_DESCRIPTION,
+  TRANSBANK_TEST_CARDS_URL,
+} from '../legal/academicCopy';
 
 type Kind = 'aviso' | 'terminos' | 'privacidad';
 
@@ -52,9 +56,14 @@ function TermsBody() {
       </p>
       <h2>Pagos</h2>
       <p>
-        Si se inicia un cobro, el sitio lo envía a Transbank (Webpay u Oneclick). En el código, ese
-        ambiente puede ser el de integración o el de producción según la configuración del servidor,
-        y esa configuración no está fijada en el sitio. No realices pagos con datos reales.
+        Webpay y Oneclick operan en el ambiente de integración de Transbank. Los pagos se realizan
+        con tarjetas de prueba; ninguna transacción es real y no se cobra dinero real. No ingreses
+        datos de tarjetas reales. Las tarjetas públicas de ese ambiente están en la documentación de
+        Transbank:{' '}
+        <a href={TRANSBANK_TEST_CARDS_URL} rel="noopener noreferrer">
+          tarjetas de prueba
+        </a>
+        .
       </p>
       <h2>Limitación de responsabilidad</h2>
       <p>
@@ -101,10 +110,11 @@ function PrivacyBody() {
         <li>Encuesta de testing: rol, plataforma, respuestas y comentarios, para el informe de pruebas.</li>
         <li>Verificación anti-robots de Cloudflare (Turnstile): un token de que no eres un robot.</li>
         <li>
-          Si entras con Google, ese proveedor entrega la identidad de la cuenta. El número de tarjeta
-          se escribe en Transbank. Este sitio no pide ni guarda el número ni el código de seguridad.
-          Si inscribes una tarjeta de demostración, solo puede quedar visible los últimos cuatro
-          dígitos.
+          Si entras con Google, ese proveedor entrega la identidad de la cuenta. El número de la
+          tarjeta de prueba se escribe en Transbank, en su ambiente de integración. Este sitio no
+          pide ni guarda el número ni el código de seguridad. Si inscribes una tarjeta de prueba,
+          solo pueden quedar visibles los últimos cuatro dígitos. Ninguna transacción mueve dinero
+          real.
         </li>
       </ul>
       <h2>Ley 19.628</h2>
@@ -119,9 +129,14 @@ function PrivacyBody() {
       <p>Los datos de prueba se borran periódicamente.</p>
       <h2>Pagos y marcas</h2>
       <p>
-        Webpay y Oneclick pueden apuntar al ambiente de integración o al de producción según la
-        configuración del servidor. No realices pagos con datos reales. Transbank, Google y
-        Cloudflare se usan solo como integración técnica.
+        Webpay y Oneclick operan en el ambiente de integración de Transbank. Los pagos se realizan
+        con tarjetas de prueba; ninguna transacción es real y no se cobra dinero real. No ingreses
+        datos de tarjetas reales. Transbank, Google y Cloudflare se usan solo como integración
+        técnica. Las tarjetas públicas están en la documentación de Transbank:{' '}
+        <a href={TRANSBANK_TEST_CARDS_URL} rel="noopener noreferrer">
+          tarjetas de prueba
+        </a>
+        .
       </p>
       <ContactBlock />
     </>
