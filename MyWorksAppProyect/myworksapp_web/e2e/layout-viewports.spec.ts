@@ -352,6 +352,9 @@ test('a 390 el formulario de invitado no corta el monto', async ({ page }) => {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByText('Pedido sin sesión')).toBeVisible();
+  await expect(dialog.getByTestId('academic-demo-note')).toHaveText(
+    'Sitio académico de demostración. No realices pagos con datos reales.',
+  );
   const amount = dialog.getByText('35.000 CLP');
   await expect(amount).toBeVisible();
   const box = await amount.boundingBox();
