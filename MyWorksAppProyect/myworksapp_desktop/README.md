@@ -38,9 +38,25 @@ Eso abre Vite en `http://127.0.0.1:3001`. La app instalada se arma con `npm run 
 
 Transbank está en integración. Khipu y Fintoc no están conectados.
 
+## Publicación
+
+El actualizador consulta `https://github.com/nicoussj/Proyecto-Titulo-MyWorksApp/releases/latest/download/latest.json` al abrir la app instalada. La clave pública está en `src-tauri/tauri.conf.json` (`plugins.updater.pubkey`). La clave privada y su contraseña no están en el repositorio: van como secrets `TAURI_SIGNING_PRIVATE_KEY` y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
+
+## Comisión
+
+`comision_servicio_clp` cobra 5 % con un mínimo de $1.000.
+
+## Bitácora
+
+La migración `20261120130000_auditoria_consola.sql` está aplicada. La tabla `auditoria_consola`, las RPC de la consola y el bloqueo que impide borrar o editar la bitácora fuera de esas funciones ya existen. Cada acción queda registrada ahí.
+
+## Ajustes y disputas abiertas
+
+La migración `20261122231000_consola_lectura_config_y_disputas.sql` agrega `consola_leer_config()` (solo quien pasa `is_admin()`) y amplía `consola_disputas_abiertas` con los estados `abierta` y `en_revision`. Hay que aplicarla en la base para que Ajustes deje de responder 403 y la cola muestre las disputas abiertas.
+
 ## Deep link
 
-Esquema `myworksapp-admin`, ruta `auth/callback`. Sirve para definir la contraseña después de una invitación o de recuperar la clave, sin depender de que el servidor de desarrollo esté encendido. Desde el PR #82 la consola lee el retorno con `code`, `token_hash` o el fragmento (`src/lib/authCallback.ts`) y, si es una invitación o una recuperación, abre «Define tu contraseña». Las consolas ya instaladas lo reciben con la próxima versión publicada.
+Esquema `myworksapp-admin`, ruta `auth/callback`. Sirve para definir la contraseña después de una invitación o de recuperar la clave, sin depender de que el servidor de desarrollo esté encendido. Desde el PR #82 la consola lee el retorno con `code`, `token_hash` o el fragmento (`src/lib/authCallback.ts`) y, si es una invitación o una recuperación, abre «Define tu contraseña». En Windows, si la app ya está abierta, `tauri-plugin-single-instance` reenvía esa URL a la ventana existente. Las consolas ya instaladas lo reciben con la próxima versión publicada.
 
 ## Roles
 
@@ -74,6 +90,6 @@ Las pruebas de permisos `docs/PRUEBAS_RLS_CONSOLA_20261120.sql` están escritas,
 
 ## Estado conocido
 
-La prueba de la consola del 20-nov sobre `08154df` encontró 24 errores (1 crítico, 2 altos, 8 medios y 13 bajos). El crítico: el módulo Profesionales responde 403 al leer `trabajadores`, así que hoy no se puede verificar ni rechazar a nadie desde la consola. Ajustes aparece en blanco (403 en `app_config`). El arreglo está en la rama `cursor/consola-bugs`, **sin merge**, junto con la migración `20261120210000_consola_lectura_config_y_disputas.sql`, que no está aplicada.
+Los 24 errores de la prueba del 20-nov quedan corregidos en este cambio. Profesionales deja de pedir `nota_verificacion` y Ajustes lee `consola_leer_config`. Esa función y la cola de disputas `abierta`/`en_revision` están en `20261122231000_consola_lectura_config_y_disputas.sql`. Hay que aplicarla en la base antes de usar Ajustes y la cola.
 
 La invitación por Resend no está activa: falta el secreto `INVITE_PROVIDER=resend` en `invitar-colaborador`. Mientras tanto la invitación sale por Supabase Auth con el SMTP de Resend.

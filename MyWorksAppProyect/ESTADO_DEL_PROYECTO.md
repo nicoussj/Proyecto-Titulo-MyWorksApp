@@ -287,7 +287,7 @@ Las cuentas `@demo.myworksapp.cl` y `@demo.com` se marcan con `es_demo` (migraci
 | Tests automatizados | CI en verde sobre `d9d2c7c` (Flutter, web, consola, Tauri en Windows y Gitleaks; corrida del 20-nov a las 02:31, hora de Chile). En el box, el 20-nov: `shared/` 231 de 231 y consola 12 de 12. Prueba P-17 (19 y 20-nov, réplica local): **641 de 641** pruebas automatizadas; ver [`docs/PRUEBAS.md`](docs/PRUEBAS.md) | ✅ |
 | Capacidad | Con todos los tipos de uso, en una réplica local con 1.000 profesionales sintéticos, se degrada con unos 100 usuarios virtuales y cae con unos 280. La causa es el catálogo, que llama a `stats_profesional()` por cada profesional, más el pool de 10 conexiones de PostgREST. En producción, con solo lecturas (otra prueba, del Programador), aguanta 200 a 250. Ver [`docs/PRUEBAS.md`](docs/PRUEBAS.md) | Alta |
 | CI/CD (GitHub Actions) | Un solo `.github` en la raíz del repo, con actions fijadas por SHA | ✅ |
-| Consola de escritorio | En uso con datos reales. La prueba del 20-nov (`08154df`) encontró 24 errores; el más grave es que el módulo «Profesionales» responde 403 y no se puede verificar a nadie desde la consola. El arreglo está en la rama `cursor/consola-bugs` (sin merge) | Alta |
+| Consola de escritorio | En uso con datos reales. Los 24 errores de la prueba del 20-nov quedan corregidos en este cambio. Ajustes y la cola de disputas dependen de aplicar `20261122231000_consola_lectura_config_y_disputas.sql` | Alta |
 | Instalador de la consola | El par de claves del actualizador es nuevo; la privada no está en el repo y va como secrets `TAURI_SIGNING_PRIVATE_KEY` y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Quien tenga la versión anterior debe reinstalar una vez | Media |
 | Publicación en tiendas | No publicada | Alta (al lanzar) |
 
@@ -298,7 +298,6 @@ Estas ramas existen en `nicoussj/Proyecto-Titulo-MyWorksApp` pero **no tienen me
 | Rama | Qué agrega |
 |---|---|
 | `cursor/aviso-academico-duoc-v2` | Banner de proyecto académico Duoc UC y páginas `/aviso-legal`, `/terminos` y `/privacidad` con texto basado en la Ley 19.628 |
-| `cursor/consola-bugs` | Arreglo de los 24 errores de la consola encontrados en la prueba del 20-nov. Trae la migración `20261120210000_consola_lectura_config_y_disputas.sql`, que no está aplicada |
 
 Además hay un **parche local de pruebas** (no es una rama en GitHub): 12 pruebas de `shared`, 2 pruebas SQL y la corrección de H1, en 3 commits sobre `d9d2c7c`. Se entrega aparte al Programador.
 

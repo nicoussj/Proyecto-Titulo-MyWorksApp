@@ -1162,4 +1162,4 @@ Estado al 20-nov-2026 (`main` `d9d2c7c`):
 4. **CU-24 y CU-32.** `send-push` no está desplegada. `soporte-automatico` sí (20-nov), pero falta programar su llamada.
 5. **CU-03 y CU-31.** El PR #82 arregla restablecer la clave desde la app (`cl.myworksapp.auth`) y aceptar una invitación en la consola; llega a los usuarios con la próxima compilación de la app y de la consola. La invitación por Resend sigue pendiente (`INVITE_PROVIDER=resend`).
 
-**En desarrollo (ramas sin merge, no forman parte de estos casos):** `cursor/aviso-academico-duoc-v2` (banner y páginas `/aviso-legal`, `/terminos`, `/privacidad`) y `cursor/consola-bugs` (24 errores de la consola, con la migración `20261120210000_consola_lectura_config_y_disputas.sql` sin aplicar).
+**En desarrollo (ramas sin merge, no forman parte de estos casos):** `cursor/aviso-academico-duoc-v2` (banner y páginas `/aviso-legal`, `/terminos`, `/privacidad`). Los 24 errores de la consola quedan corregidos con la migración `20261122231000_consola_lectura_config_y_disputas.sql`, que hay que aplicar en la base.
