@@ -80,6 +80,7 @@ archivos llevan ese mismo número.
 | 20261120170000 | `derechos_y_cobro_extra.sql` | `exportar_mis_datos`, `solicitar_eliminacion_cuenta`, tabla `direcciones_cliente`, `monto_a_cobrar_orden_cambio` y `rechazar_orden_cambio`. Aplicada en vivo (reporte del 20-nov). |
 | 20261120180000 | `agenda_alta_sin_generate_series_time.sql` | Corrige el alta: deja de usar `generate_series` con `time`. Aplicada en producción. |
 | 20261120193000 | `montos_redondeo_unico.sql` | Un solo entero de cobro. El km del traslado se cuantiza a 3 decimales; la tarifa se redondea antes de sumar el traslado; el 8 % de la orden de cambio es entero. No agrega tablas. Aplicada en producción el 20 de noviembre de 2026. |
+| 20261121110000 | `cancelar_solicitud_con_disputa.sql` | El cliente puede cancelar la solicitud con una disputa abierta (reemplaza `transicionar_trabajo`). Este archivo se numeró antes como `20261120193000`, la misma versión que `montos_redondeo_unico.sql`, así que nunca se aplicó. |
 
 ## Dump del esquema
 
