@@ -1338,11 +1338,13 @@ export function App() {
   if (view === 'notfound') return <NotFoundPage />;
   if (view === 'account') return <AccountPage />;
   if (view === 'trabaja') return <WorkWithUsPage />;
+  if (view === 'aviso') return <LegalPage kind="aviso" />;
   if (view === 'terminos') return <LegalPage kind="terminos" />;
   if (view === 'privacidad') return <LegalPage kind="privacidad" />;
 
   if (view === 'paid') {
     return (
+      <>
       <Suspense fallback={<ViewFallback />}>
         <PaidReturnView
           workerName={selectedWorker?.name}
@@ -1369,6 +1371,8 @@ export function App() {
           onGoHome={goHome}
         />
       </Suspense>
+      <SiteFooter />
+      </>
     );
   }
 
@@ -1572,6 +1576,7 @@ export function App() {
 
         )}
 
+        <SiteFooter />
       </div>
       </Suspense>
     );
@@ -1594,6 +1599,7 @@ export function App() {
               setShowAuth(true);
             }}
           />
+          <SiteFooter />
           <Suspense fallback={null}>
             <AuthModal open={showAuth} initialEmail={authInitialEmail} onClose={() => setShowAuth(false)} />
           </Suspense>
@@ -1780,6 +1786,7 @@ export function App() {
 
 
         <AuthModal open={showAuth} initialEmail={authInitialEmail} onClose={() => setShowAuth(false)} />
+        {view === 'search' ? <SiteFooter /> : null}
 
       </div>
       </Suspense>
