@@ -22,9 +22,11 @@ import { supabase } from '../supabaseClient';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { Badge, Button, CopyId, EmptyState, ErrorState, SkeletonRows } from '../ui/kit';
 import { useToast } from '../ui/toast-store';
-import { ColaResenasDudosas } from './colaResenas';
 import { filtrarDisputas, ordenarDisputas, textoProcedencia } from './disputas/bandeja';
 import { PagedTable, type PageResult } from './table';
+import { Banda } from './premium/Banda';
+import { capturaActiva } from './premium/captura';
+export { ResenasPage } from './premium/resenas';
 
 function asPromise<T>(value: PromiseLike<T>): Promise<T> {
   return Promise.resolve(value);
@@ -98,6 +100,7 @@ export function ResumenPage() {
           ))}
         </div>
       </div>
+      <Banda seccion="inicio" />
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? <ErrorState message="No se pudo cargar el resumen." onRetry={() => void query.refetch()} /> : null}
       {permissions.executive && financiero.gmv_clp != null ? (
@@ -147,6 +150,8 @@ export function PedidosPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewOrders}>
       <h1>Pedidos</h1>
+      <p className="muted">Del resumen al detalle, sin salir de la lista.</p>
+      <Banda seccion="pedidos" />
       <PagedTable
         queryKey={['pedidos']}
         empty="Aún no hay pedidos con ese filtro."
@@ -271,6 +276,7 @@ export function DisputasPage() {
     <Gate allow={permissions.supportQueue}>
       <h1>Disputas</h1>
       <p className="muted">Bandeja de casos. La cola incluye abierta, en revisión y apelaciones. La sugerencia no mueve el dinero.</p>
+      <Banda seccion="disputas" />
       {tab === 'abiertas' ? (
         <label className="field">
           <span>Prioridad</span>
@@ -311,7 +317,7 @@ export function DisputasPage() {
               <>
                 <p className="muted">Sugerencia, no es una decisión: {statusLabel(row.decision_sugerida)} · {row.motivo_regla || 'Sin regla'} · vence {formatDateTime(row.vence_en)}</p>
                 <p className="muted">Propuesta de riesgo {row.puntaje_riesgo ?? '—'}. No mueve el dinero.</p>
-                <p className="muted">Plazo {formatDateTime(row.vence_en)}</p>
+                <p className={vencePronto(row.vence_en) ? 'sla-bad' : 'sla-ok'}>Plazo {formatDateTime(row.vence_en)}</p>
               </>
             )}
             {permissions.disputeEvidence ? <Evidencia id={row.id} /> : <p className="muted">Tu rol no ve la evidencia.</p>}
@@ -327,14 +333,21 @@ export function DisputasPage() {
       {decision ? (
         <ConfirmDialog
           title={decision.decision === 'liberar' ? 'Liberar el pago' : 'Devolver el pago'}
-          summary={`${decision.monto}. ${decision.decision === 'liberar' ? 'El profesional cobra la garantía.' : 'El dinero vuelve a la tarjeta del cliente.'} Entorno Transbank: integración.`}
+          summary={`${decision.monto}. ${decision.decision === 'liberar' ? 'El profesional cobra la garantía.' : 'El dinero vuelve a la tarjeta del cliente.'} Esto llama a webpay-resolve-dispute en vivo.`}
           irreversible
+          confirmPhrase={decision.decision === 'liberar' ? 'LIBERAR' : 'REEMBOLSAR'}
           requireTotp={!totpFresh()}
           busy={busy}
           onCancel={() => setDecision(null)}
           onConfirm={(motivo, code) => {
             setBusy(true);
             void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setBusy(false);
+                setDecision(null);
+                return;
+              }
               const ok = await reverify(code);
               if (!ok) {
                 toast('El código no es válido.');
@@ -404,7 +417,8 @@ export function TicketsPage() {
   });
   return (
     <Gate allow={permissions.supportQueue}>
-      <h1>Tickets de soporte</h1>
+      <h1>Soporte y moderación</h1>
+      <Banda seccion="soporte" />
       <p className="muted">Si la app todavía no abre tickets, la lista queda vacía. La respuesta queda en el hilo y en la bitácora.</p>
       <label className="field">
         <span>Estado</span>
@@ -488,6 +502,7 @@ export function ReportesPage() {
   return (
     <Gate allow={permissions.viewPeople}>
       <h1>Reportes y abuso</h1>
+      <Banda seccion="soporte" />
       <p className="muted">Si nadie ha reportado, la lista queda vacía. Descartar o sancionar no borra la fila.</p>
       <label className="field">
         <span>Estado</span>
@@ -557,6 +572,7 @@ export function UsuariosPage() {
   return (
     <Gate allow={consolePermissions(profile?.role ?? '').viewPeople}>
       <h1>Clientes</h1>
+      <Banda seccion="clientes" />
       <PagedTable
         queryKey={['usuarios']}
         empty="Aún no hay clientes con ese filtro."
@@ -667,14 +683,15 @@ function EstadoCuenta({ id, enabled, onClose }: { id: string; enabled: boolean; 
   );
 }
 
-export function ProfesionalesPage() {
+export function ProfesionalesPage({ soloCola = false }: { soloCola?: boolean } = {}) {
   const { profile } = useAuth();
   const permissions = consolePermissions(profile?.role ?? '');
-  const [estado, setEstado] = useState('todos');
+  const [estado, setEstado] = useState(soloCola ? 'en_revision' : 'todos');
   const [selected, setSelected] = useState<string | null>(useParams().id ?? null);
   return (
     <Gate allow={permissions.viewPeople}>
-      <h1>Profesionales</h1>
+      <h1>{soloCola ? 'Verificaciones' : 'Trabajadores'}</h1>
+      <Banda seccion={soloCola ? 'verificaciones' : 'trabajadores'} />
       <label className="field">
         <span>Estado de verificación</span>
         <select value={estado} onChange={(event) => setEstado(event.target.value)}>
@@ -845,7 +862,8 @@ export function PagosPage() {
   const admin = consolePermissions(useAuth().profile?.role ?? '').people;
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewMoney}>
-      <h1>Pagos y escrow</h1>
+      <h1>Pagos y comisiones</h1>
+      <Banda seccion="pagos" />
       <p className="muted">Montos de la vista cobros_profesional. Liberar llama a webpay-release y mueve dinero.</p>
       <PagedTable
         queryKey={['pagos']}
@@ -884,12 +902,18 @@ export function PagosPage() {
       {pago ? (
         <ConfirmDialog
           title="Liberar pago"
-          summary="webpay-release marca el escrow como liberado cuando la transferencia ya se hizo fuera de la app."
+          summary="webpay-release marca el escrow como liberado cuando la transferencia ya se hizo fuera de la app. El cobro es en vivo."
           irreversible
+          confirmPhrase="LIBERAR"
           requireTotp={!totpFresh()}
           onCancel={() => setPago(null)}
           onConfirm={(motivo, code) => {
             void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setPago(null);
+                return;
+              }
               if (!(await reverify(code))) {
                 toast('El código no es válido.');
                 return;
@@ -939,6 +963,7 @@ export function LiquidacionesPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewMoney}>
       <h1>Liquidaciones</h1>
+      <Banda seccion="pagos" />
       <p className="muted">Khipu y Fintoc: no conectados. La liberación manual pide referencia y motivo.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
@@ -960,14 +985,20 @@ export function LiquidacionesPage() {
       {pago ? (
         <ConfirmDialog
           title="Liquidar garantía"
-          summary={`${formatClp(pago.neto)} se marca liberado cuando confirmas que la transferencia ya se hizo fuera de la app.`}
+          summary={`${formatClp(pago.neto)} se marca liberado cuando confirmas que la transferencia ya se hizo fuera de la app. El cobro es en vivo.`}
           irreversible
+          confirmPhrase="LIQUIDAR"
           requireTotp={!totpFresh()}
           busy={busy}
           onCancel={() => setPago(null)}
           onConfirm={(motivo, code) => {
             setBusy(true);
             void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setPago(null);
+                return;
+              }
               if (!(await reverify(code))) {
                 toast('El código no es válido.');
                 return;
@@ -1006,6 +1037,7 @@ export function ReembolsosPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewMoney}>
       <h1>Reembolsos</h1>
+      <Banda seccion="pagos" />
       <p className="muted">Los pagos aún retenidos se devuelven con webpay-refund. El historial muestra los que ya volvieron a la tarjeta.</p>
       {admin ? (
         <PagedTable
@@ -1056,12 +1088,18 @@ export function ReembolsosPage() {
       {pago ? (
         <ConfirmDialog
           title={pago.via === 'refund' ? 'Devolver el pago' : 'Devolver por cancelación'}
-          summary={pago.via === 'refund' ? 'webpay-refund devuelve el dinero a la tarjeta.' : 'webpay-refund-cancellation devuelve la garantía del trabajo.'}
+          summary={pago.via === 'refund' ? 'webpay-refund devuelve el dinero a la tarjeta. El reembolso es en vivo.' : 'webpay-refund-cancellation devuelve la garantía del trabajo. El reembolso es en vivo.'}
           irreversible
+          confirmPhrase="REEMBOLSAR"
           requireTotp={!totpFresh()}
           onCancel={() => setPago(null)}
           onConfirm={(motivo, code) => {
             void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setPago(null);
+                return;
+              }
               if (!(await reverify(code))) {
                 toast('El código no es válido.');
                 return;
@@ -1106,7 +1144,9 @@ export function ConciliacionPage() {
   return (
     <Gate allow={permissions}>
       <h1>Conciliación Transbank</h1>
+      <Banda seccion="pagos" />
       <p>Entorno de pagos: integración. Consultar el estado no cobra ni libera.</p>
+      <p className="muted">El reporte diario lo arma el cron mwa_webpay_reconcile. Su última ejecución está en Salud.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
         <ErrorState message={describeLoadError(query.error, 'No hay una ejecución reciente.')} onRetry={() => void query.refetch()} />
@@ -1129,61 +1169,11 @@ export function FinanzasPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').executive}>
       <h1>Finanzas</h1>
+      <Banda seccion="pagos" />
       <p>Los indicadores del período están en Inicio.</p>
       <p><Link to="/resumen">Abrir Inicio</Link></p>
       <p className="muted">La comisión vigente es 5 % con un mínimo de $1.000.</p>
     </Gate>
-  );
-}
-
-export function ResenasPage() {
-  const { profile } = useAuth();
-  const permissions = consolePermissions(profile?.role ?? '');
-  const toast = useToast();
-  const client = useQueryClient();
-  const [target, setTarget] = useState<{ id: string; estado: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-  return (
-    <section className="stack">
-      <h1>Reseñas</h1>
-      <ColaResenasDudosas />
-      <PagedTable
-        queryKey={['resenas']}
-        empty="Aún no hay reseñas."
-        load={(page, search) => loadPage('calificaciones', page, search, 'id, puntaje, estado_revision, comentario, creado_en')}
-        columns={[
-          { key: 'puntaje', header: 'Puntaje', cell: (row) => String(row.puntaje), csv: (row) => row.puntaje },
-          { key: 'estado', header: 'Estado', cell: (row) => <Badge value={String(row.estado_revision)} />, csv: (row) => statusLabel(String(row.estado_revision)) },
-          { key: 'comentario', header: 'Comentario', cell: (row) => String(row.comentario ?? '—'), csv: (row) => row.comentario },
-          { key: 'accion', header: 'Acción', cell: (row) => permissions.moderateReviews || permissions.proposeReviews ? (
-            <Button variant="secondary" onClick={(event) => {
-              event.stopPropagation();
-              setTarget({ id: row.id, estado: permissions.moderateReviews ? 'excluida' : 'en_revision' });
-            }}>{permissions.moderateReviews ? 'Ocultar' : 'Proponer revisión'}</Button>
-          ) : 'Solo lectura', csv: () => '' },
-        ]}
-      />
-      {target ? (
-        <ConfirmDialog
-          title="Moderar reseña"
-          summary="No se borra. Cambia el estado de revisión."
-          busy={busy}
-          onCancel={() => setTarget(null)}
-          onConfirm={(motivo) => {
-            setBusy(true);
-            void asPromise(supabase.rpc('consola_moderar_resena', { p_id: target.id, p_estado: target.estado, p_motivo: motivo })).then(async ({ error }) => {
-              if (error) {
-                toast(friendlyError(error));
-                return;
-              }
-              toast('Reseña actualizada.');
-              await client.invalidateQueries({ queryKey: ['resenas'] });
-              setTarget(null);
-            }).finally(() => setBusy(false));
-          }}
-        />
-      ) : null}
-    </section>
   );
 }
 
@@ -1194,6 +1184,7 @@ export function CatalogoPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').manageCatalog}>
       <h1>Catálogo</h1>
+      <Banda seccion="configuracion" />
       <p className="muted">Desactivar no borra el servicio. Si está en uso, deja de ofrecerse.</p>
       <PagedTable
         queryKey={['servicios']}
@@ -1246,6 +1237,8 @@ export function NotificacionesPage() {
   return (
     <section className="stack">
       <h1>Notificaciones</h1>
+      <Banda seccion="notificaciones" />
+      <p className="muted">Los avisos masivos no se simulan: el envío push depende del secreto de la función send-push, que esta pantalla no dispara.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
         <ErrorState message={describeLoadError(query.error, 'Aún no tienes notificaciones.')} onRetry={() => void query.refetch()} />
@@ -1349,7 +1342,8 @@ export function EquipoPage() {
   };
   return (
     <Gate allow={consolePermissions(profile?.role ?? '').people}>
-      <h1>Equipo</h1>
+      <h1>Equipo y roles</h1>
+      <Banda seccion="configuracion" />
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? <ErrorState message="No se pudo cargar el equipo." onRetry={() => void query.refetch()} /> : null}
       {query.data?.length === 0 ? <EmptyState title="No hay colaboradores con rol de consola." /> : null}
@@ -1458,6 +1452,7 @@ export function AuditoriaPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewAudit}>
       <h1>Auditoría</h1>
+      <Banda seccion="auditoria" />
       <PagedTable
         queryKey={['auditoria']}
         empty="La bitácora está vacía: todavía no hay acciones de la consola."
@@ -1500,7 +1495,8 @@ export function AjustesPage() {
   const [busy, setBusy] = useState(false);
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').manageCatalog}>
-      <h1>Ajustes</h1>
+      <h1>Configuración</h1>
+      <Banda seccion="configuracion" />
       <p className="muted">admin_requiere_aal2 y demo_modo se muestran y no se editan aquí.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
@@ -1569,7 +1565,8 @@ export function SaludPage() {
   const jobs = Array.isArray(body.jobs) ? body.jobs : [];
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').security}>
-      <h1>Salud</h1>
+      <h1>Salud del servicio</h1>
+      <Banda seccion="seguridad" />
       <p className="muted">El interruptor de pagos vive en los secretos de las Edge Functions. Esta pantalla no lo simula ni lo cambia.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? <ErrorState message="No se pudo leer el estado de los cron." onRetry={() => void query.refetch()} /> : null}
@@ -1597,6 +1594,7 @@ export function ErroresPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewErrors}>
       <h1>Errores de la app</h1>
+      <Banda seccion="seguridad" />
       <PagedTable
         queryKey={['errores']}
         empty="No hay errores con este filtro."
@@ -1767,6 +1765,13 @@ function asRecord(value: unknown): Record<string, unknown> {
 function num(value: unknown): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function vencePronto(value: string | null): boolean {
+  if (!value) return false;
+  const cuando = new Date(value).getTime();
+  if (Number.isNaN(cuando)) return false;
+  return cuando - Date.now() < 24 * 60 * 60 * 1000;
 }
 
 function delta(current: number, previous: number): string {
