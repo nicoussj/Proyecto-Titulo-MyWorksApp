@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
 
   # UI
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^2.0.0
   # Estado y navegación
   flutter_riverpod: ^3.5.0
   go_router: ^18.1.4
