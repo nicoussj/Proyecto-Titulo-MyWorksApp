@@ -14,6 +14,7 @@ import {
   ScrollText,
   Settings,
   Shield,
+  ShieldCheck,
   Star,
   Undo2,
   UserCog,
@@ -56,6 +57,7 @@ export const NAV: NavItem[] = [
   { to: '/equipo', label: 'Equipo y roles', group: 'Empresa', icon: UserCog, allow: (p) => p.people },
   { to: '/auditoria', label: 'Auditoría', group: 'Empresa', icon: ScrollText, allow: (p) => p.viewAudit },
   { to: '/ajustes', label: 'Ajustes', group: 'Empresa', icon: Settings, allow: (p) => p.manageCatalog },
+  { to: '/seguridad', label: 'Seguridad', group: 'Sistema', icon: ShieldCheck, allow: (p) => p.people },
   { to: '/salud', label: 'Salud y monitoreo', group: 'Sistema', icon: Activity, allow: (p) => p.security },
   { to: '/errores', label: 'Errores de la app', group: 'Sistema', icon: Bug, allow: (p) => p.viewErrors },
 ];

@@ -6,6 +6,7 @@ export function ConfirmDialog({
   summary,
   irreversible = false,
   requireTotp = false,
+  confirmPhrase,
   busy = false,
   onCancel,
   onConfirm,
@@ -14,14 +15,18 @@ export function ConfirmDialog({
   summary: string;
   irreversible?: boolean;
   requireTotp?: boolean;
+  confirmPhrase?: string;
   busy?: boolean;
   onCancel: () => void;
   onConfirm: (motivo: string, code: string) => void;
 }) {
   const [motivo, setMotivo] = useState('');
   const [code, setCode] = useState('');
+  const [phrase, setPhrase] = useState('');
   const locked = useRef(false);
-  const ready = motivo.trim().length >= 10 && (!requireTotp || code.trim().length >= 6);
+  const ready = motivo.trim().length >= 10
+    && (!requireTotp || code.trim().length >= 6)
+    && (!confirmPhrase || phrase.trim() === confirmPhrase);
   useEffect(() => {
     if (!busy) locked.current = false;
   }, [busy]);
@@ -33,6 +38,12 @@ export function ConfirmDialog({
         <span>Motivo (mínimo 10 caracteres)</span>
         <textarea value={motivo} onChange={(event) => setMotivo(event.target.value)} required disabled={busy} />
       </label>
+      {confirmPhrase ? (
+        <label className="field">
+          <span>Escribe {confirmPhrase} para confirmar</span>
+          <input aria-label="Frase de confirmación" value={phrase} onChange={(event) => setPhrase(event.target.value)} autoComplete="off" />
+        </label>
+      ) : null}
       {requireTotp ? (
         <label className="field">
           <span>Código de la aplicación de autenticación</span>

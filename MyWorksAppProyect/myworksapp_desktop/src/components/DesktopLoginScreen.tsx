@@ -3,6 +3,7 @@ import { AuthError, requestPasswordReset } from '@myworksapp/shared';
 import { useAuth } from '../context/auth-store';
 import { friendlyError } from '../lib/errors';
 import { authRedirectUrl } from '../lib/redirect';
+import { callRpc } from '../lib/rpc';
 import { supabase } from '../supabaseClient';
 import { Button } from '../ui/kit';
 
@@ -31,6 +32,7 @@ export function DesktopLoginScreen() {
             setError(null);
             void login(email, password)
               .catch((reason: unknown) => {
+                void callRpc('registrar_evento_acceso', { p_tipo: 'login_fallido', p_correo: email }).catch(() => undefined);
                 setError(reason instanceof AuthError ? reason.message : 'No se pudo iniciar sesión.');
               })
               .finally(() => setSubmitting(false));
