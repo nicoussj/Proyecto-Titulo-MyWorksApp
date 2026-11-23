@@ -1,0 +1,189 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: Fase 2/pruebas_rendimiento_23nov/k6_lectura_23nov.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1 max VUs, 1m0s max duration (incl. graceful stop):
+              * lectura: 1 looping VUs for 30s (exec: lectura, gracefulStop: 30s)
+
+time="2026-11-23T04:58:53Z" level=info msg="control_demo_modo_antes=true status=200" source=console
+time="2026-11-23T04:58:53Z" level=info msg="control_consola_leer_config_anon status=401" source=console
+
+running (0m01.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+lectura   [   1% ] 1 VUs  00.4s/30s
+
+running (0m02.0s), 1/1 VUs, 0 complete and 0 interrupted iterations
+lectura   [   5% ] 1 VUs  01.4s/30s
+
+running (0m03.0s), 1/1 VUs, 1 complete and 0 interrupted iterations
+lectura   [   8% ] 1 VUs  02.4s/30s
+
+running (0m04.0s), 1/1 VUs, 2 complete and 0 interrupted iterations
+lectura   [  11% ] 1 VUs  03.4s/30s
+
+running (0m05.0s), 1/1 VUs, 2 complete and 0 interrupted iterations
+lectura   [  15% ] 1 VUs  04.4s/30s
+
+running (0m06.0s), 1/1 VUs, 3 complete and 0 interrupted iterations
+lectura   [  18% ] 1 VUs  05.4s/30s
+
+running (0m07.0s), 1/1 VUs, 4 complete and 0 interrupted iterations
+lectura   [  21% ] 1 VUs  06.4s/30s
+
+running (0m08.0s), 1/1 VUs, 5 complete and 0 interrupted iterations
+lectura   [  25% ] 1 VUs  07.4s/30s
+
+running (0m09.0s), 1/1 VUs, 5 complete and 0 interrupted iterations
+lectura   [  28% ] 1 VUs  08.4s/30s
+
+running (0m10.0s), 1/1 VUs, 6 complete and 0 interrupted iterations
+lectura   [  31% ] 1 VUs  09.4s/30s
+
+running (0m11.0s), 1/1 VUs, 7 complete and 0 interrupted iterations
+lectura   [  35% ] 1 VUs  10.4s/30s
+
+running (0m12.0s), 1/1 VUs, 7 complete and 0 interrupted iterations
+lectura   [  38% ] 1 VUs  11.4s/30s
+
+running (0m13.0s), 1/1 VUs, 8 complete and 0 interrupted iterations
+lectura   [  41% ] 1 VUs  12.4s/30s
+
+running (0m14.0s), 1/1 VUs, 9 complete and 0 interrupted iterations
+lectura   [  45% ] 1 VUs  13.4s/30s
+
+running (0m15.0s), 1/1 VUs, 10 complete and 0 interrupted iterations
+lectura   [  48% ] 1 VUs  14.4s/30s
+
+running (0m16.0s), 1/1 VUs, 11 complete and 0 interrupted iterations
+lectura   [  51% ] 1 VUs  15.4s/30s
+
+running (0m17.0s), 1/1 VUs, 11 complete and 0 interrupted iterations
+lectura   [  55% ] 1 VUs  16.4s/30s
+
+running (0m18.0s), 1/1 VUs, 12 complete and 0 interrupted iterations
+lectura   [  58% ] 1 VUs  17.4s/30s
+
+running (0m19.0s), 1/1 VUs, 13 complete and 0 interrupted iterations
+lectura   [  61% ] 1 VUs  18.4s/30s
+
+running (0m20.0s), 1/1 VUs, 14 complete and 0 interrupted iterations
+lectura   [  65% ] 1 VUs  19.4s/30s
+
+running (0m21.0s), 1/1 VUs, 15 complete and 0 interrupted iterations
+lectura   [  68% ] 1 VUs  20.4s/30s
+
+running (0m22.0s), 1/1 VUs, 15 complete and 0 interrupted iterations
+lectura   [  71% ] 1 VUs  21.4s/30s
+
+running (0m23.0s), 1/1 VUs, 16 complete and 0 interrupted iterations
+lectura   [  75% ] 1 VUs  22.4s/30s
+
+running (0m24.0s), 1/1 VUs, 17 complete and 0 interrupted iterations
+lectura   [  78% ] 1 VUs  23.4s/30s
+
+running (0m25.0s), 1/1 VUs, 18 complete and 0 interrupted iterations
+lectura   [  81% ] 1 VUs  24.4s/30s
+
+running (0m26.0s), 1/1 VUs, 18 complete and 0 interrupted iterations
+lectura   [  85% ] 1 VUs  25.4s/30s
+
+running (0m27.0s), 1/1 VUs, 19 complete and 0 interrupted iterations
+lectura   [  88% ] 1 VUs  26.4s/30s
+
+running (0m28.0s), 1/1 VUs, 20 complete and 0 interrupted iterations
+lectura   [  91% ] 1 VUs  27.4s/30s
+
+running (0m29.0s), 1/1 VUs, 21 complete and 0 interrupted iterations
+lectura   [  95% ] 1 VUs  28.4s/30s
+
+running (0m30.0s), 1/1 VUs, 22 complete and 0 interrupted iterations
+lectura   [  98% ] 1 VUs  29.4s/30s
+
+running (0m31.0s), 1/1 VUs, 22 complete and 0 interrupted iterations
+lectura ↓ [ 100% ] 1 VUs  30s
+time="2026-11-23T04:59:23Z" level=info msg="control_demo_modo_despues=true status=200" source=console
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{name:imagen_categoria}
+    ✓ 'p(95)<30000' p(95)=21.11ms
+
+    http_req_duration{name:portada}
+    ✓ 'p(95)<30000' p(95)=28.29ms
+
+    http_req_duration{name:rpc_catalogo_app}
+    ✓ 'p(95)<30000' p(95)=177.55ms
+
+    http_req_duration{name:rpc_catalogo_web}
+    ✓ 'p(95)<30000' p(95)=210.51ms
+
+    http_req_failed
+    ✓ 'rate<0.05' rate=0.00%
+
+    http_reqs{name:imagen_categoria}
+    ✓ 'count>0' count=23
+
+    http_reqs{name:portada}
+    ✓ 'count>0' count=23
+
+    http_reqs{name:rpc_catalogo_app}
+    ✓ 'count>0' count=23
+
+    http_reqs{name:rpc_catalogo_web}
+    ✓ 'count>0' count=23
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 253     8.072823/s
+    checks_succeeded...: 100.00% 253 out of 253
+    checks_failed......: 0.00%   0 out of 253
+
+    ✓ portada 200
+    ✓ portada html
+    ✓ portada tiene raiz
+    ✓ imagen 200
+    ✓ imagen webp
+    ✓ catalogo web 200
+    ✓ catalogo web es lista
+    ✓ catalogo web sin correo
+    ✓ catalogo app 200
+    ✓ catalogo app es lista
+    ✓ catalogo app sin correo
+
+    HTTP
+    http_req_duration..............: avg=83.13ms  min=5.83ms   med=105.91ms p(90)=170.45ms p(95)=192.48ms p(99)=252.44ms max=331.08ms count=95
+      { expected_response:true }...: avg=83.13ms  min=5.83ms   med=105.91ms p(90)=170.45ms p(95)=192.48ms p(99)=252.44ms max=331.08ms count=95
+      { name:imagen_categoria }....: avg=11.02ms  min=5.83ms   med=9.72ms   p(90)=17.29ms  p(95)=21.11ms  p(99)=24.79ms  max=25.72ms  count=23
+      { name:portada }.............: avg=17.2ms   min=6.53ms   med=14.27ms  p(90)=27.77ms  p(95)=28.29ms  p(99)=52.16ms  max=58.89ms  count=23
+      { name:rpc_catalogo_app }....: avg=136.41ms min=102.44ms med=127.39ms p(90)=173.18ms p(95)=177.55ms p(99)=188.44ms max=191.46ms count=23
+      { name:rpc_catalogo_web }....: avg=148.92ms min=112.9ms  med=137.06ms p(90)=192.79ms p(95)=210.51ms p(99)=239.69ms max=247.43ms count=23
+    http_req_failed................: 0.00%  0 out of 95
+    http_reqs......................: 95     3.031297/s
+      { name:imagen_categoria }....: 23     0.733893/s
+      { name:portada }.............: 23     0.733893/s
+      { name:rpc_catalogo_app }....: 23     0.733893/s
+      { name:rpc_catalogo_web }....: 23     0.733893/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.33s    min=1.09s    med=1.35s    p(90)=1.44s    p(95)=1.46s    p(99)=1.67s    max=1.73s    count=23
+    iterations.....................: 23     0.733893/s
+    vus............................: 1      min=1       max=1
+    vus_max........................: 1      min=1       max=1
+
+    NETWORK
+    data_received..................: 723 kB 23 kB/s
+    data_sent......................: 25 kB  803 B/s
+
+
+
+
+running (0m31.3s), 0/1 VUs, 23 complete and 0 interrupted iterations
+lectura ✓ [ 100% ] 1 VUs  30s

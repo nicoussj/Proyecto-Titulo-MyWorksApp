@@ -1,0 +1,302 @@
+{
+    "metrics": {
+        "http_req_duration": {
+            "p(99)": 252.44985334000017,
+            "max": 331.08794,
+            "count": 95,
+            "avg": 83.13180956842106,
+            "min": 5.8356,
+            "med": 105.915119,
+            "p(90)": 170.4567014000001,
+            "p(95)": 192.4895535
+        },
+        "http_req_connecting": {
+            "p(95)": 0,
+            "p(99)": 0.5473726000000028,
+            "max": 1.705039,
+            "count": 95,
+            "avg": 0.03176473684210526,
+            "min": 0,
+            "med": 0,
+            "p(90)": 0
+        },
+        "http_req_waiting": {
+            "max": 330.922216,
+            "count": 95,
+            "avg": 82.89666351578946,
+            "min": 5.722253,
+            "med": 105.837574,
+            "p(90)": 170.37803420000012,
+            "p(95)": 192.387391,
+            "p(99)": 252.32987632000018
+        },
+        "http_req_tls_handshaking": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "p(99)": 12.812136160000001,
+            "max": 13.490286,
+            "count": 95,
+            "avg": 0.5013008421052632,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_sending": {
+            "p(95)": 0.06502699999999999,
+            "p(99)": 0.08494996000000006,
+            "max": 0.111896,
+            "count": 95,
+            "avg": 0.04559127368421053,
+            "min": 0.01934,
+            "med": 0.044509,
+            "p(90)": 0.057752400000000016
+        },
+        "checks": {
+            "passes": 253,
+            "fails": 0,
+            "value": 1
+        },
+        "http_reqs{name:imagen_categoria}": {
+            "count": 23,
+            "rate": 0.7338930149243545,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "http_reqs{name:portada}": {
+            "count": 23,
+            "rate": 0.7338930149243545,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "http_req_duration{name:rpc_catalogo_app}": {
+            "med": 127.391722,
+            "p(90)": 173.18486420000002,
+            "p(95)": 177.5530115,
+            "p(99)": 188.44580200000001,
+            "max": 191.466732,
+            "count": 23,
+            "avg": 136.41897852173915,
+            "min": 102.440159,
+            "thresholds": {
+                "p(95)<30000": false
+            }
+        },
+        "http_reqs{name:rpc_catalogo_app}": {
+            "count": 23,
+            "rate": 0.7338930149243545,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "data_received": {
+            "count": 722667,
+            "rate": 23059.141887666894
+        },
+        "http_reqs{name:rpc_catalogo_web}": {
+            "count": 23,
+            "rate": 0.7338930149243545,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(95)": 192.4895535,
+            "p(99)": 252.44985334000017,
+            "max": 331.08794,
+            "count": 95,
+            "avg": 83.13180956842106,
+            "min": 5.8356,
+            "med": 105.915119,
+            "p(90)": 170.4567014000001
+        },
+        "http_reqs": {
+            "count": 95,
+            "rate": 3.031297235557117
+        },
+        "data_sent": {
+            "count": 25163,
+            "rate": 802.9108667191971
+        },
+        "iteration_duration": {
+            "p(95)": 1468.6460542,
+            "p(99)": 1676.9381575800003,
+            "max": 1734.946913,
+            "count": 23,
+            "avg": 1330.5594173913044,
+            "min": 1097.206516,
+            "med": 1356.851443,
+            "p(90)": 1441.7010418
+        },
+        "http_req_duration{name:imagen_categoria}": {
+            "med": 9.721137,
+            "p(90)": 17.291896,
+            "p(95)": 21.119904599999998,
+            "p(99)": 24.791100460000006,
+            "max": 25.722109,
+            "count": 23,
+            "avg": 11.028538304347826,
+            "min": 5.8356,
+            "thresholds": {
+                "p(95)<30000": false
+            }
+        },
+        "http_req_blocked": {
+            "min": 0.000257,
+            "med": 0.00035,
+            "p(90)": 0.0004764000000000001,
+            "p(95)": 0.0005895999999999999,
+            "p(99)": 41.21767124000011,
+            "max": 86.031799,
+            "count": 95,
+            "avg": 1.5451319473684215
+        },
+        "http_req_duration{name:portada}": {
+            "med": 14.27222,
+            "p(90)": 27.7774674,
+            "p(95)": 28.299382899999998,
+            "p(99)": 52.16907992000004,
+            "max": 58.899917,
+            "count": 23,
+            "avg": 17.201361,
+            "min": 6.536991,
+            "thresholds": {
+                "p(95)<30000": false
+            }
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 95,
+            "thresholds": {
+                "rate<0.05": false
+            },
+            "value": 0
+        },
+        "iterations": {
+            "rate": 0.7338930149243545,
+            "count": 23
+        },
+        "http_req_duration{name:rpc_catalogo_web}": {
+            "max": 247.430401,
+            "count": 23,
+            "avg": 148.92745721739132,
+            "min": 112.907962,
+            "med": 137.063693,
+            "p(90)": 192.79604940000002,
+            "p(95)": 210.51206919999996,
+            "p(99)": 239.69057968000004,
+            "thresholds": {
+                "p(95)<30000": false
+            }
+        },
+        "http_req_receiving": {
+            "count": 95,
+            "avg": 0.18955477894736836,
+            "min": 0.033664,
+            "med": 0.07714,
+            "p(90)": 0.45725500000000024,
+            "p(95)": 0.7178259,
+            "p(99)": 0.8262175000000004,
+            "max": 0.991399
+        },
+        "vus_max": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        }
+    },
+    "setup_data": {
+        "consolaStatus": 401,
+        "demoAntes": "true"
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "portada 200": {
+                    "path": "::portada 200",
+                    "id": "d96d3c14b7309de32f2c37da19022cce",
+                    "passes": 23,
+                    "fails": 0,
+                    "name": "portada 200"
+                },
+                "portada html": {
+                    "passes": 23,
+                    "fails": 0,
+                    "name": "portada html",
+                    "path": "::portada html",
+                    "id": "36c109b03de97ab55ac819cc6f2456e2"
+                },
+                "portada tiene raiz": {
+                    "name": "portada tiene raiz",
+                    "path": "::portada tiene raiz",
+                    "id": "d95c6a7faf5f6de82ea77d10868faa7a",
+                    "passes": 23,
+                    "fails": 0
+                },
+                "imagen 200": {
+                    "path": "::imagen 200",
+                    "id": "adc823ffe3f2f747948503f635a61f76",
+                    "passes": 23,
+                    "fails": 0,
+                    "name": "imagen 200"
+                },
+                "imagen webp": {
+                    "name": "imagen webp",
+                    "path": "::imagen webp",
+                    "id": "dea8b71085937acd15e0b6ccf71c0217",
+                    "passes": 23,
+                    "fails": 0
+                },
+                "catalogo web 200": {
+                    "name": "catalogo web 200",
+                    "path": "::catalogo web 200",
+                    "id": "c7c22a9191e42c60acc7b1ff047309f6",
+                    "passes": 23,
+                    "fails": 0
+                },
+                "catalogo web es lista": {
+                    "passes": 23,
+                    "fails": 0,
+                    "name": "catalogo web es lista",
+                    "path": "::catalogo web es lista",
+                    "id": "6cdd08944a238e7e97b773b2fa2398d9"
+                },
+                "catalogo web sin correo": {
+                    "fails": 0,
+                    "name": "catalogo web sin correo",
+                    "path": "::catalogo web sin correo",
+                    "id": "d28eec01bc416f60fd3955bead001935",
+                    "passes": 23
+                },
+                "catalogo app 200": {
+                    "name": "catalogo app 200",
+                    "path": "::catalogo app 200",
+                    "id": "2c9d903f25ae4a9dc96cb483faf15c4f",
+                    "passes": 23,
+                    "fails": 0
+                },
+                "catalogo app es lista": {
+                    "name": "catalogo app es lista",
+                    "path": "::catalogo app es lista",
+                    "id": "923d984df5e1a03338a1fb1a8f246d3a",
+                    "passes": 23,
+                    "fails": 0
+                },
+                "catalogo app sin correo": {
+                    "name": "catalogo app sin correo",
+                    "path": "::catalogo app sin correo",
+                    "id": "f2bdad4187c375c21ae0000bc9ca9269",
+                    "passes": 23,
+                    "fails": 0
+                }
+            }
+    }
+}
