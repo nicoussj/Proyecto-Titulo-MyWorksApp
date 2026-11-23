@@ -1,3 +1,8 @@
+-- ANEXO HISTÓRICO del 17 de noviembre de 2026 (migración 20261117223850).
+-- No es el catálogo vigente. Al 23-11-2026, 01:11 hora de Chile, la base
+-- wxqrfcqifkfgawrnqmnj tiene 76 tablas en public, RLS en las 76 y 94 claves
+-- foráneas. El modelo que se abre en Workbench es modelo_er_central_workbench.sql.
+-- El mapa de 60 tablas del informe es el otro anexo, del 17 al 20 de noviembre.
 -- MyWorksApp — modelo entidad-relación (PostgreSQL)
 -- Generado desde la BD viva wxqrfcqifkfgawrnqmnj (migración 20261117223850).
 -- Solo estructura (tablas, PK, UNIQUE, FK). Sin RLS, funciones ni datos.

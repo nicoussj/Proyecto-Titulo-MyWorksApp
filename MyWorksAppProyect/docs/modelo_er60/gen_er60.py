@@ -1,4 +1,6 @@
-# Figuras ER (60 tablas) legibles a >= 9 pt impresos: una figura por página apaisada.
+# ANEXO HISTÓRICO. Figuras del mapa de 60 tablas (corte 17/20-nov-2026).
+# No es el catálogo vigente de 76 tablas ni el modelo central de 12.
+# Legibles a >= 9 pt impresos: una figura por página apaisada.
 import importlib.util, re, subprocess, sys, json
 from pathlib import Path
 from collections import defaultdict

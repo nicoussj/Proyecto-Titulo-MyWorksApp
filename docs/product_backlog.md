@@ -1,6 +1,6 @@
 # Product backlog
 
-Fase vigente: Fase 3 del Capstone PTY4614 (pruebas, informe final y demostración), al 22 de noviembre de 2026, 23:07 hora de Chile. Ítems que el producto ya cubre para la evaluación, y los que quedan explícitamente fuera.
+Fase vigente: Fase 3 del Capstone PTY4614 (pruebas, informe final y demostración), al 23 de noviembre de 2026, 01:29 hora de Chile. Ítems que el producto ya cubre para la evaluación, y los que quedan explícitamente fuera. El detalle está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.
 
 ## Listo para demostrar
 
@@ -25,8 +25,8 @@ Fase vigente: Fase 3 del Capstone PTY4614 (pruebas, informe final y demostració
 - Transbank en producción.
 - MFA para clientes y profesionales.
 - Invitación de colaboradores por Resend: falta el secreto `INVITE_PROVIDER=resend`.
-- Carta de boleta del SII: el formulario existe en el código y guarda RUT, giro y tipo de documento solo en el teléfono. Desde el 22 de noviembre de 2026 (commit `19d1da3`, app 1.0.15) no se muestra en Mi Perfil, porque la boleta no está integrada. La aplicación no emite boletas.
-- Publicar en Vercel el `main` que ya trae los textos legales, el aviso de proyecto de título y la foto de electricidad con nombre único. El 22 de noviembre de 2026, a las 23:03 hora de Chile, https://myworksapp.cl seguía sirviendo `/assets/index-dFwoI3u5.js`. El intento de esta revisión no pudo entrar al proyecto `myworksapp`.
-- Arreglo de los 24 errores de la consola (rama `cursor/consola-bugs`, sin merge).
-- Push FCM: `send-push` no está desplegada en vivo.
+- Carta de boleta del SII: la app 1.0.15+16 no la muestra. El formulario guarda RUT, giro y tipo de documento solo en el teléfono y la boleta no está integrada.
+- Push FCM: `send-push` no está desplegada en vivo, según el reporte del 20-nov. Esta lectura no la desplegó.
+- Recompilar el instalador Tauri de la consola. El arreglo ya está en `main` (`4c033b3`) y el isotipo de la ventana ya estaba.
+- Piloto de tiempos y una p95 posterior a la del 15 de noviembre. El alta H1 está migrada y no se volvió a medir.
 - Programar la llamada periódica a `soporte-automatico` (ya desplegada) para que las devoluciones del soporte automático salgan solas.

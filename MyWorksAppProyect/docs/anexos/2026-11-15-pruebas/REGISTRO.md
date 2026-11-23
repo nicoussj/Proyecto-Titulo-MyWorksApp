@@ -1,6 +1,6 @@
 # Registro de pruebas — 15 de noviembre de 2026
 
-> **Documento histórico.** Registra el estado del proyecto a la fecha de su última revisión (15-11-2026) y no se actualiza. Las cifras, URL y pantallas que nombra pueden haber cambiado. El estado vigente de la fase 3 (22-11-2026, 23:07 hora de Chile) está en [`ESTADO_DEL_PROYECTO.md`](../../../ESTADO_DEL_PROYECTO.md).
+> **Documento histórico del 15-11-2026.** No hay una medición nueva al 23-11-2026. Se conservan la p95 de 283 ms, 200 usuarios y 0 fallas en 55.537 peticiones. El estado vigente está en [`ESTADO_DEL_PROYECTO.md`](../../../ESTADO_DEL_PROYECTO.md).
 
 Corrida en esta máquina, hora de Chile. El proyecto medido es `wxqrfcqifkfgawrnqmnj`. Los JSON de k6 están en `k6/` y los de latencia y de la web en `rendimiento/`. No se usó la clave `service_role`. No se llamó a Webpay ni a `guest-checkout` en la carga.
 

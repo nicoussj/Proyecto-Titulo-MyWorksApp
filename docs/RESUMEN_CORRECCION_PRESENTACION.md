@@ -1,7 +1,7 @@
 # Resumen de Correcciones — Presentación de Defensa MyWorksApp
 
 **Fecha del cuerpo:** 20 de noviembre de 2026  
-**Estado:** el corte de 60 tablas quedó superado el 22-11-2026: la base viva tiene 76 tablas, todas con RLS. Donde este resumen dice 60 o «4FN» para el esquema entero, usar `MyWorksAppProyect/docs/normalizacion.md`.  
+**Estado vigente al 23 de noviembre de 2026, 01:29 hora de Chile:** el catálogo tiene 76 tablas, todas con RLS, y 94 claves foráneas. Las tablas auditadas están en BCNF. Donde este resumen dice 60 tablas o «4FN» para el esquema entero, esa frase es el corte del 20-11 y no el estado vigente. Ver `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.  
 **Repositorio:** https://github.com/nicoussj/Proyecto-Titulo-MyWorksApp
 
 ---
@@ -38,7 +38,7 @@
   - **Resultados:** Estado actual verificado (ej. "641 de 641 pruebas OK")
 
 **Ejemplos concretos:**
-- **OE1:** "100% de las tablas con RLS activo" → Resultado: **60 de 60 tablas**
+- **OE1:** "100% de las tablas con RLS activo" → Resultado vigente: **76 de 76 tablas**
 - **OE3:** "100% de pagos siguen ciclo retenido → liberado/reembolsado" → Resultado: **100% correcto**
 - **OE6:** "0 pruebas fallidas; p95 < 800ms; Lighthouse ≥90" → Resultado: **641/641 OK; p95=283ms; Lighthouse 94/99**
 
@@ -71,7 +71,7 @@
 **Corrección aplicada:**
 
 **A. Número único y definitivo:**
-- **60 tablas** en el esquema `public` (no 43, no 90)
+- El corte de este resumen cerró la contradicción 43 contra 90 en 60 tablas. El catálogo vigente es de **76 tablas** (no 43, no 90, no 60)
 - Fuente: Migraciones del repositorio al 20-nov-2026 (`main` commit `d9d2c7c`)
 - **Diapositiva 10** muestra este número como definitivo
 

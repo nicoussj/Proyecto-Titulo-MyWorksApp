@@ -14,14 +14,15 @@ La ventana del Sprint 10 (cierre de la Fase 2) terminó el 22 de noviembre de 20
 | Web pública | Dominio `myworksapp.cl`, rutas compartibles, perfil público del profesional, cuenta del cliente y aprobación de cobros adicionales. Hecho (PR #78, #81). |
 | Seguridad | Turnstile obligatorio en la compra como invitado, límite de tasa global y checkout sin enumerar correos. Hecho (PR #78). |
 | Correo | Correos transaccionales con Resend y enlaces de recuperación e invitación para la app y la consola. Hecho (PR #82); `soporte-automatico` desplegada. |
-| Documentación | Al 22-11-2026, 23:07 hora de Chile, el estado vigente de la fase 3 está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`. El informe final incorpora P-18 y la nota de Fase 3 en la rama `cursor/informe-cierre-5321`. El corte anterior era `main` `d9d2c7c`. |
+| Documentación | Al 23-11-2026, 01:29 hora de Chile, el estado vigente está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`. |
 
 ## Pendiente que pasa a la Fase 3
 
-- Corregir los 24 errores de la prueba de la consola del 20-nov; el más grave (Profesionales responde 403) impide verificar profesionales. Rama `cursor/consola-bugs`, sin merge.
-- Textos legales: el aviso académico ya está en `main`. Falta desplegar ese paquete en https://myworksapp.cl.
+- Recompilar el instalador Tauri. El arreglo de la consola ya está en `main` (`4c033b3`) y `consola_leer_config` está en la base desde las 00:20.
+- La web https://myworksapp.cl ya publica `/assets/index-UPaWWnOt.js` (01:11), con el aviso académico.
 - Activar la invitación por Resend (`INVITE_PROVIDER=resend`) y probar de punta a punta `soporte@myworksapp.cl`.
 - Desplegar `send-push` y programar la llamada a `soporte-automatico`.
+- Piloto de tiempos. No hay p95 nueva (última: 15-nov, 283 ms, 200 usuarios, 0 fallas en 55.537 peticiones). Alta H1 migrada y no remedida.
 
 ## Guion de la demostración
 

@@ -1,6 +1,6 @@
 # Índice de la documentación de MyWorksApp
 
-Este índice ordena toda la documentación del repositorio por tema. Fase vigente: Fase 3 del Capstone PTY4614 (pruebas, informe final y demostración), al 22 de noviembre de 2026, 23:07 hora de Chile. El detalle vivo está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`. No hay carpeta ni plantilla de estudiante de la Fase 3.
+Este índice ordena toda la documentación del repositorio por tema. Fase vigente: Fase 3 del Capstone PTY4614 (pruebas, informe final y demostración), al 23 de noviembre de 2026, 01:29 hora de Chile. El detalle vivo está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`. No hay carpeta ni plantilla de estudiante de la Fase 3.
 
 **Si es tu primera vez, lee en este orden:**
 
@@ -65,10 +65,10 @@ Este índice ordena toda la documentación del repositorio por tema. Fase vigent
 
 | Documento | Para qué sirve |
 |---|---|
-| [`MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md`](../MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md) | Diccionario: 60 tablas con columnas y, en la sección 0-bis, las 15 leídas el 22-11 |
-| [`MyWorksAppProyect/docs/MODELO_ENTIDAD_RELACION.md`](../MyWorksAppProyect/docs/MODELO_ENTIDAD_RELACION.md) | Modelo entidad-relación. Las figuras siguen en 60 tablas; el catálogo del 22-11 midió 76 |
+| [`MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md`](../MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md) | Diccionario: fichas del corte anterior y, en 0-ter, el catálogo vigente de 76 tablas en BCNF |
+| [`MyWorksAppProyect/docs/MODELO_ENTIDAD_RELACION.md`](../MyWorksAppProyect/docs/MODELO_ENTIDAD_RELACION.md) | Modelo entidad-relación. El mapa de 60 es anexo histórico; el catálogo vigente es de 76 y el modelo central tiene 12 tablas |
 | [`MyWorksAppProyect/docs/modelo-datos.md`](../MyWorksAppProyect/docs/modelo-datos.md) y [`normalizacion.md`](../MyWorksAppProyect/docs/normalizacion.md) | Modelo de datos y formas normales |
-| [`myworksapp_app/supabase/MIGRATIONS_INVENTORY.md`](../MyWorksAppProyect/myworksapp_app/supabase/MIGRATIONS_INVENTORY.md) | Inventario de migraciones. El 22-11 el repo tiene 133 archivos y la base viva llega a `20261123020000` |
+| [`myworksapp_app/supabase/MIGRATIONS_INVENTORY.md`](../MyWorksAppProyect/myworksapp_app/supabase/MIGRATIONS_INVENTORY.md) | Inventario de migraciones. Al 23-11 el repo tiene 137 archivos y la base viva llega a `20261123040924` |
 | [`Fase 2/Anexo_A_Diccionario_de_tablas.md`](../Fase%202/Anexo_A_Diccionario_de_tablas.md) | Anexo A del informe: una tabla por cada tabla de la base |
 
 ## 6. Pagos, correo y operación

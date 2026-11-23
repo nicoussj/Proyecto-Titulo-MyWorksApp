@@ -3,8 +3,8 @@
 
 **Institución:** Duoc UC — Sede Puerto Montt  
 **Equipo:** Mathias Alejandro Jara Alvarado · Nicolas Chiguay · Gabriel Valderas  
-**Última actualización:** 22 de noviembre de 2026, 23:07 hora de Chile  
-**Estado:** Fase 3 en curso (Sprint 11). La ventana del Sprint 10 cerró ese día
+**Última actualización:** 23 de noviembre de 2026, 01:29 hora de Chile  
+**Estado:** Fase 3 en curso (Sprint 11). El detalle vivo está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`
 
 ---
 
@@ -12,12 +12,12 @@
 
 Este documento presenta la planificación temporal completa del proyecto My Works App, desde su inicio en agosto de 2026 hasta su defensa en diciembre de 2026. El proyecto sigue metodología Scrum adaptada con 11 sprints organizados en 3 fases del Capstone PTY4614.
 
-**Estado actual (22-nov-2026, 23:07 hora de Chile):**
+**Estado vigente (23-nov-2026, 01:29 hora de Chile):**
 - ✅ Ventana del Sprint 10 cerrada (Fase 2, desarrollo)
 - 🔄 Fase 3 en curso: pruebas, informe final y demostración (Sprint 11)
-- ✅ MVP técnico implementado y funcional
-- ✅ Web en producción (https://myworksapp.cl). El paquete publicado a las 23:03 seguía siendo el anterior; el redespliegue queda pendiente
-- ✅ 641 pruebas automatizadas pasando en el corte del 20-nov. Esta revisión no repitió esa corrida
+- ✅ Web publicada en https://myworksapp.cl con `/assets/index-UPaWWnOt.js` (01:11)
+- ✅ App 1.0.15+16. Base: 76 tablas, RLS en las 76, 94 claves foráneas, migración `20261123040924`
+- ✅ 641 pruebas del corte del 20-nov. No hay p95 nueva: la última es del 15-nov, 283 ms, 200 usuarios, 0 fallas en 55.537 peticiones
 
 ---
 
@@ -106,7 +106,7 @@ Agosto 2026          Septiembre 2026         Octubre 2026           Noviembre 20
 | Actividad | Responsable | Hito |
 |-----------|-------------|------|
 | Refinamiento del Product Backlog | Product Owner | 25 historias de usuario priorizadas |
-| Diseño de arquitectura de datos | Gabriel Valderas | Modelo ER con 60 tablas |
+| Diseño de arquitectura de datos | Gabriel Valderas | Modelo ER del sprint (el catálogo vigente, al 23-11, es de 76 tablas) |
 | Diseño de arquitectura de aplicación | Mathias Jara | Arquitectura Feature-First + capas |
 | Configuración de Supabase | Gabriel Valderas | Proyecto Supabase creado |
 | Carta Gantt actualizada (v2) | Nicolas Chiguay | `Capstone_Project.mpp` creado (13-sep) |
@@ -254,23 +254,22 @@ Agosto 2026          Septiembre 2026         Octubre 2026           Noviembre 20
 | Límite de tasa global | Gabriel Valderas | ✅ Completado | `rate_limit_consumir` implementado |
 | Segundo factor (TOTP) en consola | Mathias Jara | ✅ Completado | Autenticación de dos factores |
 | Prueba integral P-17 | Equipo | ✅ Completado | 641 de 641 pruebas pasando |
-| Corrección H1 (alta profesionales) | Gabriel Valderas | Migración aplicada | `20261120180000` está en la base viva; el alta no se repitió el 22-11 |
-| Arreglo bugs consola (24 errores) | Equipo | ⏳ En rama | `cursor/consola-bugs` |
-| Páginas legales | Nicolas Chiguay | En `main` | Falta el despliegue de https://myworksapp.cl |
+| Corrección H1 (alta profesionales) | Gabriel Valderas | Migración aplicada | `20261120180000` está en la base; el alta no se remedió al 23-11 |
+| Arreglo bugs consola (24 errores) | Equipo | En `main` | `4c033b3` es ancestro de `origin/main`. Hay que recompilar el instalador |
+| Páginas legales | Nicolas Chiguay | Publicadas | https://myworksapp.cl carga `/assets/index-UPaWWnOt.js` |
 | Informe final PTY4614 | Nicolas Chiguay y equipo | ✅ Completado | Documento Word actualizado |
 | Actualización de documentación Scrum | Nicolas Chiguay | ✅ Completado | Visión, backlog, sprint, retrospectiva |
 
-**Entregables al 20-nov-2026:**
-- ✅ Web en producción con dominio propio
-- ✅ Consola de escritorio operativa (24 bugs pendientes)
+**Lectura al 23-nov-2026, 01:29 hora de Chile:**
+- ✅ Web publicada con `/assets/index-UPaWWnOt.js`
+- ✅ Consola integrada en `main` (`4c033b3`). El instalador Tauri hay que recompilarlo
 - ✅ Correos transaccionales con Resend
-- ✅ 641 pruebas automatizadas pasando
-- ✅ Informe final actualizado
-- Migración de H1 aplicada en la base viva el 22-11; el alta no se volvió a medir
-- ⏳ 24 bugs de consola (rama sin merge)
-- Páginas legales en `main`; el 22-11 a las 23:03 (hora de Chile) el sitio seguía sirviendo `/assets/index-dFwoI3u5.js`
+- ✅ 641 pruebas del corte del 20-nov. No hay p95 nueva
+- ✅ Informe final con nota de versión
+- Alta H1 migrada y no remedida
+- Páginas legales publicadas
 
-Estos pendientes pasan a la Fase 3. No quedaron cerrados con el fin de la ventana del Sprint 10.
+Los huecos que siguen (piloto de tiempos, p95 nueva, remedición de H1, recompilación del instalador) pasan con la Fase 3.
 
 **Métricas del Sprint 10 (al 20-nov):**
 - 86 commits (60 después del corte del 17-nov)
@@ -446,14 +445,14 @@ Un incremento está "Done" cuando:
 | Falta de experiencia en tecnologías | Alta | Medio | Prototipado temprano, documentación | ✅ Mitigado |
 | Dependencia de servicios externos | Baja | Alto | Ambientes de integración, fallbacks | ✅ Mitigado |
 
-### Riesgos actuales (al 20-nov)
+### Riesgos vigentes (al 23-nov-2026)
 
 | Riesgo | Descripción | Plan de acción |
 |--------|-------------|----------------|
-| H1 (alta profesionales) | Fallo en producción con `generate_series` | Aplicar migración correctiva del parche |
-| 24 bugs en consola | Errores encontrados en prueba del 20-nov | Mergear rama `cursor/consola-bugs` |
-| Capacidad limitada | Degradación con ~100 usuarios | Optimizar catálogo, considerar CDN |
-| Push notifications | `send-push` no desplegada | Desplegar función y probar |
+| H1 (alta profesionales) | La migración correctiva está aplicada y el alta no se volvió a medir | Remediar la medición, sin declarar el síntoma cerrado |
+| Instalador de la consola | El arreglo `4c033b3` ya está en `main`; el instalador Tauri no se recompiló | Recompilar el instalador |
+| Capacidad | No hay p95 nueva. La última es del 15-nov: 283 ms, 200 usuarios, 0 fallas en 55.537 peticiones | Medir de nuevo cuando haya una corrida |
+| Push notifications | `send-push` no desplegada, según el reporte del 20-nov | Desplegar la función y probar |
 
 ---
 
@@ -590,8 +589,8 @@ Un incremento está "Done" cuando:
 ### Inmediato (diciembre 2026)
 
 - [ ] Defensa exitosa del proyecto de título
-- [ ] Repetir el alta de un profesional (la migración de H1 ya está aplicada)
-- [ ] Merge de `cursor/consola-bugs` y despliegue web del aviso académico, que ya está en `main`
+- [ ] Repetir el alta de un profesional (la migración de H1 ya está aplicada y no se remedió)
+- [ ] Recompilar el instalador de la consola. La web y el aviso académico ya están publicados
 - [ ] Activación de todas las funcionalidades pendientes
 
 ### Corto plazo (enero-marzo 2027)

@@ -15,7 +15,7 @@
 | Web de clientes | Sitio React/Vite: buscar, reservar, pagar y seguir el pedido | [`MyWorksAppProyect/myworksapp_web/`](MyWorksAppProyect/myworksapp_web/), publicado en https://myworksapp.cl |
 | Consola de escritorio | App Tauri para el equipo interno: pedidos, pagos, disputas, profesionales y equipo | [`MyWorksAppProyect/myworksapp_desktop/`](MyWorksAppProyect/myworksapp_desktop/) |
 | Módulo compartido | Código TypeScript común a la web y la consola (sesión, pagos, chat, tipos) | [`MyWorksAppProyect/shared/`](MyWorksAppProyect/shared/) |
-| Backend | Supabase: PostgreSQL con RLS. El 22-11-2026 la base viva tenía 76 tablas. El detalle y la forma normal están en el diccionario y en `docs/normalizacion.md` | [`MyWorksAppProyect/myworksapp_app/supabase/`](MyWorksAppProyect/myworksapp_app/supabase/) |
+| Backend | Supabase: PostgreSQL con RLS en las 76 tablas de `public` (23-11-2026, 01:11). El detalle está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md` | [`MyWorksAppProyect/myworksapp_app/supabase/`](MyWorksAppProyect/myworksapp_app/supabase/) |
 | Documentación técnica | Casos de uso, diccionario de datos, guías de despliegue y pruebas | [`MyWorksAppProyect/docs/`](MyWorksAppProyect/docs/) |
 | Índice de toda la documentación | Qué documento leer para cada tema | [`docs/INDICE.md`](docs/INDICE.md) |
 
@@ -219,7 +219,7 @@ Configurar variables Supabase según `.env.example` de web/desktop y `--dart-def
 
 ## 9. Estado respecto al título y al producto
 
-Estado al 22 de noviembre de 2026, 23:07 hora de Chile. La fase vigente es la Fase 3 (pruebas, informe final y demostración). `origin/main` está en `19d1da3`. El detalle está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.
+Estado vigente al 23 de noviembre de 2026, 01:29 hora de Chile. La fase vigente es la Fase 3 (pruebas, informe final y demostración). `origin/main` está en `cdcf404`. El detalle está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.
 
 | Dimensión | Estado actual |
 |-----------|----------------|
@@ -233,7 +233,7 @@ Estado al 22 de noviembre de 2026, 23:07 hora de Chile. La fase vigente es la Fa
 | Liquidación al profesional | Manual por administrador (automatización futura) |
 | Lanzamiento comercial | Condicionado a empresa, credenciales de producción de Transbank y al piloto con usuarios |
 
-**Pendiente de integrar o de publicar:** `cursor/consola-bugs` (24 errores de la consola del 20-11). El aviso académico ya está en `main`. Falta desplegar la web posterior al PR #100 y la función `oneclick-charge` que reanuda la orden de cambio. También pendientes: la invitación por Resend (`INVITE_PROVIDER=resend`) y la prueba de punta a punta de `soporte@myworksapp.cl`. Detalle en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.
+**Estado vigente al 23-11-2026.** La web https://myworksapp.cl está publicada (`/assets/index-UPaWWnOt.js`, 01:11). `oneclick-charge` está en la versión 29 y `webpay-commit` en la 34. La consola (`4c033b3`) ya es ancestro de `main`; el instalador Tauri hay que recompilarlo. `demo_modo` sigue en 1. Siguen abiertos el piloto de tiempos, una p95 nueva y la remedición del alta H1. También la invitación por Resend (`INVITE_PROVIDER=resend`) y la prueba de punta a punta de `soporte@myworksapp.cl`. Detalle en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.
 
 ---
 

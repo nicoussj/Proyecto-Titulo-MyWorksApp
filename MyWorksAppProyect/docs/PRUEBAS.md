@@ -1,6 +1,6 @@
 # Pruebas de MyWorksApp
 
-Qué se probó, cómo, con qué resultado y qué falta. El cuerpo de este archivo es la prueba al 20-11-2026 (P-17 y las anteriores). El 22-11-2026 no se repitieron estas mediciones. Sí consta que la migración `20261120180000` (corrección de H1) está en la lista de migraciones de la base viva, y que el catálogo pasó a una sola consulta de cifras. Ninguna de las dos cosas tiene un p95 nuevo. El cierre de integración está en la sección P-18 del informe `Fase 2/Myworksapp_Informe_Final_PTY4614.docx` (rama `cursor/informe-cierre-5321`).
+Qué se probó, cómo, con qué resultado y qué falta. El cuerpo de este archivo es la prueba al 20-11-2026 (P-17 y las anteriores). Al 23-11-2026, 01:29 hora de Chile, no hay una medición nueva. La última p95 sigue siendo la del 15 de noviembre: 283 ms, 200 usuarios, 0 fallas en 55.537 peticiones. La migración `20261120180000` (corrección de H1) está aplicada y el alta no se volvió a medir. El estado vigente está en [`../ESTADO_DEL_PROYECTO.md`](../ESTADO_DEL_PROYECTO.md).
 
 ## Contenido
 
@@ -20,7 +20,7 @@ Qué se probó, cómo, con qué resultado y qué falta. El cuerpo de este archiv
 - **Pruebas automatizadas: 641 de 641 aprobadas** (una prueba de extremo a extremo la omite el propio proyecto).
 - **Capacidad con `main` tal cual (réplica local):** se degrada con unos **100** usuarios virtuales y cae con unos **280**.
 - **Qué la limita:** el catálogo (`listar_profesionales_catalogo`) llama a `stats_profesional()` una vez por cada profesional. Eso agota la CPU de Postgres y llena el pool de 10 conexiones de PostgREST.
-- **Hallazgo grave (H1):** desde la migración `20261118230000`, todo `INSERT` en `trabajadores` falla, así que no se pueden dar de alta profesionales. **Está aplicada en producción** (verificado el 20-11-2026 con consultas de solo lectura; ver [Hallazgos](#hallazgos)). La corrección está en el parche de pruebas y no se ha aplicado.
+- **Hallazgo grave (H1):** la migración `20261118230000` hacía fallar todo `INSERT` en `trabajadores`. La corrección `20261120180000` está aplicada. El alta no se volvió a medir el 23-11-2026.
 - 1.000, 5.000 y 10.000 usuarios simultáneos no los soporta hoy el sistema.
 
 ## Cómo se hizo (sin tocar producción)
@@ -109,13 +109,13 @@ No fueron el límite: el inicio de sesión, la web estática, el simulador de Tr
 
 | # | Gravedad | Qué pasa | Estado |
 |---|---|---|---|
-| H1 | **Alta** | `trabajador_horarios_desde_alta` (migración `20261118230000`) usa `generate_series(time, time, interval)`, que no existe en Postgres 17. Todo `INSERT` en `trabajadores` falla | **Aplicada en producción.** Corrección y prueba en el parche; **sin aplicar** |
+| H1 | **Alta** | `trabajador_horarios_desde_alta` (migración `20261118230000`) usaba `generate_series(time, time, interval)`, que no existe en Postgres 17 | Corrección `20261120180000` aplicada. Alta no remedida al 23-11 |
 | H2 | Alta (rendimiento) | El catálogo calcula `stats_profesional()` por cada profesional | Prototipo medido (412 → 76 ms); sin integrar |
 | H3 | Media | Las migraciones no aplican desde cero (se reordenó una y se volvieron condicionales 54 `DROP TRIGGER` y 20 `ALTER POLICY`) | Pendiente |
 | H4 | Media | 5 Edge Functions no pasaban `deno check` | Resuelto en `main` con el PR #82 (18 / 18) |
 | H5, H6 | Baja | Doble recálculo en los triggers de calificaciones; índice `idx_trabajos_id_trabajador` repetido | Pendiente |
 
-**Cómo se verificó H1 en producción** (20-11-2026, cerca de las 04:14, hora de Chile; solo lectura, sin escribir nada):
+**Cómo se verificó H1 en producción** (20-11-2026, cerca de las 04:14, hora de Chile; solo lectura, sin escribir nada). Esta lista describe el fallo de ese día, antes de `20261120180000`. No describe la función vigente: la corrección está aplicada y el alta no se volvió a medir.
 
 1. La lista de migraciones del proyecto `wxqrfcqifkfgawrnqmnj` incluye `20261118230000 agenda_por_defecto_trabajador_nuevo`. Las 125 versiones coinciden con los 125 archivos del repositorio.
 2. `pg_get_functiondef` de `public.trabajador_horarios_desde_alta` contiene `generate_series(time '09:00', time '17:00', interval '1 hour')`.
@@ -143,7 +143,7 @@ Coincide con P-17 en la causa (CPU de la base y cola de PostgREST). Producción 
 
 | # | Acción | Costo | Efecto |
 |---|---|---|---|
-| 1 | Aplicar la corrección de H1 en producción | Gratis | Vuelve el alta de profesionales |
+| 1 | El alta H1 ya está migrada. Falta medirla de nuevo | Gratis | Confirma que el alta de profesionales volvió |
 | 2 | Catálogo sin cálculo por fila (leer `trabajadores.calificacion` y `trabajos_completados`, o el prototipo) | Gratis | 412 → 76 ms o menos; quiebre de ~100 a ~490 VU en la réplica |
 | 3 | Caché en el CDN de catálogo y categorías (`s-maxage=60`) | Gratis | Saca de la base la mayoría de las lecturas públicas |
 | 4 | Menos llamadas por vista y caché más larga en el cliente | Gratis | Menos peticiones por usuario |

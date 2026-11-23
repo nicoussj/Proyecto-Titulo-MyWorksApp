@@ -5,7 +5,7 @@
 **Duración total:** 28 minutos (25 min core + 3 min consola opcional)  
 **Modalidad:** Video HD + Demo en vivo con 2 pantallas simultáneas
 
-> **22-11-2026, 23:07 hora de Chile.** La fase académica vigente es la Fase 3 del PTY4614: pruebas, informe final y demostración. Los títulos «FASE 1» a «FASE 4» de este guion son tramos de la demostración, no las fases del Capstone. Donde el guion dice 60 tablas o «60 tablas en 4FN», el catálogo de ese día midió 76 tablas con RLS. La cuarta forma normal no es la de todo el esquema. El piso auditado es 2FN, la mayoría de las tablas revisadas está en BCNF y la 4FN queda para las listas separadas del profesional. El detalle está en `MyWorksAppProyect/docs/normalizacion.md`.
+> **Estado vigente al 23 de noviembre de 2026, 01:29 hora de Chile.** La fase académica es la Fase 3 del PTY4614. Los títulos «FASE 1» a «FASE 4» de este guion son tramos de la demostración, no las fases del Capstone. La defensa que se proyecta tiene 15 láminas y la última es Preguntas de la comisión. El catálogo vigente es de 76 tablas con RLS. Las tablas auditadas están en BCNF y la 4FN queda solo en las listas del profesional. Donde el guion dice 60 tablas, ese número es el corte del 20-11 y no se dice como cifra vigente. El detalle está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.
 
 ---
 
@@ -15,7 +15,7 @@
 |--------|------------|-------------------|-------------|----------|----------|
 | **0:00** | **NICOLÁS** | "Bienvenidos. Somos el equipo MyWorksApp..." | Video HD introductorio | Proyector | 2 min |
 | **2:00** | **MATHIAS** | "El problema: 78% informalidad..." | Diapositivas 2-3 | Proyector | 1 min |
-| **3:00** | **GABRIEL** | "Objetivos medibles: 641 pruebas, 60 tablas RLS..." | Diapositivas 5-7 | Proyector | 2 min |
+| **3:00** | **GABRIEL** | "Objetivos medibles: 641 pruebas del corte del 20-nov, 76 tablas con RLS." | Láminas del archivo de 15 | Proyector | 2 min |
 | **5:00** | **NICOLÁS** | "Metodología Scrum: 11 sprints, GitHub Projects..." | Diapositiva 8 | Proyector | 2 min |
 | **7:00** | **GABRIEL** | "Arquitectura Feature-First. El esquema auditado tiene piso en 2FN y la mayoría de esas tablas está en BCNF; la 4FN es solo de las listas del profesional. El 22-11 el catálogo midió 76 tablas." | Diapositivas 9-11 | Proyector | 3 min |
 | **10:00** | **MATHIAS** | "128 migraciones, 18 Edge Functions, web en producción..." | Diapositivas 12-13 | Proyector | 2 min |
@@ -106,7 +106,7 @@
 >
 > **Objetivos Específicos** con sus métricas:
 >
-> - **OE1:** Modelo de datos en tercera forma normal con RLS. Métrica: 100% de las tablas con RLS activo. Resultado: 60 de 60 tablas con RLS activo.
+> - **OE1:** Modelo de datos con RLS. Métrica: 100% de las tablas con RLS activo. Resultado vigente: 76 de 76 tablas con RLS. Las tablas auditadas están en BCNF.
 >
 > - **OE2:** Búsqueda y comparación de profesionales con orden común: cercanía en bandas de 1 kilómetro, luego calificación, luego precio. Métrica: tiempo mediano de contratación menor o igual a 5 minutos. Resultado: implementado; medición en piloto.
 >
@@ -183,7 +183,7 @@
 >
 > **Modelo de Datos:**
 >
-> Aquí está el número definitivo y real: **60 tablas** en el esquema público de PostgreSQL, según las migraciones aplicadas al 20 de noviembre. No decimos 'vamos en 90' ni mostramos 43. Son exactamente 60 tablas con RLS activo en todas.
+> El número vigente es **76 tablas** en el esquema público, las 76 con RLS, medidas el 23 de noviembre de 2026 a las 01:11. El corte del 20 de noviembre documentaba 60. No decimos 43 ni 90.
 >
 > Dividimos el modelo en **9 módulos funcionales** para facilitar la comprensión:
 >
@@ -236,7 +236,7 @@
 >
 > - **128 migraciones SQL** aplicadas, desde la primera del 7 de junio de 2025 hasta la última del 20 de noviembre de 2026.
 > - **18 Edge Functions** en Deno, que manejan Webpay, Oneclick, invitado, soporte automático y acciones de administración.
-> - **60 tablas** en PostgreSQL con **132 políticas RLS** activas.
+> - **76 tablas** en PostgreSQL, las 76 con RLS. Las 132 políticas son el conteo del corte de 60 tablas, no una remedición del 23-11.
 > - **34 casos de uso documentados**, 25 historias de usuario, 6 workflows de CI/CD en GitHub Actions.
 >
 > **Pruebas automatizadas: 641 en total.**
@@ -274,7 +274,7 @@
 > - Auditoría de base de datos del 16 de noviembre: 181 de 181 casos aprobados.
 > - 6.077 de 6.077 lecturas anónimas de trabajos fueron negadas bajo carga.
 > - Gitleaks en integración continua: 0 secretos expuestos.
-> - RLS activo en 60 de 60 tablas.
+> - RLS activo en 76 de 76 tablas.
 >
 > **Lighthouse (calidad web):**
 > - Móvil: 94 sobre 100.

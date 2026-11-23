@@ -4,9 +4,9 @@
 **Institución:** Duoc UC — Sede Puerto Montt  
 **Equipo:** Mathias Alejandro Jara Alvarado (Product Owner y Scrum Master) · Nicolas Chiguay · Gabriel Valderas  
 **Fecha:** Diciembre 2026  
-**Estado:** Versión corregida según retroalimentación del profesor patrocinante (20-nov-2026)
+**Estado vigente:** 23 de noviembre de 2026, 01:29 hora de Chile. El archivo que se proyecta es `Fase 2/Presentacion_final_MyWorksApp.pptx`, de 15 láminas (commit `bd7c2bb` o posterior). La lámina 15 es Preguntas de la comisión. El detalle está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.
 
-> **22-11-2026, 23:07 hora de Chile.** Esta presentación es el material de la Fase 3 y última (pruebas, informe final y demostración). El relato de las fases 1 y 2 se conserva. El catálogo de la base viva midió **76 tablas**, las 76 con RLS, y 94 claves foráneas; la remedición de las 23:04 hora de Chile repitió esas cifras y la migración `20261123020000`. Donde este guion dice 60 tablas, ese era el corte del 20-11. La cuarta forma normal no cubre el esquema completo: el piso auditado es la segunda forma normal, la mayoría de esas tablas está en BCNF y la 4FN se declara solo para las listas del profesional. Ver `MyWorksAppProyect/docs/normalizacion.md`.
+> El catálogo vigente es de **76 tablas**, las 76 con RLS, y 94 claves foráneas. La migración aplicada es `20261123040924` (archivo `20261124050000_esquema_bcnf.sql`), a las 01:11. Las tablas auditadas están en BCNF. La 4FN queda solo en las listas del profesional. No se afirma que todo el esquema esté en 3FN ni en 4FN. La app es 1.0.15+16 y no muestra la carta de boleta del SII. La web publicada carga `/assets/index-UPaWWnOt.js`. `oneclick-charge` está en la versión 29. Donde el relato de abajo dice 60 tablas, ese número es el corte del 20-11 y no el esquema vigente.
 
 ---
 
@@ -141,7 +141,7 @@ que conecta clientes y especialistas locales con:
 - **Objetivo:** Diseñar e implementar un modelo de datos relacional en Supabase/PostgreSQL, en tercera forma normal y protegido con seguridad a nivel de fila (RLS).
 - **Métrica:** 100% de las tablas con RLS activo
 - **Validación:** Consulta a `pg_policies` + suite de pruebas de seguridad
-- **Resultado:** ✅ **60 de 60 tablas con RLS activo (100%)**
+- **Resultado:** ✅ **76 de 76 tablas con RLS activo (100%)**, al 23-11-2026, 01:11.
 
 **OE2: Búsqueda y Comparación Inteligente**
 - **Objetivo:** Implementar en app móvil y web la búsqueda de profesionales por oficio, comuna, precio y calificación, con orden común: cercanía (bandas 1km) → calificación → precio.
@@ -269,9 +269,9 @@ Merge → Sprint Review (fin de semana) → Retrospective
 ### Diapositiva 10: MODELO DE DATOS — VISTA GENERAL
 **Título:** Modelo de Datos: 60 Tablas en PostgreSQL con RLS
 
-**NÚMERO DEFINITIVO Y REAL:** **60 tablas** en el esquema `public`
+**NÚMERO VIGENTE:** **76 tablas** en el esquema `public` (23-11-2026, 01:11). El corte del 20-11 documentaba 60.
 - Fuente: Migraciones del repositorio al 20-nov-2026 (`main` commit `d9d2c7c`)
-- Estado: 60 tablas con RLS activo (100%)
+- Estado: 76 tablas con RLS activo (100%)
 - 128 migraciones SQL aplicadas
 - 132 políticas RLS activas
 
@@ -472,7 +472,7 @@ La tabla **`trabajador_servicios`** evita dependencias multivaluadas:
 - ✅ Auditoría de base de datos (16-nov-2026): 181/181 casos aprobados
 - ✅ 6.077 de 6.077 lecturas anónimas de trabajos negadas bajo carga
 - ✅ Gitleaks en CI: 0 secretos expuestos
-- ✅ RLS activo en 60 de 60 tablas
+- ✅ RLS activo en 76 de 76 tablas
 
 **LIGHTHOUSE (CALIDAD WEB):**
 - ✅ Móvil: 94/100
@@ -576,7 +576,7 @@ La tabla **`trabajador_servicios`** evita dependencias multivaluadas:
 |--------|------------|----------|-------------|----------|
 | **0:00-2:00** | **NICOLÁS** | "Bienvenidos. Somos el equipo MyWorksApp y presentaremos nuestra solución para eliminar el fraude en servicios del hogar." | Video HD introductorio | Proyector |
 | **2:00-3:00** | **MATHIAS** | "El problema: 78% de contrataciones son informales. Nuestra solución: escrow + agenda garantizada." | Diapositivas 2-3 | Proyector |
-| **3:00-5:00** | **GABRIEL** | "Objetivos medibles: 100% de pagos protegidos, 641 pruebas automatizadas pasando, 60 tablas con RLS." | Diapositivas 5-7 | Proyector |
+| **3:00-5:00** | **GABRIEL** | "Objetivos medibles: 100% de pagos protegidos en integración, 641 pruebas del corte del 20-nov, 76 tablas con RLS." | Diapositivas 5-7 | Proyector |
 | **5:00-7:00** | **NICOLÁS** | "Metodología Scrum: roles definidos, 11 sprints, tablero en GitHub Projects, 228 commits." | Diapositiva 8 | Proyector |
 | **7:00-10:00** | **GABRIEL** | "Arquitectura: Feature-First + capas. Modelo de datos: piso en 2FN, mayoría en BCNF, 4FN solo en las listas del profesional. El 22-11 el catálogo midió 76 tablas." | Diapositivas 9-11 | Proyector |
 | **10:00-12:00** | **MATHIAS** | "Implementación: 128 migraciones SQL, 18 Edge Functions, 641 pruebas automatizadas, web en producción." | Diapositivas 12-13 | Proyector |
@@ -693,7 +693,7 @@ La tabla **`trabajador_servicios`** evita dependencias multivaluadas:
 - Consola de escritorio Tauri (Windows, macOS, Linux)
 
 ✅ **Backend Robusto:**
-- 60 tablas con RLS activo (100%)
+- 76 tablas con RLS activo (100%)
 - 128 migraciones SQL
 - 18 Edge Functions
 - PostgreSQL 17 en Supabase
@@ -725,7 +725,7 @@ La tabla **`trabajador_servicios`** evita dependencias multivaluadas:
 ✅ **Documentación Completa:**
 - 34 casos de uso documentados
 - 25 historias de usuario
-- Diccionario de base de datos (60 tablas)
+- Diccionario de base de datos (fichas históricas y catálogo vigente de 76 tablas)
 - Runbooks de operación
 
 ---
@@ -736,7 +736,7 @@ La tabla **`trabajador_servicios`** evita dependencias multivaluadas:
 **PENDIENTES TÉCNICOS (PRIORIDAD CRÍTICA):**
 
 🔴 **Alta Prioridad:**
-1. Corregir H1 (alta de profesionales con `generate_series`)
+1. Remediar el alta H1 (la migración ya está aplicada; no hay medición nueva)
 2. Migrar Transbank de integración a producción
 3. Optimizar capacidad del catálogo (degradación con ~100 usuarios)
 4. Publicar en Google Play Store y Apple App Store
@@ -826,7 +826,7 @@ MyWorksApp es una **plataforma multiplataforma funcional y demostrable** que res
 
 **CUMPLIMIENTO DE OBJETIVOS:**
 
-✅ **OE1:** 60 de 60 tablas con RLS (100%)  
+✅ **OE1:** 76 de 76 tablas con RLS (100%). Tablas auditadas en BCNF.  
 ✅ **OE2:** Búsqueda por cercanía → calificación → precio implementada  
 ✅ **OE3:** 100% de pagos de prueba siguen ciclo correcto  
 ✅ **OE4:** Máquina de estados funcional con PIN y evidencia  
@@ -852,8 +852,10 @@ Este proyecto demuestra que **es posible formalizar servicios del hogar** con te
 
 ---
 
-### Diapositiva 21: PREGUNTAS Y CONTACTO
-**Título:** ¿Preguntas?
+### Preguntas de la comisión
+En el archivo que se proyecta (`Fase 2/Presentacion_final_MyWorksApp.pptx`, 15 láminas) esta parte es la lámina 15, la última. No es la lámina 9.
+
+**Título:** Preguntas de la comisión
 
 **EQUIPO MYWORKSAPP:**
 

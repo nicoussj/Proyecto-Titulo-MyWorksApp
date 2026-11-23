@@ -1,8 +1,8 @@
 # Modelo de datos de MyWorksApp
 
-> **Actualización 20-11-2026 (`main` `d9d2c7c`).** Las migraciones `20261120130000`, `20261120150000` y `20261120170000` agregan `auditoria_consola` (administración), `rate_limit_ventana` (administración) y `direcciones_cliente` (usuarios, FK a `perfiles`). Con ellas el esquema documentado queda en **60 tablas**, 481 columnas y 86 claves foráneas, contadas desde el DDL del repositorio. Detalle de las columnas en la sección 0 de [`DICCIONARIO_BASE_DATOS.md`](DICCIONARIO_BASE_DATOS.md).
+> **Estado vigente al 23-11-2026, 01:11 hora de Chile.** El catálogo de `wxqrfcqifkfgawrnqmnj` tiene **76 tablas**, RLS en las 76 y **94 claves foráneas**. La migración aplicada es `20261123040924`. Este archivo describe el snapshot del 17-11 (57 tablas) y el corte documentado del 20-11 (60 tablas). Esos números son anexos históricos, no el esquema vigente. El detalle está en [`DICCIONARIO_BASE_DATOS.md`](DICCIONARIO_BASE_DATOS.md) y en [`../ESTADO_DEL_PROYECTO.md`](../ESTADO_DEL_PROYECTO.md).
 >
-> **22-11-2026.** La base viva tiene **76 tablas** y **94 claves foráneas**. Este archivo y sus diagramas siguen describiendo el snapshot de 57 tablas. Las tablas nuevas están listadas, sin diagrama, en la sección 0-bis del diccionario. El resto de este documento describe el snapshot del 17-11-2026:
+> **Corte del 20-11-2026 (`main` `d9d2c7c`), anexo.** Las migraciones `20261120130000`, `20261120150000` y `20261120170000` agregaron `auditoria_consola`, `rate_limit_ventana` y `direcciones_cliente`. Con ellas ese corte documentaba 60 tablas. El resto de este documento describe el snapshot del 17-11-2026:
 
 > **Total del snapshot: 57 tablas** en el esquema `public` de la base de datos (PostgreSQL en Supabase), con 458 columnas, 57 claves primarias y 85 claves foráneas (84 entre tablas de `public` y 1 hacia `auth.users`).
 

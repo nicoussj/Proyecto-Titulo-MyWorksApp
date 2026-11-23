@@ -140,7 +140,8 @@ Cada dato depende de la clave completa de su tabla (2FN) y ninguna columna depen
 
 - **La 4FN se cumple en la oferta del profesional**: sus oficios (`trabajador_servicios`), fotos (`portafolio_trabajador`), precios (`trabajador_precios`), servicios adicionales (`trabajador_servicios_extra`) y horarios (`trabajador_horarios`, `trabajador_horas_publicadas`) están en tablas separadas, cada una con una sola lista y una clave que determina todas sus columnas. Lo mismo ocurre con las listas de un usuario de la sección 3.4.
 - Esas tablas cumplen además 1FN, 2FN, 3FN y BCNF, que son requisito de la 4FN.
-- Este documento declara 4FN **solo para las tablas indicadas en las secciones 3.1 a 3.5**. No se afirma que las 57 tablas del modelo estén en 4FN.
+- Este documento declara 4FN **solo para las listas del profesional** (servicios, precios, horarios y portafolio). No se afirma que las 76 tablas del catálogo vigente estén en 3FN ni en 4FN.
+- **23-11-2026, 01:11.** Las tablas auditadas están en BCNF. Las 15 tablas nuevas tienen clave de una columna y se clasificaron BCNF. El trigger que copia una cifra no borra la dependencia teórica.
 
 ## 5. Cómo se revisó
 

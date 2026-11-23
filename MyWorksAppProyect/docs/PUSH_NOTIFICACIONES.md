@@ -1,6 +1,6 @@
 # Notificaciones push (FCM)
 
-> Estado al 20-nov-2026: según el reporte de despliegue, la Edge Function `send-push` **no está desplegada** en el proyecto en vivo. Hoy los avisos solo llegan por Supabase Realtime con la app o la web abiertas.
+> Reporte del 20-nov-2026: la Edge Function `send-push` no estaba desplegada. El 23-11-2026 no se volvió a desplegar. Con la app o la web abiertas los avisos llegan por Supabase Realtime. El estado vigente del producto está en [`../ESTADO_DEL_PROYECTO.md`](../ESTADO_DEL_PROYECTO.md).
 
 Con la app abierta los avisos ya llegan por Supabase Realtime. Esto agrega el
 push de Firebase Cloud Messaging (gratis) para cuando la app está cerrada o en

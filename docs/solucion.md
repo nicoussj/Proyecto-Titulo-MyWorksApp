@@ -1,6 +1,6 @@
 # Solución — My Works App
 
-**Estado del documento:** 2026-11-20, sobre `main` en `d9d2c7c`. Las rutas son relativas a `MyWorksAppProyect/` (el monorepo de software), salvo que se indique otra cosa.
+**Estado del documento:** el cuerpo es del 20-11-2026, sobre `main` `d9d2c7c`. El estado vigente al 23 de noviembre de 2026, 01:29 hora de Chile, está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`. `listar_profesionales_catalogo` ordena por cercanía, nota y tarifa. Las rutas son relativas a `MyWorksAppProyect/`, salvo que se indique otra cosa.
 
 ## Descripción de la solución
 
@@ -113,7 +113,7 @@ Es el orden por defecto en las dos interfaces. La web y la app lo replican con e
 | Escritorio (Tauri) | `myworksapp_desktop/src/App.tsx`; `src/shell/` (`Shell.tsx`, `nav.ts`: 20 módulos de menú); `src/features/screens.tsx` (una página por módulo y «Mi cuenta»), `src/features/table.tsx`; `src/components/` (`DesktopLoginScreen.tsx`, `AdminMfaGate.tsx`, `InvitePasswordScreen.tsx`); `src/lib/` (`idle.ts`: cierre a los 15 min; `totp.ts`: código TOTP vigente 5 min para mover dinero; `csv.ts`, `redirect.ts`); `src/ui/ConfirmDialog.tsx`; `src-tauri/` (deep link `myworksapp-admin://`, actualizador) |
 | App (páginas de administración) | `lib/features/admin/presentation/pages/` (panel, usuarios, profesionales, trabajos, disputas, pagos, reportes, banderas de funcionalidad, ranking, errores) |
 | Compartido | `shared/src/repositories/metrics.ts`, `shared/src/metrics/period.ts`, `shared/src/invites/` |
-| Edge Functions | `invitar-colaborador`, `webpay-release`, `webpay-refund`, `webpay-refund-cancellation`, `webpay-resolve-dispute` (las cinco llaman `is_admin()` con el JWT del usuario, `_shared/require_admin.ts`), `webpay-reconcile`, `soporte-automatico` (no desplegada en vivo según el reporte del 20-nov) |
+| Edge Functions | `invitar-colaborador`, `webpay-release`, `webpay-refund`, `webpay-refund-cancellation`, `webpay-resolve-dispute` (las cinco llaman `is_admin()` con el JWT del usuario, `_shared/require_admin.ts`), `webpay-reconcile`, `soporte-automatico` (desplegada desde el 20-nov; falta programar su llamada) |
 | Base de datos | `20260914000005_rls_politicas_negocio.sql` (`admin_metricas_resumen`), `20260924000001_thermos_security_fixes.sql` (`liberar_escrow_manual`), `20261005000002_security_lockdown_rpc.sql`, `20261115232902_consola_roles_soporte_qa.sql`, `20261120130000_auditoria_consola.sql` (bitácora inmutable `auditoria_consola`, `registrar_auditoria()` y 17 RPC `consola_*`). Tablas: `auditoria_consola`, `banderas_funcionalidad`, `registros_error_app`, `eventos_analitica`, `reportes`, `eventos_abuso`. |
 
 ### 11. Calidad, seguridad y operación

@@ -1,3 +1,4 @@
+# ANEXO HISTÓRICO del mapa de 60 tablas (17/20-nov-2026). No es el catálogo de 76.
 import importlib.util, subprocess, re
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('e', Path(__file__).with_name('gen_er60.py'))

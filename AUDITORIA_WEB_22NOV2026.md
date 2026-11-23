@@ -1,4 +1,7 @@
-# 🔍 Auditoría Exhaustiva Web - MyWorksApp Flutter
+# Auditoría de la web Flutter — MyWorksApp
+
+> El estado vigente del producto al 23 de noviembre de 2026, 01:29 hora de Chile, está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`. Esta auditoría es del 22 de noviembre y no se reescribe.
+
 **Fecha:** Domingo 22 de Noviembre, 2026 (UTC-3)  
 **Responsable:** Desarrollador Senior Full Stack & QA Lead  
 **Plataforma:** Flutter Web (`myworksapp_app`)

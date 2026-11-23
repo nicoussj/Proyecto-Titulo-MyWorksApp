@@ -1,8 +1,8 @@
 # Modelo de Datos — Presentación Técnica
 ## MyWorksApp — PostgreSQL con RLS
 
-**Fecha del cuerpo:** 20 de noviembre de 2026 (`main` `d9d2c7c`, 60 tablas contadas desde el DDL)  
-**Lectura del 22-11-2026:** la base viva tiene 76 tablas y 94 claves foráneas. Este documento no se reescribió tabla por tabla. La forma normal de las 15 tablas nuevas no se reclasificó. La 4FN del texto de abajo aplica a las listas del profesional, no al esquema completo.  
+**Fecha del cuerpo:** 20 de noviembre de 2026 (`main` `d9d2c7c`). Las 60 tablas de ese corte son un anexo histórico.  
+**Estado vigente al 23-11-2026, 01:11:** la base viva tiene 76 tablas, RLS en las 76 y 94 claves foráneas. Las tablas auditadas están en BCNF. Las 15 tablas nuevas tienen clave de una columna y se clasificaron BCNF. La 4FN del texto de abajo aplica solo a las listas del profesional. El detalle está en `MyWorksAppProyect/ESTADO_DEL_PROYECTO.md`.  
 **Fuente del cuerpo:** migraciones en `myworksapp_app/supabase/migrations/` y `MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md` sección 0-bis.
 
 ---
@@ -21,7 +21,7 @@
 | Vistas | 2 | `encuestas_testing_con_puntaje`, `cobros_profesional` |
 | Última migración | `20261120220000` | `catalogo_stats_una_consulta_y_realtime.sql` |
 
-**Consistencia:** No decimos "vamos en 90" ni mostramos 43. El número real y verificado es **60 tablas**.
+**Consistencia:** No decimos "vamos en 90" ni mostramos 43. El corte de este cuerpo documentaba 60 tablas. El catálogo vigente, al 23-11-2026, es de **76 tablas**.
 
 ---
 
@@ -443,7 +443,7 @@ verificacion_eventos (id_trabajador, evento, creado_en, motivo)
 
 ## Seguridad: Row Level Security (RLS)
 
-**Estado:** 60 de 60 tablas con RLS activo (100%)  
+**Estado vigente:** 76 de 76 tablas con RLS activo (100%), al 23-11-2026. El 100% del corte de 60 queda como antecedente de este cuerpo.  
 **Políticas:** 132 políticas activas
 
 **Principio:** Cada usuario solo accede a sus propios datos.

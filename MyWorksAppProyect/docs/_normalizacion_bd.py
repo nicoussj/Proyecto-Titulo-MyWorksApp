@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Análisis de formas normales por tabla (auditoría de base de datos 2026-11-16).
+"""Análisis de formas normales por tabla.
+
+Al 23-11-2026, 01:11 hora de Chile, las tablas auditadas se clasifican BCNF.
+La 4FN queda en las listas del profesional. El trigger no borra la
+dependencia teórica. La auditoría de origen es la del 16-11-2026.
 
 Lo usa _gen_diccionario_desde_schema.py para escribir, en cada tabla del
 diccionario y del Anexo A, la forma normal alcanzada y por qué, en palabras
@@ -84,7 +88,7 @@ NORMAL_FORMS = {
     "trabajador_precios": ("4FN", "Lista de precios del profesional separada de su ficha. Clave (id_usuario, codigo); id_usuario es uuid con clave foránea a trabajadores.", None),
     "trabajador_servicios": ("4FN", "Lista de oficios del profesional separada de su ficha: un profesional atiende varios oficios, independiente de sus precios. Clave (id_trabajador, categoria_servicio); cada oficio es una categoría de categorias_servicio.", None),
     "trabajador_servicios_extra": ("4FN", "Servicios adicionales del profesional, separados de su ficha. id_usuario es uuid con clave foránea a trabajadores.", None),
-    "trabajadores": ("BCNF", "Ficha 1:1 del profesional. Los precios, los servicios extra y los oficios viven en tablas hijas en 4FN; la región se obtiene desde la comuna. es_elite sigue generada. calificacion y trabajos_completados las iguala el trigger trabajadores_z_cifras_desde_stats a la estadística, y score_listado solo lo cambia el recálculo de ranking: la fórmula no cabe en GENERATED ALWAYS. El catálogo público no ordena por score_listado.", None),
+    "trabajadores": ("BCNF", "Ficha 1:1 del profesional. Los precios, los servicios extra y los oficios viven en tablas hijas en 4FN; la región se obtiene desde la comuna. es_elite sigue generada. calificacion y trabajos_completados las iguala el trigger trabajadores_z_cifras_desde_stats a la estadística, y score_listado solo lo cambia el recálculo de ranking: la fórmula no cabe en GENERATED ALWAYS. Ese trigger no borra la dependencia teórica. listar_profesionales_catalogo ordena por cercanía, nota y tarifa, no por score_listado.", None),
     "trabajos": ("BCNF con una copia mantenida por trigger", "Cada columna describe el pedido. instantanea_precio es la foto del precio al pedir (dato histórico).", "estado_pago copia el estado del pago principal (trigger copiar_estado_pago_trabajo) para filtrar listas sin unir con pagos. Diferencias: 0."),
     "ubicacion_en_vivo": ("BCNF", "Extensión 1:1 de trabajos (clave id_trabajo).", "id_trabajador repite el profesional del trabajo para autorizar la publicación en tiempo real. Diferencias: 0."),
     "verificacion_eventos": _s("Bitácora de cambios del estado de verificación."),

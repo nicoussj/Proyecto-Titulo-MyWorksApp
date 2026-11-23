@@ -1,3 +1,5 @@
+// ANEXO HISTÓRICO del 17-11-2026. El catálogo vigente al 23-11-2026
+// es de 76 tablas. El modelo central está en modelo_er_central_workbench.sql.
 // MyWorksApp — modelo entidad-relación generado desde la BD viva
 // Proyecto wxqrfcqifkfgawrnqmnj · migración 20261117223850 · abrir en https://dbdiagram.io
 Project MyWorksApp { database_type: 'PostgreSQL' }

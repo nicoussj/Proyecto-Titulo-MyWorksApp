@@ -27,9 +27,12 @@ Las rutas están en `src/routing/paths.ts`: `/`, `/servicios`, `/servicios/:cate
 - Si el enlace se abre en otro navegador, la web avisa que debe abrirse en el mismo (PKCE).
 - Los correos de pago recibido, alta de invitado, reembolso y pago liberado los envían las Edge Functions, no la web.
 
+## Estado vigente al 23-11-2026
+
+https://myworksapp.cl carga `/assets/index-UPaWWnOt.js` (comprobado a las 01:29 hora de Chile; última modificación 01:11). El aviso académico y las páginas legales están en ese paquete. El menú de horas es oscuro y las fotos de oficios son las del build.
+
 ## Pendiente
 
-- `/terminos` y `/privacidad` dicen que el texto oficial todavía no está publicado. Los textos y `/aviso-legal` están en la rama `cursor/aviso-academico-duoc-v2`, **sin merge**.
 - Turnstile aparece en el registro y en la compra como invitado. Solo `guest-checkout` lo valida en el servidor; en el registro la validación depende del captcha de Supabase Auth, que no está activado.
 
 ## Cómo correrla

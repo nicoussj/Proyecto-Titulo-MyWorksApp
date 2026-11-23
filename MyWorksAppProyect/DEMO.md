@@ -1,6 +1,6 @@
 # Demo en vivo — MyWorksApp
 
-Guion para mostrar MyWorksApp con las cuentas de demostración del proyecto Supabase `wxqrfcqifkfgawrnqmnj`. Los pagos van por Transbank en **ambiente de integración**: no hay cobros reales. Al 22 de noviembre de 2026, 23:07 hora de Chile, este guion es el de la Fase 3 (pruebas, informe final y demostración).
+Guion para mostrar MyWorksApp con las cuentas de demostración del proyecto Supabase `wxqrfcqifkfgawrnqmnj`. Los pagos van por Transbank en **ambiente de integración**: no hay cobros reales. Estado vigente al 23 de noviembre de 2026, 01:29 hora de Chile. El detalle está en [`ESTADO_DEL_PROYECTO.md`](ESTADO_DEL_PROYECTO.md).
 
 ## 1. Dónde está cada parte
 
@@ -12,7 +12,7 @@ Guion para mostrar MyWorksApp con las cuentas de demostración del proyecto Supa
 | Encuesta de prueba con usuarios (SUS) | https://myworksapp.cl/encuesta; en la app, inicio del cliente → **Encuesta de la prueba**, y perfil del profesional → **Encuesta de la prueba** |
 | Migraciones de la base | `myworksapp_app/supabase/MIGRATIONS_INVENTORY.md` (cada versión de la base tiene su archivo) |
 
-Configuración vigente en `public.app_config`: `demo_modo = 1`, leído otra vez el 22 de noviembre de 2026 a las 23:04 hora de Chile, y `admin_requiere_aal2 = 1` (la consola exige el segundo factor; este último valor se informó el 20-nov-2026 y no se volvió a cambiar).
+Configuración vigente en `public.app_config`: `demo_modo = 1`. Esta lectura no lo cambia. `admin_requiere_aal2 = 1` (la consola exige el segundo factor; este último valor se informó el 20-nov-2026 y no se volvió a cambiar).
 
 Con `demo_modo = 1` las cuentas demo aparecen en el catálogo con el aviso «Datos de demostración» y el invitado queda con la cuenta confirmada sin correo (`_shared/guest_ticket.ts`). Con otro valor, las cuentas `@demo.myworksapp.cl` y `@demo.com` se ocultan del catálogo y no se pueden reservar ni cobrar (migración `20261120140000_ocultar_profesionales_demo.sql`).
 
@@ -101,7 +101,8 @@ Sirven para mostrar estados sin esperar el flujo completo.
 | `demo-job-en-curso` | en curso, con chat | Andrés Pizarro y José Muñoz |
 | `demo-job-conforme` | esperando conformidad | Camila Soto y Ana Vidal |
 | `demo-job-cerrado` | completado, pago liberado | Andrés Pizarro y Tomás Herrera |
-| `demo-job-disputa` | en curso, disputa abierta | Camila Soto y María Fuentes |
+| `demo-job-disputa` | en curso, disputa abierta. La misma fila en consola, app y web | Camila Soto y María Fuentes |
+| disputa `requiere_humano` | no es la de la demo | Gabriel Valderas y Pepe Cuevas |
 
 ## 6. Cómo levantar cada cliente en local
 
@@ -166,7 +167,7 @@ Los pagos pasan por Edge Functions de Supabase; las claves de Transbank viven so
 | Función | Para qué |
 |---|---|
 | `webpay-create`, `webpay-handoff`, `webpay-commit`, `webpay-status` | Pago con Webpay Plus y vuelta del banco |
-| `oneclick-handoff`, `oneclick-return`, `oneclick-charge` | Inscripción de la tarjeta y cobro Oneclick |
+| `oneclick-handoff`, `oneclick-return`, `oneclick-charge` versión 29 (01:04 del 23-11) | Cobra, reutiliza la tarjeta y la orden de cambio llama `marcar_orden_cambio_pagada` |
 | `guest-checkout`, `definir-clave-invitado` | Pedido sin sesión desde la web y creación de la clave del invitado |
 | `webpay-release`, `webpay-refund`, `webpay-refund-cancellation`, `webpay-refund-rejection`, `webpay-resolve-dispute`, `webpay-reconcile` | Liberación, reembolsos, disputas y conciliación |
 | `invitar-colaborador` | Invitación de soporte y QA desde la consola |

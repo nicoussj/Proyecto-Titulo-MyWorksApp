@@ -74,6 +74,6 @@ Las pruebas de permisos `docs/PRUEBAS_RLS_CONSOLA_20261120.sql` están escritas,
 
 ## Estado conocido
 
-La prueba de la consola del 20-nov sobre `08154df` encontró 24 errores (1 crítico, 2 altos, 8 medios y 13 bajos). El crítico era el 403 de Profesionales: la lista pedía `nota_verificacion`, columna sin `SELECT` para `authenticated`. La lista ya no la pide; la nota sale de `fichas_sensibles_admin`. Ajustes lee `consola_leer_config()` (migración `20261123032058_consola_lectura_config_y_disputas.sql`) y muestra carga, error o vacío en lugar de quedar en blanco.
+Estado vigente al 23-11-2026. El commit `4c033b3` es ancestro de `origin/main`. La prueba del 20-nov sobre `08154df` encontró 24 errores; ese arreglo ya está integrado. Ajustes lee `consola_leer_config()` (migración en la base desde las 00:20). El isotipo de la ventana ya estaba. El instalador Tauri hay que recompilarlo. La disputa abierta de la demo es Camila Soto y María Fuentes; la que queda en `requiere_humano` es Gabriel Valderas y Pepe Cuevas. Es la misma fila que leen la app y la web.
 
 La invitación por Resend no está activa: falta el secreto `INVITE_PROVIDER=resend` en `invitar-colaborador`. Mientras tanto la invitación sale por Supabase Auth con el SMTP de Resend.

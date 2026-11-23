@@ -4,7 +4,7 @@
 **Equipo:** Mathias Jara Alvarado (Product Owner y Scrum Master), Nicolás Chiguay y Gabriel Valderas.
 **Fuente oficial:** `Fase 2/Myworksapp_Informe_Final_PTY4614.docx`, sección 1.6 «Objetivos» (tabla 2) y capítulo de Resultados (tabla 29). Este documento repite esos objetivos y dice dónde se verifica cada uno en el repositorio.
 
-**Fase vigente:** Fase 3, al 22 de noviembre de 2026, 23:07 hora de Chile. La remedición de las 23:04 hora de Chile confirma 76 de 76 tablas con RLS, 94 claves foráneas y la migración `20261123020000`. No se agregan puntajes de satisfacción ni tiempos de piloto: esta revisión no midió la encuesta.
+**Fase vigente:** Fase 3, al 23 de noviembre de 2026, 01:29 hora de Chile. La base `wxqrfcqifkfgawrnqmnj` tiene 76 de 76 tablas con RLS, 94 claves foráneas y la migración `20261123040924`. No se agregan puntajes de satisfacción ni tiempos de piloto: no hay medición nueva.
 
 ## Objetivo general
 
@@ -34,7 +34,7 @@ Las rutas que no indican otra cosa son relativas a `MyWorksAppProyect/`.
 
 ## Cumplimiento
 
-Resultados de la tabla 29 del informe final (mediciones al 17-nov-2026). El 22-11-2026 el catálogo mostró 76 de 76 tablas con RLS. El OE1 pide tercera forma normal: el esquema auditado el 16-11 tiene piso en segunda forma normal, la mayoría de esas tablas está en BCNF y tres se quedan en 2FN a propósito. La cuarta forma normal se declara solo para las listas del profesional. Las tablas posteriores no se reclasificaron.
+Resultados de la tabla 29 del informe final (mediciones al 17-nov-2026). El 23-11-2026, a las 01:11, el catálogo mostró 76 de 76 tablas con RLS. El OE1 pide tercera forma normal. Las tablas auditadas están en BCNF. No se afirma que todo el esquema esté en 3FN ni en 4FN. La cuarta forma normal se declara solo para las listas del profesional. Las 15 tablas nuevas tienen clave de una columna y se clasificaron BCNF.
 
 | OE | Resultado medido | Estado |
 |----|------------------|--------|
@@ -45,17 +45,17 @@ Resultados de la tabla 29 del informe final (mediciones al 17-nov-2026). El 22-1
 | OE5 | Consola con segundo factor, verificación de profesionales, mediación, liquidación y roles soporte y QA. El número de profesionales verificados del piloto se informa al cierre del piloto. | Implementado; meta del piloto |
 | OE6 | 303 pruebas automatizadas aprobadas y 0 fallidas; p95 de 283 ms con 200 usuarios virtuales (0 de 55.537 peticiones fallidas); Lighthouse 94 (móvil) y 99 (escritorio). La encuesta de satisfacción y SUS está disponible en la plataforma para el piloto. | Técnico cumplido; aceptación en el piloto |
 
-## Estado de la base al 22-11-2026
+## Estado de la base al 23-11-2026
 
-Lectura de solo lectura del catálogo, el 22 de noviembre de 2026. No sustituye la medición del 18-11 que sigue más abajo.
+Lectura vigente, 23 de noviembre de 2026, 01:11 hora de Chile. No sustituye la medición del 18-11 que sigue más abajo.
 
 | Dato | Valor |
 |------|-------|
 | Tablas de `public` | 76, las 76 con RLS |
 | Claves foráneas en `public` | 94 |
-| Última migración registrada | `20261123020000` |
-| `demo_modo` | 1, consultado el 22-11 |
-| Forma normal | Piso 2FN en el esquema auditado el 16-11. La mayoría de esas tablas está en BCNF. La 4FN se declara solo para las listas separadas del profesional. Quince tablas nuevas no se reclasificaron. Ver `MyWorksAppProyect/docs/normalizacion.md` |
+| Última migración registrada | `20261123040924` (archivo `20261124050000_esquema_bcnf.sql`) |
+| `demo_modo` | 1. No se modificó |
+| Forma normal | Tablas auditadas en BCNF. 4FN solo en las listas del profesional. Las 15 tablas nuevas se clasificaron BCNF. Ver `MyWorksAppProyect/docs/normalizacion.md` |
 
 ## Estado de la base al 18-nov-2026
 

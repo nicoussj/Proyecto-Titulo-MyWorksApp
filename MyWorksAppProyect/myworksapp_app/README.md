@@ -2,7 +2,7 @@
 
 App móvil online-first (Supabase) para conectar usuarios con trabajadores de oficios.
 
-Versión en `pubspec.yaml`: **1.0.15+16** (commit `19d1da3`). Esa versión no muestra la carta de boleta del SII en Mi Perfil. El estado del proyecto al 22-11-2026 está en `../ESTADO_DEL_PROYECTO.md`. Es la app de clientes y profesionales; la operación interna se hace en la consola de escritorio (`../myworksapp_desktop/`).
+Versión en `pubspec.yaml`: **1.0.15+16**. Esa versión no muestra la carta de boleta del SII. El isotipo de la marca está en el código y se ve al reinstalar. El estado vigente al 23-11-2026 está en `../ESTADO_DEL_PROYECTO.md`. Es la app de clientes y profesionales; la operación interna se hace en la consola de escritorio (`../myworksapp_desktop/`).
 
 Es parte del monorepo [`MyWorksAppProyect/`](../README.md); el índice de toda la documentación está en [`docs/INDICE.md`](../../docs/INDICE.md). Desde el PR #82, recuperar la contraseña vuelve a la app (`cl.myworksapp.auth`) y abre «Nueva contraseña»; las instalaciones existentes lo reciben con la próxima compilación.
 
