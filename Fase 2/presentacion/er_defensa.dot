@@ -1,0 +1,151 @@
+digraph ER {
+  graph [bgcolor="#F7F5F2", splines=line, pad="0.45"];
+  node [shape=plain, fontname="Inter"];
+  edge [fontname="Inter", fontsize=17, penwidth=2.8, arrowsize=1.25];
+  titulo [shape=plaintext, pos="955,1000!", fontname="Inter", fontsize=34, fontcolor="#00205B", label="Las doce tablas del pedido"];
+  leyenda [shape=plaintext, pos="955,28!", fontname="Inter", fontsize=16, fontcolor="#5C6370", label="Pata de gallo: varios.      Raya: uno.      Círculo: puede no existir."];
+  direcciones [pos="210,780!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#00205B" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Dirección</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#00205B"><FONT POINT-SIZE="15" COLOR="#5C6370">direcciones_cliente</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">etiqueta y calle</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  perfiles [pos="700,780!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#FF5E03" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Perfil</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#FF5E03"><FONT POINT-SIZE="15" COLOR="#5C6370">perfiles</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">quién es y su rol</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  ficha [pos="1190,780!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#00205B" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Ficha</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#00205B"><FONT POINT-SIZE="15" COLOR="#5C6370">trabajadores</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">oficio y verificación</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  horarios [pos="1700,780!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#1A3A6E" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Horarios</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#1A3A6E"><FONT POINT-SIZE="15" COLOR="#5C6370">trabajador_horarios</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">día y hora publicados</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  tarjeta [pos="210,460!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#1B6B43" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Tarjeta</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#1B6B43"><FONT POINT-SIZE="15" COLOR="#5C6370">metodos_pago_oneclick</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">últimos 4, en el servidor</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  trabajos [pos="700,460!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#FF5E03" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Trabajo</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#FF5E03"><FONT POINT-SIZE="15" COLOR="#5C6370">trabajos</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">cliente, fecha y estado</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  pagos [pos="1190,460!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#1B6B43" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Pago</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#1B6B43"><FONT POINT-SIZE="15" COLOR="#5C6370">pagos</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">monto retenido</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  orden [pos="1700,460!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#1B6B43" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Orden de cambio</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#1B6B43"><FONT POINT-SIZE="15" COLOR="#5C6370">ordenes_cambio</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">cobro adicional</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  evidencia [pos="210,150!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#8C2F39" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Evidencia</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#8C2F39"><FONT POINT-SIZE="15" COLOR="#5C6370">fotos_trabajo</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">foto o video del hecho</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  mensajes [pos="700,150!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#8C2F39" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Mensaje</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#8C2F39"><FONT POINT-SIZE="15" COLOR="#5C6370">mensajes</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">chat de ese pedido</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  calif [pos="1190,150!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#8C2F39" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Calificación</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#8C2F39"><FONT POINT-SIZE="15" COLOR="#5C6370">calificaciones</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">nota de ese trabajo</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  disputas [pos="1700,150!" label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0" BGCOLOR="#F7F5F2">
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+      <TR><TD>
+        <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0">
+          <TR><TD BGCOLOR="#8C2F39" CELLPADDING="11"><FONT COLOR="white" POINT-SIZE="24"><B>Disputa</B></FONT></TD></TR>
+          <TR><TD ALIGN="LEFT" BGCOLOR="white" CELLPADDING="10" BORDER="1" COLOR="#8C2F39"><FONT POINT-SIZE="15" COLOR="#5C6370">disputas</FONT><BR/><FONT POINT-SIZE="16" COLOR="#12141A">reclamo de ese pedido</FONT></TD></TR>
+        </TABLE>
+      </TD></TR>
+      <TR><TD HEIGHT="18" BGCOLOR="#F7F5F2"></TD></TR>
+    </TABLE>>];
+  direcciones:e -> perfiles:w [dir=both, arrowtail=crow, arrowhead=tee, color="#1A3A6E"];
+  ficha:w -> perfiles:e [dir=both, arrowtail=teeodot, arrowhead=tee, color="#1A3A6E"];
+  horarios:w -> ficha:e [dir=both, arrowtail=crow, arrowhead=tee, color="#1A3A6E"];
+  tarjeta:n -> perfiles:sw [dir=both, arrowtail=teeodot, arrowhead=tee, color="#1B6B43"];
+  trabajos:n -> perfiles:s [dir=both, arrowtail=crow, arrowhead=tee, color="#FF5E03" xlabel="cliente" fontcolor="#5C6370"];
+  trabajos:ne -> ficha:s [dir=both, arrowtail=crow, arrowhead=teeodot, color="#C45A00" xlabel="profesional" fontcolor="#5C6370"];
+  pagos:w -> trabajos:e [dir=both, arrowtail=crow, arrowhead=tee, color="#1B6B43"];
+  orden:w -> pagos:e [dir=both, arrowtail=crow, arrowhead=teeodot, color="#1B6B43"];
+  evidencia:n -> trabajos:sw [dir=both, arrowtail=crow, arrowhead=tee, color="#8C2F39"];
+  mensajes:n -> trabajos:s [dir=both, arrowtail=crow, arrowhead=tee, color="#8C2F39"];
+  calif:n -> trabajos:se [dir=both, arrowtail=crow, arrowhead=tee, color="#8C2F39"];
+  disputas:n -> trabajos:se [dir=both, arrowtail=crow, arrowhead=tee, color="#8C2F39"];
+}
