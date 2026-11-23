@@ -34,6 +34,7 @@ type Review = {
 };
 
 type Slot = { dia_semana: number; hora_inicio: string; hora_fin: string };
+type WorkPhoto = { ruta_foto: string; descripcion: string | null; tipo_medio: string | null };
 
 const DAYS = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -54,6 +55,7 @@ export function ProfessionalProfilePage({
   const [row, setRow] = useState<ProfileRow | null>(null);
   const [hours, setHours] = useState<Slot[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [works, setWorks] = useState<WorkPhoto[]>([]);
   const [resumen, setResumen] = useState<string | null>(null);
   const [parecidos, setParecidos] = useState<ProfesionalParecido[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
@@ -83,6 +85,10 @@ export function ProfessionalProfilePage({
       setHours(Array.isArray(schedule.data) ? schedule.data as Slot[] : []);
       setReviews(Array.isArray(notes.data) ? notes.data as Review[] : []);
       setStatus('ready');
+      void db.rpc('portafolio_publico_profesional', { p_id: id }).then((photos) => {
+        if (cancelled || photos.error || !Array.isArray(photos.data)) return;
+        setWorks(photos.data as WorkPhoto[]);
+      });
       registrarEventoUso(EVENTOS_USO.vioFicha, { id_profesional: id });
       void Promise.all([leerResumenResenas(id), leerProfesionalesParecidos(id)]).then(([texto, lista]) => {
         if (cancelled) return;
@@ -120,89 +126,145 @@ export function ProfessionalProfilePage({
     });
   };
 
+  const photo = profilePhotoOrInitials(row?.ruta_foto_perfil, name, row?.id_usuario);
+  const rating = Number(row?.calificacion ?? 0);
+  const reviewCount = Number(row?.n_calificaciones ?? 0);
+  const jobsDone = Number(row?.trabajos_completados ?? 0);
+  const price = row?.tarifa_visita == null
+    ? null
+    : `$${Number(row.tarifa_visita).toLocaleString('es-CL')}`;
+  const photos = works.filter((work) => (work.tipo_medio ?? 'foto') !== 'video' && work.ruta_foto?.startsWith('http'));
+
   return (
     <div className="min-h-screen app-shell">
-      <main className="container legal-page">
-        <Link to="/servicios">Volver a servicios</Link>
+      <main className="container ficha">
+        <Link className="ficha-back" to="/servicios">Volver a servicios</Link>
         {status === 'loading' ? <p role="status">Cargando la ficha…</p> : null}
         {status === 'error' ? <p role="alert">No se pudo leer la ficha. Inténtalo de nuevo.</p> : null}
         {status === 'empty' ? <p role="status">Este profesional no está en el catálogo público.</p> : null}
         {status === 'ready' && row ? (
-          <article className="profile-public">
-            <img
-              src={profilePhotoOrInitials(row.ruta_foto_perfil, name, row.id_usuario)}
-              alt=""
-              width={96}
-              height={96}
-            />
-            <h1>{name}</h1>
-            <p>{row.profesion || 'Sin dato de oficio'}</p>
-            {row.es_elite ? <p>Élite</p> : null}
-            {row.verificado ? <p>Verificado</p> : null}
-            <p>{row.descripcion?.trim() || 'Sin descripción.'}</p>
-            <p>Zona: {row.zona_trabajo?.trim() || 'Sin dato'}</p>
-            <p>
-              Radio: {row.radio_servicio_km == null ? 'Sin dato' : `${row.radio_servicio_km} km`}
-            </p>
-            <p>
-              Tarifa de visita: {row.tarifa_visita == null ? 'Sin dato' : `$${Number(row.tarifa_visita).toLocaleString('es-CL')}`}
-            </p>
-            {Number(row.n_calificaciones ?? 0) > 0 ? (
-              <p>
-                <StarScore rating={Number(row.calificacion ?? 0)} /> {Number(row.calificacion).toFixed(1)} · {row.n_calificaciones} reseñas · {row.trabajos_completados ?? 0} trabajos
-              </p>
-            ) : (
-              <p>Nuevo · sin reseñas aún</p>
-            )}
-            {resumen ? (
-              <>
-                <h2>Resumen de reseñas</h2>
-                <p>{resumen}</p>
-              </>
-            ) : null}
-            <h2>Horario</h2>
-            {hours.length === 0 ? <p>Sin horario publicado.</p> : (
-              <ul>
-                {hours.map((slot) => (
-                  <li key={`${slot.dia_semana}-${slot.hora_inicio}`}>
-                    {DAYS[slot.dia_semana] || 'Día'} {slot.hora_inicio}–{slot.hora_fin}
-                  </li>
-                ))}
+          <article className="ficha-sheet">
+            <header className="ficha-hero">
+              <img className="ficha-photo" src={photo} alt="" width={112} height={112} />
+              <div className="ficha-identity">
+                <p className="ficha-kicker">{row.profesion || 'Oficio'}</p>
+                <h1>{name}</h1>
+                <div className="ficha-badges">
+                  {row.verificado ? <span>Verificado</span> : null}
+                  {row.es_elite ? <span className="is-elite">Élite del mes</span> : null}
+                </div>
+                <p className="ficha-rating">
+                  {reviewCount > 0 ? (
+                    <>
+                      <StarScore rating={rating} />
+                      <strong>{rating.toFixed(1)}</strong>
+                      <span>{reviewCount} {reviewCount === 1 ? 'reseña' : 'reseñas'}</span>
+                    </>
+                  ) : (
+                    <span>Nuevo · sin reseñas aún</span>
+                  )}
+                </p>
+              </div>
+            </header>
+
+            <section className="ficha-stats" aria-label="Cifras del profesional">
+              <div>
+                <strong>{reviewCount > 0 ? rating.toFixed(1) : '—'}</strong>
+                <span>Calificación</span>
+              </div>
+              <div>
+                <strong>{jobsDone}</strong>
+                <span>{jobsDone === 1 ? 'Trabajo anterior' : 'Trabajos anteriores'}</span>
+              </div>
+              <div>
+                <strong>{price ?? '—'}</strong>
+                <span>Visita</span>
+              </div>
+            </section>
+
+            <section className="ficha-card">
+              <h2>Sobre el profesional</h2>
+              <p>{row.descripcion?.trim() || 'Atiende en su zona con tarifa de visita publicada.'}</p>
+              <ul className="ficha-facts">
+                <li>Zona: {row.zona_trabajo?.trim() || 'Puerto Montt'}</li>
+                <li>Radio: {row.radio_servicio_km == null ? 'Sin dato' : `${row.radio_servicio_km} km`}</li>
               </ul>
-            )}
-            <h2>Reseñas</h2>
-            {reviews.length === 0 ? <p>Sin reseñas publicadas.</p> : (
-              <ul>
-                {reviews.map((review, index) => (
-                  <li key={`${review.fecha}-${index}`}>
-                    <StarScore rating={Number(review.nota)} />
-                    <span> {review.nombre_corto || 'Cliente'}</span>
-                    {review.fecha ? <time dateTime={review.fecha}> · {review.fecha.slice(0, 10)}</time> : null}
-                    {review.comentario ? <p>{review.comentario}</p> : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {parecidos.length > 0 ? (
-              <>
-                <h2>Profesionales parecidos</h2>
-                <ul>
-                  {parecidos.map((item) => (
-                    <li key={item.id}>
-                      <Link to={`/profesional/${item.id}`}>{item.nombre}</Link>
-                      <span> · {item.profesion}</span>
-                      {item.calificacion == null ? null : (
-                        <span> · {item.calificacion.toFixed(1)}</span>
-                      )}
+              {resumen ? <p className="ficha-summary">{resumen}</p> : null}
+            </section>
+
+            <section className="ficha-card">
+              <h2>Horario</h2>
+              {hours.length === 0 ? <p className="ficha-empty">Sin horario publicado.</p> : (
+                <ul className="ficha-hours">
+                  {hours.map((slot) => (
+                    <li key={`${slot.dia_semana}-${slot.hora_inicio}`}>
+                      <strong>{DAYS[slot.dia_semana] || 'Día'}</strong>
+                      <span>{String(slot.hora_inicio).slice(0, 5)}–{String(slot.hora_fin).slice(0, 5)}</span>
                     </li>
                   ))}
                 </ul>
-              </>
+              )}
+            </section>
+
+            <section className="ficha-card">
+              <h2>Trabajos anteriores</h2>
+              {photos.length === 0 ? <p className="ficha-empty">Aún no publica fotos de trabajos.</p> : (
+                <ul className="ficha-works">
+                  {photos.map((work) => (
+                    <li key={work.ruta_foto}>
+                      <img src={work.ruta_foto} alt={work.descripcion?.trim() || 'Trabajo anterior'} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="ficha-card">
+              <h2>Reseñas de clientes</h2>
+              {reviews.length === 0 ? <p className="ficha-empty">Todavía no tiene reseñas publicadas.</p> : (
+                <ul className="ficha-reviews">
+                  {reviews.map((review, index) => (
+                    <li key={`${review.fecha}-${index}`}>
+                      <div>
+                        <strong>{review.nombre_corto || 'Cliente'}</strong>
+                        <StarScore rating={Number(review.nota)} />
+                      </div>
+                      {review.fecha ? <time dateTime={review.fecha}>{review.fecha.slice(0, 10)}</time> : null}
+                      {review.comentario ? <p>{review.comentario}</p> : <p>Calificó el trabajo sin comentario.</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {parecidos.length > 0 ? (
+              <section className="ficha-card">
+                <h2>Profesionales parecidos</h2>
+                <ul className="ficha-similar">
+                  {parecidos.map((item) => (
+                    <li key={item.id}>
+                      <Link to={`/profesional/${item.id}`}>
+                        <strong>{item.nombre}</strong>
+                        <span>{item.profesion}</span>
+                        {item.calificacion == null ? null : <em>{item.calificacion.toFixed(1)}</em>}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ) : null}
-            <button type="button" className="btn-primary" onClick={reserve}>Reservar</button>
           </article>
         ) : null}
       </main>
+      {status === 'ready' && row ? (
+        <div className="ficha-bar">
+          <div>
+            <strong>{price ? `${price} / visita` : 'Tarifa al reservar'}</strong>
+            <span>{name}</span>
+          </div>
+          <button type="button" className="btn-primary" onClick={reserve}>Reservar</button>
+        </div>
+      ) : null}
       <SiteFooter />
     </div>
   );
