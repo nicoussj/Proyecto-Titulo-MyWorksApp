@@ -22,7 +22,7 @@ export function SiteFooter() {
             <Link to="/trabaja">Trabaja con nosotros</Link>
             <Link to="/cuenta">Mi cuenta</Link>
           </nav>
-          <p className="site-footer-version">Versión {APP_COMMIT}</p>
+          {APP_COMMIT ? <p className="site-footer-version">Versión {APP_COMMIT}</p> : null}
         </div>
       </div>
     </footer>
