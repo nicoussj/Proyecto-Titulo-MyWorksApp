@@ -3,10 +3,12 @@ import path from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-/** El pie muestra «Versión dev» si el build no recibe el commit. */
+/** Commit corto del pie. En Vercel no hay .git: usa el SHA del despliegue. */
 function appCommit(): string {
   const fromEnv = process.env.VITE_APP_COMMIT?.trim();
   if (fromEnv) return fromEnv;
+  const vercel = process.env.VERCEL_GIT_COMMIT_SHA?.trim();
+  if (vercel) return vercel.slice(0, 7);
   try {
     return execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
       encoding: 'utf8',

@@ -3,15 +3,20 @@
   "name": "MyWorksApp Plataforma Web + Asistente IA",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "/brand/mark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/favicon.ico",
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-48.png",
       "sizes": "48x48",
-      "type": "image/x-icon"
+      "type": "image/png"
     },
     {
       "src": "/apple-touch-icon.png",
