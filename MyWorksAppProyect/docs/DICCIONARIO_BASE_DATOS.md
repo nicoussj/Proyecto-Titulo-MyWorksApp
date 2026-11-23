@@ -1,6 +1,6 @@
 # Diccionario de base de datos — My Works App
 
-> Generado por `docs/_gen_diccionario_desde_schema.py` el 2026-11-17 (America/Santiago) desde el esquema real de Supabase `wxqrfcqifkfgawrnqmnj`. El cuerpo de cada tabla sigue siendo ese snapshot. La sección 0 agrega a mano las 3 tablas del 20-11-2026. La sección 0-bis registra la lectura del catálogo del 22-11-2026 (76 tablas). La sección 0-ter anota la migración BCNF del 23-11-2026. No se regeneró el cuerpo del `.docx`: solo se agregó un párrafo al inicio.
+> Generado por `docs/_gen_diccionario_desde_schema.py` el 2026-11-17 (America/Santiago) desde el esquema real de Supabase `wxqrfcqifkfgawrnqmnj`. El cuerpo de cada tabla sigue siendo ese snapshot. La sección 0 agrega a mano las 3 tablas del 20-11-2026. La sección 0-bis registra la lectura del catálogo del 22-11-2026 (76 tablas). La sección 0-ter anota la migración BCNF del 23-11-2026. El archivo principal es `DICCIONARIO_BASE_DATOS.docx`: al abrirlo, la primera página es la actualización del 23 de noviembre de 2026 (cifras, forma normal, los tres cambios y las 15 tablas). Las fichas detalladas que siguen en ese Word son el snapshot del 17 y del 20 de noviembre; no se regeneraron.
 
 | Campo | Valor |
 |-------|-------|
