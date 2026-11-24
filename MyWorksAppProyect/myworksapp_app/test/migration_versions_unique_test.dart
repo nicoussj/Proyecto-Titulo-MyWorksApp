@@ -48,4 +48,47 @@ void main() {
       isFalse,
     );
   });
+
+  test(
+    'la última transicionar_trabajo exige devolver principal, orden de cambio y horas extra',
+    () {
+      final dir = Directory('supabase/migrations');
+      expect(dir.existsSync(), isTrue);
+
+      final sqlFiles = dir
+          .listSync()
+          .whereType<File>()
+          .where((file) => p.extension(file.path) == '.sql')
+          .toList()
+        ..sort((a, b) => p.basename(a.path).compareTo(p.basename(b.path)));
+
+      File? lastReplace;
+      for (final file in sqlFiles) {
+        if (file.readAsStringSync().contains(
+          'CREATE OR REPLACE FUNCTION public.transicionar_trabajo',
+        )) {
+          lastReplace = file;
+        }
+      }
+
+      expect(lastReplace, isNotNull);
+      final contents = lastReplace!.readAsStringSync();
+      expect(
+        contents.contains('v_cobro_abierto') &&
+            contents.contains(
+              "tipo_pago IN ('principal', 'orden_cambio', 'horas_extra')",
+            ),
+        isTrue,
+        reason:
+            'un CREATE OR REPLACE posterior no debe quitar el guardia de '
+            'cobros extra: ${p.basename(lastReplace.path)}',
+      );
+      expect(
+        File(
+          'supabase/migrations/20261124120000_cancelar_exige_todos_los_cobros.sql',
+        ).existsSync(),
+        isTrue,
+      );
+    },
+  );
 }
