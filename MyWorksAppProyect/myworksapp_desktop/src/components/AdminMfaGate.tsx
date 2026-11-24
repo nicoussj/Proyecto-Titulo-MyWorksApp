@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/auth-store';
+import { callRpc } from '../lib/rpc';
 import { supabase } from '../supabaseClient';
 import { Button } from '../ui/kit';
+import { makeScannableTotpQr } from '../lib/totpQr';
 
 /** Segundo factor TOTP obligatorio para entrar a la consola. */
 export function AdminMfaGate() {
@@ -43,8 +45,10 @@ export function AdminMfaGate() {
         return;
       }
       setFactorId(enrolled.data.id);
-      setQr(enrolled.data.totp.qr_code);
       setSecret(enrolled.data.totp.secret);
+      const qrSrc = await makeScannableTotpQr(enrolled.data.totp);
+      if (cancelled) return;
+      setQr(qrSrc);
     };
     void prepare();
     return () => {
@@ -80,6 +84,7 @@ export function AdminMfaGate() {
               });
               setBusy(false);
               if (verified.error) {
+                void callRpc('registrar_evento_acceso', { p_tipo: 'mfa_fallido', p_correo: '' }).catch(() => undefined);
                 setError('El código no es válido.');
                 return;
               }
@@ -93,7 +98,7 @@ export function AdminMfaGate() {
               ? 'Escanea el código QR con tu aplicación de autenticación. Después escribe el código de 6 dígitos.'
               : 'Escribe el código de 6 dígitos que muestra tu aplicación de autenticación.'}
           </p>
-          {qr ? <img src={qr} alt="Código QR para configurar el segundo factor" width={180} height={180} /> : null}
+          {qr ? <img className="totp-qr" src={qr} alt="Código QR para configurar el segundo factor" width={240} height={240} /> : null}
           {secret ? <p>Si no puedes escanear el QR, escribe esta clave manual: <strong className="secret-key">{secret}</strong></p> : null}
           <label className="field">
             <span>Código de 6 dígitos</span>

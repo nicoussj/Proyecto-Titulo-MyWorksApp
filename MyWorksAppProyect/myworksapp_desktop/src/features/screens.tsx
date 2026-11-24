@@ -10,6 +10,7 @@ import {
   cleanSearch,
   fetchOrderedPage,
   orIlike,
+  PAGE_SIZE,
   paymentFilter,
   refundFilter,
   type PageQuery,
@@ -17,13 +18,16 @@ import {
 import { markTotpVerified, totpFresh } from '../lib/totp';
 import { authRedirectUrl } from '../lib/redirect';
 import { setSharedDevice, sharedDeviceEnabled } from '../lib/session';
+import { callRpc } from '../lib/rpc';
 import { supabase } from '../supabaseClient';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { Badge, Button, CopyId, EmptyState, ErrorState, SkeletonRows } from '../ui/kit';
 import { useToast } from '../ui/toast-store';
-import { ColaResenasDudosas } from './colaResenas';
 import { filtrarDisputas, ordenarDisputas, textoProcedencia } from './disputas/bandeja';
 import { PagedTable, type PageResult } from './table';
+import { Banda } from './premium/Banda';
+import { capturaActiva } from './premium/captura';
+export { ResenasPage } from './premium/resenas';
 
 function asPromise<T>(value: PromiseLike<T>): Promise<T> {
   return Promise.resolve(value);
@@ -97,6 +101,7 @@ export function ResumenPage() {
           ))}
         </div>
       </div>
+      <Banda seccion="inicio" />
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? <ErrorState message="No se pudo cargar el resumen." onRetry={() => void query.refetch()} /> : null}
       {permissions.executive && financiero.gmv_clp != null ? (
@@ -133,7 +138,7 @@ function Kpi({ label, value, delta }: { label: string; value: string; delta: str
 
 function Queue({ to, label, value }: { to: string; label: string; value: unknown }) {
   return (
-    <Link to={to} className="card">
+    <Link to={to} className="card queue-card">
       <span className="muted">{label}</span>
       <strong className="nums">{value == null ? '—' : String(value)}</strong>
     </Link>
@@ -146,6 +151,8 @@ export function PedidosPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewOrders}>
       <h1>Pedidos</h1>
+      <p className="muted">Del resumen al detalle, sin salir de la lista.</p>
+      <Banda seccion="pedidos" />
       <PagedTable
         queryKey={['pedidos']}
         empty="Aún no hay pedidos con ese filtro."
@@ -270,6 +277,7 @@ export function DisputasPage() {
     <Gate allow={permissions.supportQueue}>
       <h1>Disputas</h1>
       <p className="muted">Bandeja de casos. La cola incluye abierta, en revisión y apelaciones. La sugerencia no mueve el dinero.</p>
+      <Banda seccion="disputas" />
       {tab === 'abiertas' ? (
         <label className="field">
           <span>Prioridad</span>
@@ -310,7 +318,7 @@ export function DisputasPage() {
               <>
                 <p className="muted">Sugerencia, no es una decisión: {statusLabel(row.decision_sugerida)} · {row.motivo_regla || 'Sin regla'} · vence {formatDateTime(row.vence_en)}</p>
                 <p className="muted">Propuesta de riesgo {row.puntaje_riesgo ?? '—'}. No mueve el dinero.</p>
-                <p className="muted">Plazo {formatDateTime(row.vence_en)}</p>
+                <p className={vencePronto(row.vence_en) ? 'sla-bad' : 'sla-ok'}>Plazo {formatDateTime(row.vence_en)}</p>
               </>
             )}
             {permissions.disputeEvidence ? <Evidencia id={row.id} /> : <p className="muted">Tu rol no ve la evidencia.</p>}
@@ -326,14 +334,21 @@ export function DisputasPage() {
       {decision ? (
         <ConfirmDialog
           title={decision.decision === 'liberar' ? 'Liberar el pago' : 'Devolver el pago'}
-          summary={`${decision.monto}. ${decision.decision === 'liberar' ? 'El profesional cobra la garantía.' : 'El dinero vuelve a la tarjeta del cliente.'} Entorno Transbank: integración.`}
+          summary={`${decision.monto}. ${decision.decision === 'liberar' ? 'El profesional cobra la garantía.' : 'El dinero vuelve a la tarjeta del cliente.'} Esto llama a webpay-resolve-dispute en vivo.`}
           irreversible
+          confirmPhrase={decision.decision === 'liberar' ? 'LIBERAR' : 'REEMBOLSAR'}
           requireTotp={!totpFresh()}
           busy={busy}
           onCancel={() => setDecision(null)}
           onConfirm={(motivo, code) => {
             setBusy(true);
             void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setBusy(false);
+                setDecision(null);
+                return;
+              }
               const ok = await reverify(code);
               if (!ok) {
                 toast('El código no es válido.');
@@ -388,42 +403,138 @@ function Evidencia({ id }: { id: string }) {
 }
 
 export function TicketsPage() {
+  const { profile } = useAuth();
+  const permissions = consolePermissions(profile?.role ?? '');
+  const toast = useToast();
+  const client = useQueryClient();
+  const [estado, setEstado] = useState('abiertos');
+  const [selected, setSelected] = useState<string | null>(null);
+  const [cerrar, setCerrar] = useState(false);
+  const [reply, setReply] = useState(false);
+  const mensajes = useQuery({
+    queryKey: ['ticket-mensajes', selected],
+    enabled: Boolean(selected),
+    queryFn: () => callRpc<Array<{ id: string; cuerpo: string; creado_en: string }>>('consola_mensajes_ticket', { p_id: selected }),
+  });
   return (
-    <section className="stack">
-      <h1>Tickets de soporte</h1>
+    <Gate allow={permissions.supportQueue}>
+      <h1>Soporte y moderación</h1>
+      <Banda seccion="soporte" />
+      <p className="muted">Si la app todavía no abre tickets, la lista queda vacía. La respuesta queda en el hilo y en la bitácora.</p>
+      <label className="field">
+        <span>Estado</span>
+        <select aria-label="Filtrar tickets por estado" value={estado} onChange={(event) => setEstado(event.target.value)}>
+          <option value="abiertos">Sin resolver</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="respondido">Respondidos</option>
+          <option value="resuelto">Resueltos</option>
+          <option value="todos">Todos</option>
+        </select>
+      </label>
       <PagedTable
-        queryKey={['tickets']}
-        empty="Aún no hay tickets."
-        load={(page, search) => loadTickets(page, search)}
+        queryKey={['tickets', estado]}
+        empty="No hay tickets en este filtro."
+        load={(page, search) => loadTickets(page, search, estado)}
         columns={[
           { key: 'asunto', header: 'Asunto', cell: (row) => String(row.asunto ?? '—'), csv: (row) => row.asunto },
           { key: 'estado', header: 'Estado', cell: (row) => <Badge value={String(row.estado ?? 'pendiente')} />, csv: (row) => statusLabel(String(row.estado ?? '')) },
           { key: 'cliente', header: 'Cliente', cell: (row) => String(row.nombre_cliente ?? '—'), csv: (row) => row.nombre_cliente },
         ]}
+        onRow={(row) => setSelected(row.id)}
       />
-    </section>
+      {selected ? (
+        <article className="panel stack">
+          <div className="spread">
+            <h2>Hilo</h2>
+            <Button variant="ghost" onClick={() => setSelected(null)}>Cerrar</Button>
+          </div>
+          {mensajes.isLoading ? <SkeletonRows /> : null}
+          {mensajes.isError ? <ErrorState message="No se pudo leer el hilo." onRetry={() => void mensajes.refetch()} /> : null}
+          {(mensajes.data ?? []).length === 0 ? <p className="muted">Todavía no hay respuestas.</p> : null}
+          <ul className="timeline">
+            {(mensajes.data ?? []).map((item) => (
+              <li key={item.id}>{formatDateTime(item.creado_en)} · {item.cuerpo}</li>
+            ))}
+          </ul>
+          {permissions.replyTickets ? (
+            <div className="row">
+              <Button onClick={() => { setCerrar(false); setReply(true); }}>Responder</Button>
+              {permissions.people ? <Button variant="secondary" onClick={() => { setCerrar(true); setReply(true); }}>Responder y cerrar</Button> : null}
+            </div>
+          ) : <p className="muted">Tu rol lee el hilo y no responde.</p>}
+        </article>
+      ) : null}
+      {reply && selected ? (
+        <ConfirmDialog
+          title={cerrar ? 'Cerrar ticket' : 'Responder ticket'}
+          summary={cerrar ? 'La respuesta se guarda y el ticket pasa a resuelto.' : 'La respuesta queda en el hilo. El ticket sigue abierto.'}
+          onCancel={() => setReply(false)}
+          onConfirm={(motivo) => {
+            void callRpc('consola_responder_ticket', {
+              p_id: selected,
+              p_cuerpo: motivo,
+              p_cerrar: cerrar,
+              p_motivo: motivo,
+            }).then(async () => {
+              toast('Ticket actualizado.');
+              setReply(false);
+              await client.invalidateQueries({ queryKey: ['tickets'] });
+              await client.invalidateQueries({ queryKey: ['ticket-mensajes', selected] });
+              await client.invalidateQueries({ queryKey: ['auditoria'] });
+            }).catch((error: unknown) => {
+              toast(error instanceof Error ? friendlyError(error as { message?: string }) : 'No se pudo responder.');
+            });
+          }}
+        />
+      ) : null}
+    </Gate>
   );
 }
 
 export function ReportesPage() {
   const { profile } = useAuth();
-  const admin = consolePermissions(profile?.role ?? '').people;
+  const permissions = consolePermissions(profile?.role ?? '');
+  const admin = permissions.people;
   const toast = useToast();
   const client = useQueryClient();
+  const [estado, setEstado] = useState('pendiente');
   const [target, setTarget] = useState<{ id: string; estado: string } | null>(null);
   const [busy, setBusy] = useState(false);
   return (
-    <section className="stack">
+    <Gate allow={permissions.viewPeople}>
       <h1>Reportes y abuso</h1>
+      <Banda seccion="soporte" />
+      <p className="muted">Si nadie ha reportado, la lista queda vacía. Descartar o sancionar no borra la fila.</p>
+      <label className="field">
+        <span>Estado</span>
+        <select aria-label="Filtrar reportes por estado" value={estado} onChange={(event) => setEstado(event.target.value)}>
+          <option value="pendiente">Pendientes</option>
+          <option value="revisado">Revisados</option>
+          <option value="resuelto">Sancionados</option>
+          <option value="descartado">Descartados</option>
+          <option value="todos">Todos</option>
+        </select>
+      </label>
       <PagedTable
-        queryKey={['reportes']}
-        empty="Aún no hay reportes."
-        load={(page, search) => loadPage('reportes', page, search, 'id, motivo, estado, creado_en')}
+        queryKey={['reportes', estado]}
+        empty="No hay reportes en este filtro."
+        load={async (page, search) => {
+          const q = clean(search);
+          let request = supabase.from('reportes').select('id, motivo, estado, creado_en', { count: 'exact' });
+          if (q) request = request.ilike('motivo', `%${q}%`);
+          if (estado !== 'todos') request = request.eq('estado', estado);
+          const { data, error, count } = await request.order('creado_en', { ascending: false }).range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+          if (error) throw error;
+          return { rows: (data ?? []) as Array<Record<string, unknown> & { id: string }>, total: count ?? 0 };
+        }}
         columns={[
           { key: 'motivo', header: 'Motivo', cell: (row) => String(row.motivo ?? '—'), csv: (row) => row.motivo },
           { key: 'estado', header: 'Estado', cell: (row) => <Badge value={String(row.estado)} />, csv: (row) => statusLabel(String(row.estado)) },
           { key: 'accion', header: 'Acción', cell: (row) => admin ? (
-            <Button variant="secondary" onClick={(event) => { event.stopPropagation(); setTarget({ id: row.id, estado: 'descartado' }); }}>Descartar</Button>
+            <div className="row">
+              <Button variant="secondary" onClick={(event) => { event.stopPropagation(); setTarget({ id: row.id, estado: 'descartado' }); }}>Descartar</Button>
+              <Button variant="danger" onClick={(event) => { event.stopPropagation(); setTarget({ id: row.id, estado: 'resuelto' }); }}>Sancionar</Button>
+            </div>
           ) : 'Solo lectura', csv: () => '' },
         ]}
       />
@@ -443,13 +554,14 @@ export function ReportesPage() {
                 }
                 toast('Reporte actualizado.');
                 await client.invalidateQueries({ queryKey: ['reportes'] });
+                await client.invalidateQueries({ queryKey: ['auditoria'] });
                 setTarget(null);
               })
               .finally(() => setBusy(false));
           }}
         />
       ) : null}
-    </section>
+    </Gate>
   );
 }
 
@@ -461,6 +573,7 @@ export function UsuariosPage() {
   return (
     <Gate allow={consolePermissions(profile?.role ?? '').viewPeople}>
       <h1>Clientes</h1>
+      <Banda seccion="clientes" />
       <PagedTable
         queryKey={['usuarios']}
         empty="Aún no hay clientes con ese filtro."
@@ -571,14 +684,15 @@ function EstadoCuenta({ id, enabled, onClose }: { id: string; enabled: boolean; 
   );
 }
 
-export function ProfesionalesPage() {
+export function ProfesionalesPage({ soloCola = false }: { soloCola?: boolean } = {}) {
   const { profile } = useAuth();
   const permissions = consolePermissions(profile?.role ?? '');
-  const [estado, setEstado] = useState('todos');
+  const [estado, setEstado] = useState(soloCola ? 'en_revision' : 'todos');
   const [selected, setSelected] = useState<string | null>(useParams().id ?? null);
   return (
     <Gate allow={permissions.viewPeople}>
-      <h1>Profesionales</h1>
+      <h1>{soloCola ? 'Verificaciones' : 'Trabajadores'}</h1>
+      <Banda seccion={soloCola ? 'verificaciones' : 'trabajadores'} />
       <label className="field">
         <span>Estado de verificación</span>
         <select value={estado} onChange={(event) => setEstado(event.target.value)}>
@@ -743,12 +857,18 @@ function FichaProfesional({ id, canAct, onClose }: { id: string; canAct: boolean
 }
 
 export function PagosPage() {
+  const toast = useToast();
+  const client = useQueryClient();
+  const [pago, setPago] = useState<string | null>(null);
+  const admin = consolePermissions(useAuth().profile?.role ?? '').people;
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewMoney}>
-      <h1>Pagos y escrow</h1>
+      <h1>Pagos y comisiones</h1>
+      <Banda seccion="pagos" />
+      <p className="muted">Montos de la vista cobros_profesional. Liberar llama a webpay-release y mueve dinero.</p>
       <PagedTable
         queryKey={['pagos']}
-        empty="Aún no hay pagos."
+        empty="Aún no hay pagos con ese filtro."
         load={async (page, search) => {
           const filter = paymentFilter(search);
           let request = supabase.from('cobros_profesional').select('id_pago, estado_pago, tipo_pago, bruto_clp, comision_clp, neto_clp, creado_en', { count: 'exact' });
@@ -775,8 +895,44 @@ export function PagosPage() {
           { key: 'comision', header: 'Comisión', cell: (row) => <span className="nums">{formatClp(row.comision_clp)}</span>, csv: (row) => row.comision_clp },
           { key: 'neto', header: 'Neto', cell: (row) => <span className="nums">{formatClp(row.neto_clp)}</span>, csv: (row) => row.neto_clp },
           { key: 'id', header: 'Pago', cell: (row) => maskId(row.id), csv: (row) => row.id },
+          { key: 'accion', header: 'Acción', cell: (row) => admin && row.estado_pago === 'retenido' ? (
+            <Button onClick={(event) => { event.stopPropagation(); setPago(row.id); }}>Liberar</Button>
+          ) : '—', csv: () => '' },
         ]}
       />
+      {pago ? (
+        <ConfirmDialog
+          title="Liberar pago"
+          summary="webpay-release marca el escrow como liberado cuando la transferencia ya se hizo fuera de la app. El cobro es en vivo."
+          irreversible
+          confirmPhrase="LIBERAR"
+          requireTotp={!totpFresh()}
+          onCancel={() => setPago(null)}
+          onConfirm={(motivo, code) => {
+            void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setPago(null);
+                return;
+              }
+              if (!(await reverify(code))) {
+                toast('El código no es válido.');
+                return;
+              }
+              const { error } = await supabase.functions.invoke('webpay-release', {
+                body: { paymentId: pago, confirmExternal: true, transferRef: motivo.slice(0, 40), motivo, provider: 'manual' },
+              });
+              if (error) toast(await edgeFunctionErrorMessage(error, 'No se pudo liberar.'));
+              else {
+                toast('Pago liberado.');
+                await client.invalidateQueries({ queryKey: ['pagos'] });
+                await client.invalidateQueries({ queryKey: ['auditoria'] });
+              }
+              setPago(null);
+            })();
+          }}
+        />
+      ) : null}
     </Gate>
   );
 }
@@ -808,6 +964,7 @@ export function LiquidacionesPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewMoney}>
       <h1>Liquidaciones</h1>
+      <Banda seccion="pagos" />
       <p className="muted">Khipu y Fintoc: no conectados. La liberación manual pide referencia y motivo.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
@@ -829,14 +986,20 @@ export function LiquidacionesPage() {
       {pago ? (
         <ConfirmDialog
           title="Liquidar garantía"
-          summary={`${formatClp(pago.neto)} se marca liberado cuando confirmas que la transferencia ya se hizo fuera de la app.`}
+          summary={`${formatClp(pago.neto)} se marca liberado cuando confirmas que la transferencia ya se hizo fuera de la app. El cobro es en vivo.`}
           irreversible
+          confirmPhrase="LIQUIDAR"
           requireTotp={!totpFresh()}
           busy={busy}
           onCancel={() => setPago(null)}
           onConfirm={(motivo, code) => {
             setBusy(true);
             void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setPago(null);
+                return;
+              }
               if (!(await reverify(code))) {
                 toast('El código no es válido.');
                 return;
@@ -868,9 +1031,42 @@ export function LiquidacionesPage() {
 }
 
 export function ReembolsosPage() {
+  const toast = useToast();
+  const client = useQueryClient();
+  const admin = consolePermissions(useAuth().profile?.role ?? '').people;
+  const [pago, setPago] = useState<{ id: string; via: 'refund' | 'cancelacion'; jobId: string | null } | null>(null);
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewMoney}>
       <h1>Reembolsos</h1>
+      <Banda seccion="pagos" />
+      <p className="muted">Los pagos aún retenidos se devuelven con webpay-refund. El historial muestra los que ya volvieron a la tarjeta.</p>
+      {admin ? (
+        <PagedTable
+          queryKey={['reembolsables']}
+          empty="No hay pagos retenidos o autorizados para devolver."
+          load={async (page, search) => {
+            const q = clean(search);
+            let request = supabase.from('pagos').select('id, estado, monto, id_trabajo', { count: 'exact' }).in('estado', ['retenido', 'autorizado', 'pendiente']);
+            if (q) request = request.ilike('estado', `%${q}%`);
+            const { data, error, count } = await request.order('creado_en', { ascending: false }).range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+            if (error) throw error;
+            return { rows: data ?? [], total: count ?? 0 };
+          }}
+          columns={[
+            { key: 'estado', header: 'Estado', cell: (row) => <Badge value={String(row.estado)} />, csv: (row) => row.estado },
+            { key: 'monto', header: 'Monto', cell: (row) => formatClp(Number(row.monto)), csv: (row) => row.monto },
+            { key: 'accion', header: 'Acción', cell: (row) => (
+              <div className="row">
+                <Button variant="danger" onClick={(event) => { event.stopPropagation(); setPago({ id: row.id, via: 'refund', jobId: row.id_trabajo ? String(row.id_trabajo) : null }); }}>Devolver</Button>
+                {row.id_trabajo ? (
+                  <Button variant="secondary" onClick={(event) => { event.stopPropagation(); setPago({ id: row.id, via: 'cancelacion', jobId: String(row.id_trabajo) }); }}>Por cancelación</Button>
+                ) : null}
+              </div>
+            ), csv: () => '' },
+          ]}
+        />
+      ) : null}
+      <h2>Historial</h2>
       <PagedTable
         queryKey={['reembolsos']}
         empty="Aún no hay reembolsos."
@@ -890,6 +1086,41 @@ export function ReembolsosPage() {
           { key: 'fecha', header: 'Reembolsado', cell: (row) => formatDateTime(row.reembolsado_en ? String(row.reembolsado_en) : null), csv: (row) => row.reembolsado_en },
         ]}
       />
+      {pago ? (
+        <ConfirmDialog
+          title={pago.via === 'refund' ? 'Devolver el pago' : 'Devolver por cancelación'}
+          summary={pago.via === 'refund' ? 'webpay-refund devuelve el dinero a la tarjeta. El reembolso es en vivo.' : 'webpay-refund-cancellation devuelve la garantía del trabajo. El reembolso es en vivo.'}
+          irreversible
+          confirmPhrase="REEMBOLSAR"
+          requireTotp={!totpFresh()}
+          onCancel={() => setPago(null)}
+          onConfirm={(motivo, code) => {
+            void (async () => {
+              if (capturaActiva()) {
+                toast('Captura local: no se envió dinero.');
+                setPago(null);
+                return;
+              }
+              if (!(await reverify(code))) {
+                toast('El código no es válido.');
+                return;
+              }
+              const { error } = await supabase.functions.invoke(
+                pago.via === 'refund' ? 'webpay-refund' : 'webpay-refund-cancellation',
+                { body: pago.via === 'refund' ? { paymentId: pago.id, motivo } : { jobId: pago.jobId, motivo } },
+              );
+              if (error) toast(await edgeFunctionErrorMessage(error, 'No se pudo devolver.'));
+              else {
+                toast('Reembolso registrado.');
+                await client.invalidateQueries({ queryKey: ['reembolsos'] });
+                await client.invalidateQueries({ queryKey: ['reembolsables'] });
+                await client.invalidateQueries({ queryKey: ['auditoria'] });
+              }
+              setPago(null);
+            })();
+          }}
+        />
+      ) : null}
     </Gate>
   );
 }
@@ -914,7 +1145,9 @@ export function ConciliacionPage() {
   return (
     <Gate allow={permissions}>
       <h1>Conciliación Transbank</h1>
+      <Banda seccion="pagos" />
       <p>Entorno de pagos: integración. Consultar el estado no cobra ni libera.</p>
+      <p className="muted">El reporte diario lo arma el cron mwa_webpay_reconcile. Su última ejecución está en Salud.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
         <ErrorState message={describeLoadError(query.error, 'No hay una ejecución reciente.')} onRetry={() => void query.refetch()} />
@@ -937,6 +1170,7 @@ export function FinanzasPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').executive}>
       <h1>Finanzas</h1>
+      <Banda seccion="pagos" />
       <p>Los indicadores del período están en Inicio.</p>
       <p><Link to="/resumen">Abrir Inicio</Link></p>
       <p className="muted">La comisión vigente es 5 % con un mínimo de $1.000.</p>
@@ -944,61 +1178,15 @@ export function FinanzasPage() {
   );
 }
 
-export function ResenasPage() {
-  const { profile } = useAuth();
-  const permissions = consolePermissions(profile?.role ?? '');
+export function CatalogoPage() {
   const toast = useToast();
   const client = useQueryClient();
-  const [target, setTarget] = useState<{ id: string; estado: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-  return (
-    <section className="stack">
-      <h1>Reseñas</h1>
-      <ColaResenasDudosas />
-      <PagedTable
-        queryKey={['resenas']}
-        empty="Aún no hay reseñas."
-        load={(page, search) => loadPage('calificaciones', page, search, 'id, puntaje, estado_revision, comentario, creado_en')}
-        columns={[
-          { key: 'puntaje', header: 'Puntaje', cell: (row) => String(row.puntaje), csv: (row) => row.puntaje },
-          { key: 'estado', header: 'Estado', cell: (row) => <Badge value={String(row.estado_revision)} />, csv: (row) => statusLabel(String(row.estado_revision)) },
-          { key: 'comentario', header: 'Comentario', cell: (row) => String(row.comentario ?? '—'), csv: (row) => row.comentario },
-          { key: 'accion', header: 'Acción', cell: (row) => permissions.moderateReviews || permissions.proposeReviews ? (
-            <Button variant="secondary" onClick={(event) => {
-              event.stopPropagation();
-              setTarget({ id: row.id, estado: permissions.moderateReviews ? 'excluida' : 'en_revision' });
-            }}>{permissions.moderateReviews ? 'Ocultar' : 'Proponer revisión'}</Button>
-          ) : 'Solo lectura', csv: () => '' },
-        ]}
-      />
-      {target ? (
-        <ConfirmDialog
-          title="Moderar reseña"
-          summary="No se borra. Cambia el estado de revisión."
-          busy={busy}
-          onCancel={() => setTarget(null)}
-          onConfirm={(motivo) => {
-            setBusy(true);
-            void asPromise(supabase.rpc('consola_moderar_resena', { p_id: target.id, p_estado: target.estado, p_motivo: motivo })).then(async ({ error }) => {
-              if (error) {
-                toast(friendlyError(error));
-                return;
-              }
-              toast('Reseña actualizada.');
-              await client.invalidateQueries({ queryKey: ['resenas'] });
-              setTarget(null);
-            }).finally(() => setBusy(false));
-          }}
-        />
-      ) : null}
-    </section>
-  );
-}
-
-export function CatalogoPage() {
+  const [servicio, setServicio] = useState<{ id: string; activo: number } | null>(null);
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').manageCatalog}>
       <h1>Catálogo</h1>
+      <Banda seccion="configuracion" />
+      <p className="muted">Desactivar no borra el servicio. Si está en uso, deja de ofrecerse.</p>
       <PagedTable
         queryKey={['servicios']}
         empty="Aún no hay servicios."
@@ -1006,10 +1194,30 @@ export function CatalogoPage() {
         columns={[
           { key: 'nombre', header: 'Servicio', cell: (row) => String(row.nombre), csv: (row) => row.nombre },
           { key: 'categoria', header: 'Categoría', cell: (row) => String(row.categoria), csv: (row) => row.categoria },
-          { key: 'activo', header: 'Activo', cell: (row) => row.activo ? 'Sí' : 'No', csv: (row) => row.activo },
+          { key: 'activo', header: 'Activo', cell: (row) => Number(row.activo) === 1 ? 'Sí' : 'No', csv: (row) => row.activo },
+          { key: 'accion', header: 'Acción', cell: (row) => (
+            <Button variant="secondary" onClick={(event) => {
+              event.stopPropagation();
+              setServicio({ id: row.id, activo: Number(row.activo) === 1 ? 0 : 1 });
+            }}>{Number(row.activo) === 1 ? 'Desactivar' : 'Activar'}</Button>
+          ), csv: () => '' },
         ]}
       />
-      <p className="muted">Si una categoría está en uso, se desactiva en vez de borrarse. Esta vista no borra filas.</p>
+      {servicio ? (
+        <ConfirmDialog
+          title={servicio.activo === 1 ? 'Activar servicio' : 'Desactivar servicio'}
+          summary="El cambio queda en la bitácora. No se borra la fila."
+          onCancel={() => setServicio(null)}
+          onConfirm={(motivo) => {
+            void callRpc('consola_fijar_servicio', { p_id: servicio.id, p_activo: servicio.activo, p_motivo: motivo }).then(async () => {
+              toast('Catálogo actualizado.');
+              setServicio(null);
+              await client.invalidateQueries({ queryKey: ['servicios'] });
+              await client.invalidateQueries({ queryKey: ['auditoria'] });
+            }).catch((error: unknown) => toast(friendlyError(error as { message?: string })));
+          }}
+        />
+      ) : null}
     </Gate>
   );
 }
@@ -1030,6 +1238,8 @@ export function NotificacionesPage() {
   return (
     <section className="stack">
       <h1>Notificaciones</h1>
+      <Banda seccion="notificaciones" />
+      <p className="muted">Los avisos masivos no se simulan: el envío push depende del secreto de la función send-push, que esta pantalla no dispara.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
         <ErrorState message={describeLoadError(query.error, 'Aún no tienes notificaciones.')} onRetry={() => void query.refetch()} />
@@ -1133,7 +1343,8 @@ export function EquipoPage() {
   };
   return (
     <Gate allow={consolePermissions(profile?.role ?? '').people}>
-      <h1>Equipo</h1>
+      <h1>Equipo y roles</h1>
+      <Banda seccion="configuracion" />
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? <ErrorState message="No se pudo cargar el equipo." onRetry={() => void query.refetch()} /> : null}
       {query.data?.length === 0 ? <EmptyState title="No hay colaboradores con rol de consola." /> : null}
@@ -1242,9 +1453,10 @@ export function AuditoriaPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewAudit}>
       <h1>Auditoría</h1>
+      <Banda seccion="auditoria" />
       <PagedTable
         queryKey={['auditoria']}
-        empty="Aún no hay acciones registradas en la bitácora."
+        empty="La bitácora está vacía: todavía no hay acciones de la consola."
         load={async (page, search) => {
           const q = clean(search);
           let request = supabase.from('auditoria_consola').select('id, creado_en, accion, entidad, id_entidad, motivo, rol_actor', { count: 'exact' });
@@ -1284,17 +1496,18 @@ export function AjustesPage() {
   const [busy, setBusy] = useState(false);
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').manageCatalog}>
-      <h1>Ajustes</h1>
+      <h1>Configuración</h1>
+      <Banda seccion="configuracion" />
       <p className="muted">admin_requiere_aal2 y demo_modo se muestran y no se editan aquí.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? (
         <ErrorState message={describeLoadError(query.error, 'No se pudieron leer los ajustes.')} onRetry={() => void query.refetch()} />
       ) : null}
       {!query.isLoading && !query.isError && (query.data ?? []).length === 0 ? (
-        <EmptyState title="No hay ajustes para mostrar." />
+        <EmptyState title="No hay ajustes para mostrar." detail="La tabla app_config no devolvió filas para esta sesión." />
       ) : null}
       {(query.data ?? []).map((row) => {
-        const locked = row.clave === 'admin_requiere_aal2' || row.clave === 'demo_modo';
+        const locked = row.clave === 'admin_requiere_aal2' || row.clave === 'demo_modo' || row.clave.startsWith('defensa_');
         return (
           <article key={row.clave} className="panel spread">
             <label className="field">
@@ -1330,6 +1543,7 @@ export function AjustesPage() {
               }
               toast('Ajuste guardado.');
               await client.invalidateQueries({ queryKey: ['config'] });
+              await client.invalidateQueries({ queryKey: ['auditoria'] });
               setPending(null);
             }).finally(() => setBusy(false));
           }}
@@ -1352,7 +1566,8 @@ export function SaludPage() {
   const jobs = Array.isArray(body.jobs) ? body.jobs : [];
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').security}>
-      <h1>Salud</h1>
+      <h1>Salud del servicio</h1>
+      <Banda seccion="seguridad" />
       <p className="muted">El interruptor de pagos vive en los secretos de las Edge Functions. Esta pantalla no lo simula ni lo cambia.</p>
       {query.isLoading ? <SkeletonRows /> : null}
       {query.isError ? <ErrorState message="No se pudo leer el estado de los cron." onRetry={() => void query.refetch()} /> : null}
@@ -1380,6 +1595,7 @@ export function ErroresPage() {
   return (
     <Gate allow={consolePermissions(useAuth().profile?.role ?? '').viewErrors}>
       <h1>Errores de la app</h1>
+      <Banda seccion="seguridad" />
       <PagedTable
         queryKey={['errores']}
         empty="No hay errores con este filtro."
@@ -1501,12 +1717,15 @@ export function CuentaPage() {
 async function loadTickets(
   page: number,
   search: string,
+  estado = 'abiertos',
 ): Promise<PageResult<Record<string, unknown> & { id: string }>> {
   const q = clean(search);
   let request = supabase
     .from('consola_tickets')
     .select('id, asunto, estado, nombre_cliente, nombre_trabajador, creado_en', { count: 'exact' });
   if (q) request = request.ilike('asunto', `%${q}%`);
+  if (estado === 'abiertos') request = request.or('estado.is.null,estado.neq.resuelto');
+  else if (estado !== 'todos') request = request.eq('estado', estado);
   const { data, error, count } = await fetchOrderedPage(request as unknown as PageQuery, 'consola_tickets', page);
   if (error) throw error;
   return { rows: (data ?? []) as unknown as Array<Record<string, unknown> & { id: string }>, total: count ?? 0 };
@@ -1547,6 +1766,13 @@ function asRecord(value: unknown): Record<string, unknown> {
 function num(value: unknown): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function vencePronto(value: string | null): boolean {
+  if (!value) return false;
+  const cuando = new Date(value).getTime();
+  if (Number.isNaN(cuando)) return false;
+  return cuando - Date.now() < 24 * 60 * 60 * 1000;
 }
 
 function delta(current: number, previous: number): string {

@@ -27,6 +27,9 @@ import {
   TicketsPage,
   UsuariosPage,
 } from './features/screens';
+import { SeguridadPage } from './features/seguridad';
+import { InformesPage, SistemaDisenoPage, VerificacionesPage } from './features/premium/paginas';
+import { capturaActiva } from './features/premium/captura';
 import {
   authDeepLinkNeedsPassword,
   beginAuthDeepLink,
@@ -45,7 +48,7 @@ import { EmptyState } from './ui/kit';
 
 function Gate() {
   const { profile, loading, needsMfa, mustSetPassword, finishPasswordSetup, logout } = useAuth();
-  if (!supabaseConfigStatus.urlConfigured || !supabaseConfigStatus.anonKeyConfigured) {
+  if (!capturaActiva() && (!supabaseConfigStatus.urlConfigured || !supabaseConfigStatus.anonKeyConfigured)) {
     return <EmptyState title="Faltan las variables de Supabase" detail="Define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY antes de abrir la consola." />;
   }
   if (loading) return <p className="muted">Cargando sesión…</p>;
@@ -67,6 +70,9 @@ function Gate() {
           <Route path="/usuarios/:id" element={<UsuariosPage />} />
           <Route path="/profesionales" element={<ProfesionalesPage />} />
           <Route path="/profesionales/:id" element={<ProfesionalesPage />} />
+          <Route path="/verificaciones" element={<VerificacionesPage />} />
+          <Route path="/informes" element={<InformesPage />} />
+          <Route path="/sistema-diseno" element={<SistemaDisenoPage />} />
           <Route path="/pagos" element={<PagosPage />} />
           <Route path="/pagos/:id" element={<PagosPage />} />
           <Route path="/liquidaciones" element={<LiquidacionesPage />} />
@@ -79,6 +85,7 @@ function Gate() {
           <Route path="/equipo" element={<EquipoPage />} />
           <Route path="/auditoria" element={<AuditoriaPage />} />
           <Route path="/ajustes" element={<AjustesPage />} />
+          <Route path="/seguridad" element={<SeguridadPage />} />
           <Route path="/salud" element={<SaludPage />} />
           <Route path="/errores" element={<ErroresPage />} />
           <Route path="/cuenta" element={<CuentaPage />} />
