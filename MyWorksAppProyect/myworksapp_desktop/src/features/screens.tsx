@@ -10,6 +10,7 @@ import {
   cleanSearch,
   fetchOrderedPage,
   orIlike,
+  PAGE_SIZE,
   paymentFilter,
   refundFilter,
   type PageQuery,
@@ -522,7 +523,7 @@ export function ReportesPage() {
           let request = supabase.from('reportes').select('id, motivo, estado, creado_en', { count: 'exact' });
           if (q) request = request.ilike('motivo', `%${q}%`);
           if (estado !== 'todos') request = request.eq('estado', estado);
-          const { data, error, count } = await request.order('creado_en', { ascending: false }).range(page * PAGE, page * PAGE + PAGE - 1);
+          const { data, error, count } = await request.order('creado_en', { ascending: false }).range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
           if (error) throw error;
           return { rows: (data ?? []) as Array<Record<string, unknown> & { id: string }>, total: count ?? 0 };
         }}
@@ -1047,7 +1048,7 @@ export function ReembolsosPage() {
             const q = clean(search);
             let request = supabase.from('pagos').select('id, estado, monto, id_trabajo', { count: 'exact' }).in('estado', ['retenido', 'autorizado', 'pendiente']);
             if (q) request = request.ilike('estado', `%${q}%`);
-            const { data, error, count } = await request.order('creado_en', { ascending: false }).range(page * PAGE, page * PAGE + PAGE - 1);
+            const { data, error, count } = await request.order('creado_en', { ascending: false }).range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
             if (error) throw error;
             return { rows: data ?? [], total: count ?? 0 };
           }}
