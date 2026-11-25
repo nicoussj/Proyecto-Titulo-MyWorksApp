@@ -1,6 +1,7 @@
 import { corsHeadersFor, jsonResponse } from "../_shared/cors.ts";
 import { scheduleRefundEmail } from "../_shared/payment_mail.ts";
 import { reconcileAuthorized } from "../_shared/reconcile_auth.ts";
+import { refundHeldCobrosForJob } from "../_shared/refund_job_cobros.ts";
 import { refundHeldPaymentOnce } from "../_shared/refund_once.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { pagosPausados } from "../_shared/defensa.ts";
@@ -50,6 +51,21 @@ async function refundOne(
     const refund = await refundHeldPaymentOnce(admin, paymentId);
     if (refund.status === "refunded" || refund.status === "already") {
       scheduleRefundEmail(admin, paymentId);
+    }
+    let jobId = String(refund.payment?.id_trabajo || "");
+    if (!jobId) {
+      const { data: pago } = await admin
+        .from("pagos")
+        .select("id_trabajo")
+        .eq("id", paymentId)
+        .maybeSingle();
+      jobId = String(pago?.id_trabajo || "");
+    }
+    if (jobId) {
+      const leftovers = await refundHeldCobrosForJob(admin, jobId);
+      for (const extraId of leftovers) {
+        if (extraId !== paymentId) scheduleRefundEmail(admin, extraId);
+      }
     }
     const { error: closeError } = await admin.rpc("aplicar_cierre_disputa", {
       p_disputa_id: disputeId,

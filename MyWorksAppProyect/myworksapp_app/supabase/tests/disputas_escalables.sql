@@ -21,6 +21,8 @@ DECLARE
   v_intentos integer;
   v_estado_pago text;
   v_estado_reembolso text;
+  v_estado_extra text;
+  v_estado_job text;
 BEGIN
   IF public.dhash_desde_luma(v_cero) IS DISTINCT FROM '0000000000000000' THEN
     RAISE EXCEPTION 'dhash de ceros = %', public.dhash_desde_luma(v_cero);
@@ -133,6 +135,17 @@ BEGIN
   SET search_path TO 'public'
   AS $mock$
   BEGIN
+    -- Simula Transbank: marca todos los cobros retenidos del trabajo, no solo el principal.
+    UPDATE public.pagos p
+    SET estado = 'reembolsado',
+        reembolsado_en = now(),
+        actualizado_en = now()
+    FROM public.disputas d
+    WHERE d.id::text = p_body->>'disputa_id'
+      AND p.id_trabajo::text = d.id_trabajo::text
+      AND p.tipo_pago IN ('principal', 'orden_cambio', 'horas_extra')
+      AND p.estado IN ('retenido', 'autorizado', 'pendiente');
+
     PERFORM public.aplicar_cierre_disputa(
       p_body->>'disputa_id',
       'sistema',
@@ -164,6 +177,98 @@ BEGIN
   SELECT intentos INTO v_intentos FROM public.reembolsos_automaticos WHERE id_disputa = 'disp-reembolso';
   IF v_intentos IS DISTINCT FROM 1 THEN
     RAISE EXCEPTION 'el reembolso se reintentó estando ejecutado: %', v_intentos;
+  END IF;
+
+  INSERT INTO public.trabajos (
+    id, id_usuario, id_trabajador, id_servicio, estado, direccion,
+    latitud, longitud, creado_en, actualizado_en
+  ) VALUES
+    ('job-disp-c', v_client, v_worker, 'svc-plomeria', 'en_curso', 'Cardonal 3',
+      -41.4717, -72.9366, v_ahora, v_ahora),
+    ('job-disp-d', v_client, v_worker, 'svc-plomeria', 'en_curso', 'Cardonal 4',
+      -41.4717, -72.9366, v_ahora, v_ahora);
+
+  INSERT INTO public.pagos (
+    id, id_trabajo, monto, estado, tipo_pago, moneda, creado_en, actualizado_en
+  ) VALUES
+    ('pago-c-principal', 'job-disp-c', 20000, 'retenido', 'principal', 'CLP', now(), now()),
+    ('pago-c-oc', 'job-disp-c', 8000, 'retenido', 'orden_cambio', 'CLP', now() + interval '1 second', now()),
+    ('pago-d-principal', 'job-disp-d', 18000, 'retenido', 'principal', 'CLP', now(), now()),
+    ('pago-d-hx', 'job-disp-d', 5000, 'retenido', 'horas_extra', 'CLP', now() + interval '1 second', now());
+
+  INSERT INTO public.disputas (
+    id, id_trabajo, abierta_por, motivo, descripcion, estado,
+    origen, decision_sugerida, motivo_regla, creado_en, actualizado_en
+  ) VALUES (
+    'disp-extra-c', 'job-disp-c', v_worker, 'calidad', 'Principal y orden de cambio retenidos',
+    'abierta', 'admin', 'reembolsar', 'revision_manual', now(), now()
+  );
+
+  BEGIN
+    PERFORM public.aplicar_cierre_disputa(
+      'disp-extra-c',
+      'sistema',
+      'reembolsar',
+      'No debe cerrar con extras retenidos'
+    );
+    RAISE EXCEPTION 'reembolsar con extras retenidos no fue rechazado';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT ILIKE '%todos los cobros%' THEN
+      RAISE;
+    END IF;
+  END;
+  SELECT estado INTO v_estado_extra FROM public.pagos WHERE id = 'pago-c-oc';
+  IF v_estado_extra IS DISTINCT FROM 'retenido' THEN
+    RAISE EXCEPTION 'la orden de cambio no debía moverse: %', v_estado_extra;
+  END IF;
+  SELECT estado INTO v_estado_pago FROM public.pagos WHERE id = 'pago-c-principal';
+  IF v_estado_pago IS DISTINCT FROM 'retenido' THEN
+    RAISE EXCEPTION 'el principal no debía marcarse reembolsado en SQL: %', v_estado_pago;
+  END IF;
+
+  UPDATE public.disputas
+  SET estado = 'resuelta', actualizado_en = now()
+  WHERE id_trabajo::text = 'job-disp-c'
+    AND public.disputa_esta_activa(estado)
+    AND id::text <> 'disp-extra-c';
+  UPDATE public.disputas
+  SET estado = 'reembolso_pendiente',
+      decision_sugerida = 'reembolsar',
+      actualizado_en = now()
+  WHERE id = 'disp-extra-c';
+
+  PERFORM public.encadenar_soporte_automatico();
+  SELECT estado INTO v_estado_pago FROM public.pagos WHERE id = 'pago-c-principal';
+  SELECT estado INTO v_estado_extra FROM public.pagos WHERE id = 'pago-c-oc';
+  SELECT estado INTO v_estado_job FROM public.trabajos WHERE id = 'job-disp-c';
+  IF v_estado_pago IS DISTINCT FROM 'reembolsado' OR v_estado_extra IS DISTINCT FROM 'reembolsado' THEN
+    RAISE EXCEPTION 'el cron no reembolsó ambos cobros: principal=% extra=%', v_estado_pago, v_estado_extra;
+  END IF;
+  IF v_estado_job IS DISTINCT FROM 'cancelado' THEN
+    RAISE EXCEPTION 'el trabajo con extras no quedó cancelado: %', v_estado_job;
+  END IF;
+
+  INSERT INTO public.disputas (
+    id, id_trabajo, abierta_por, motivo, descripcion, estado,
+    origen, decision_sugerida, motivo_regla, creado_en, actualizado_en
+  ) VALUES (
+    'disp-extra-d', 'job-disp-d', v_worker, 'calidad', 'Principal y horas extra retenidos',
+    'abierta', 'admin', 'liberar', 'revision_manual', now(), now()
+  );
+  PERFORM public.aplicar_cierre_disputa(
+    'disp-extra-d',
+    'sistema',
+    'liberar',
+    'Liberar principal y horas extra juntos'
+  );
+  SELECT estado INTO v_estado_pago FROM public.pagos WHERE id = 'pago-d-principal';
+  SELECT estado INTO v_estado_extra FROM public.pagos WHERE id = 'pago-d-hx';
+  SELECT estado INTO v_estado_job FROM public.trabajos WHERE id = 'job-disp-d';
+  IF v_estado_pago IS DISTINCT FROM 'liberado' OR v_estado_extra IS DISTINCT FROM 'liberado' THEN
+    RAISE EXCEPTION 'liberar no movió ambos cobros: principal=% extra=%', v_estado_pago, v_estado_extra;
+  END IF;
+  IF v_estado_job IS DISTINCT FROM 'completado' THEN
+    RAISE EXCEPTION 'el trabajo con horas extra no quedó completado: %', v_estado_job;
   END IF;
 
   EXECUTE 'SET LOCAL ROLE authenticated';
