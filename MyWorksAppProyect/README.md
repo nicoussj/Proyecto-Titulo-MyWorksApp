@@ -25,7 +25,7 @@ Registro de pruebas vigente: [`docs/anexos/2026-11-15-pruebas/REGISTRO.md`](docs
 | Web de clientes | Sitio React/Vite: buscar, reservar, pagar y seguir el pedido | [`myworksapp_web/`](myworksapp_web/), publicado en https://myworksapp.cl |
 | Consola de escritorio | App Tauri para el equipo interno: pedidos, pagos, disputas, profesionales y equipo | [`myworksapp_desktop/`](myworksapp_desktop/) |
 | Módulo compartido | Código TypeScript común a la web y la consola (sesión, pagos, chat, tipos) | [`shared/`](shared/) |
-| Backend | Supabase: PostgreSQL con RLS. El 22-11-2026 la base viva tenía 76 tablas. El diccionario está en [`docs/DICCIONARIO_BASE_DATOS.md`](docs/DICCIONARIO_BASE_DATOS.md) | [`myworksapp_app/supabase/`](myworksapp_app/supabase/) |
+| Backend | Supabase: PostgreSQL. **60 tablas** en `public`, **RLS en las 60**. Diccionario: [`docs/DICCIONARIO_BASE_DATOS.md`](docs/DICCIONARIO_BASE_DATOS.md) | [`myworksapp_app/supabase/`](myworksapp_app/supabase/) |
 | Documentación técnica | Casos de uso, diccionario de datos, guías de despliegue y pruebas | [`docs/`](docs/) |
 | Índice de toda la documentación | Qué documento leer para cada tema | [`docs/INDICE.md`](../docs/INDICE.md) (en la raíz del repositorio) |
 
@@ -96,7 +96,19 @@ Web y desktop reutilizan contratos TypeScript en `shared/` y hablan al mismo bac
 1. El cliente paga en **Transbank Webpay Plus** o con su tarjeta inscrita en **Oneclick**. My Works App **no** pide ni guarda el número de la tarjeta (en jerga bancaria: **PAN** = *Primary Account Number*, el número largo de la tarjeta).  
 2. El commit deja el pago **`retenido`** (escrow de negocio: la plata queda “congelada”). **Recibo conforme** del cliente lo deja **`liberado`**.  
 3. Un administrador registra la liquidación al profesional (`liquidaciones`, hoy transferencia manual).
-4. Comisión en el código: 5 % del pago principal, mínimo $1.000 y nunca más que el pago (`comision_servicio_clp`, `shared/src/metrics/period.ts`), descontada al profesional. Una orden de cambio cobra al cliente el monto más 8 %.
+4. Comisión en el código: 5 % del pago principal, mínimo $1.000 y nunca más que el pago (`comision_servicio_clp`, `shared/src/metrics/period.ts`), descontada al profesional. El cliente paga tarifa + traslado; la comisión se calcula una sola vez sobre esa suma, en pesos enteros (half-away). Una orden de cambio cobra al cliente el monto más 8 %.
+
+### Tokenización Oneclick
+
+La tarjeta la custodia Transbank. La tabla `metodos_pago_oneclick` tiene RLS y el cliente no la lee: solo `service_role` (Edge Functions).
+
+1. Con sesión, `tbkOneclickStart` hace `POST /rswebpaytransaction/api/oneclick/v1.2/inscriptions` (`username`, `email`, `response_url`). Transbank responde `token` y `url_webpay`.
+2. Se guarda una fila `pendiente` con `token_inscripcion`. No se guarda el PAN.
+3. El cliente completa el formulario de Transbank (`TBK_TOKEN`).
+4. `oneclick-return` confirma con `tbkOneclickFinish` (`PUT /inscriptions/{token}`). Si `response_code` es 0, la fila pasa a `activa` y se guardan `tbk_user`, `tipo_tarjeta` y `ultimos4`.
+5. `oneclick-charge` autoriza los cobros siguientes con ese `tbk_user`. El pago queda `retenido`, igual que Webpay Plus.
+6. Si la vuelta no llega, `activatePendingInscription` consulta el mismo token. Si Transbank ya no reconoce la inscripción, hay que inscribir otra tarjeta.
+7. Sin sesión o sin tarjeta inscrita, `checkoutLane` manda el cobro a Webpay Plus.
 
 Detalle: [`docs/DICCIONARIO_BASE_DATOS.md`](docs/DICCIONARIO_BASE_DATOS.md) y [`docs/RUNBOOK_TRANSBANK_PRODUCCION.md`](docs/RUNBOOK_TRANSBANK_PRODUCCION.md).
 
@@ -245,13 +257,26 @@ flutter test
 flutter run
 ```
 
+### Comandos de prueba
+
+Desde `MyWorksAppProyect/`:
+
+```bash
+(cd myworksapp_app && flutter test)
+(cd shared && npm test)
+(cd myworksapp_web && npm test && npm run build)
+(cd myworksapp_desktop && npm test)
+```
+
+La web también tiene `npm run test:e2e` (Playwright). El cierre en pesos de tarifa + traslado + comisión del 5 % (mínimo $1.000) está en `myworksapp_app/test/clp_tarifa_traslado_comision_test.dart`.
+
 Cuentas demo **solo staging/debug** (nunca en release UI): ver `DEMO.md`. Runbook Webpay: [`docs/RUNBOOK_TRANSBANK_PRODUCCION.md`](docs/RUNBOOK_TRANSBANK_PRODUCCION.md).
 
 ---
 
 ## Calidad y CI
 
-- Flutter: `flutter analyze` + `flutter test` (`.github/workflows/flutter_ci.yml`)
+- Flutter: `flutter analyze` + `flutter test` (`.github/workflows/flutter_ci.yml`). En local: `cd myworksapp_app && flutter test`
 - Web: dominio TS↔Dart, pruebas de `shared/`, lint, build y Playwright; consola: lint, pruebas y build; Tauri build en Windows (`.github/workflows/web_desktop_ci.yml`)
 - Gitleaks, Scorecard, commitlint y keepalive de Supabase (requiere secrets `SUPABASE_URL` / `SUPABASE_ANON_KEY`)
 - **Capacidad / stress (manual):** [`docs/RUNBOOK_CAPACIDAD_CARGA.md`](docs/RUNBOOK_CAPACIDAD_CARGA.md) — scripts en `scripts/load/k6/`

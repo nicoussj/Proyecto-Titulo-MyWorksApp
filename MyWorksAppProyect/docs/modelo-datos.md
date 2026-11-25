@@ -1,8 +1,6 @@
 # Modelo de datos de MyWorksApp
 
-> **Actualización 20-11-2026 (`main` `d9d2c7c`).** Las migraciones `20261120130000`, `20261120150000` y `20261120170000` agregan `auditoria_consola` (administración), `rate_limit_ventana` (administración) y `direcciones_cliente` (usuarios, FK a `perfiles`). Con ellas el esquema documentado queda en **60 tablas**, 481 columnas y 86 claves foráneas, contadas desde el DDL del repositorio. Detalle de las columnas en la sección 0 de [`DICCIONARIO_BASE_DATOS.md`](DICCIONARIO_BASE_DATOS.md).
->
-> **22-11-2026.** La base viva tiene **76 tablas** y **94 claves foráneas**. Este archivo y sus diagramas siguen describiendo el snapshot de 57 tablas. Las tablas nuevas están listadas, sin diagrama, en la sección 0-bis del diccionario. El resto de este documento describe el snapshot del 17-11-2026:
+> **Esquema documentado: 60 tablas en `public`, con RLS en las 60.** Las migraciones `20261120130000`, `20261120150000` y `20261120170000` agregan `auditoria_consola`, `rate_limit_ventana` y `direcciones_cliente` a las 57 del snapshot del 17-11-2026. Cada una de esas tres tiene `ENABLE ROW LEVEL SECURITY`. El detalle de columnas está en la sección 0 de [`DICCIONARIO_BASE_DATOS.md`](DICCIONARIO_BASE_DATOS.md). Los diagramas de abajo dibujan el snapshot de 57; las 3 restantes no cambian el conteo de la defensa: **60 tablas, RLS en las 60**.
 
 > **Total del snapshot: 57 tablas** en el esquema `public` de la base de datos (PostgreSQL en Supabase), con 458 columnas, 57 claves primarias y 85 claves foráneas (84 entre tablas de `public` y 1 hacia `auth.users`).
 
@@ -13,7 +11,7 @@
 | **Base de datos viva** (proyecto Supabase `wxqrfcqifkfgawrnqmnj`, lectura con `list_tables` y consultas al catálogo, **17-11-2026**, hora de Chile; última migración aplicada `20261117223850`) | **57 tablas** en `public`, más la vista `encuestas_testing_con_puntaje` (no hay tipos ENUM) |
 | **Migraciones del repositorio** (`myworksapp_app/supabase/migrations/`) | Las 113 versiones de `supabase_migrations.schema_migrations` tienen su archivo con el mismo número; reproducidas en orden dejan las mismas 57 tablas. |
 
-El conteo de la base viva es el que vale: **57 tablas**. Las tablas de otros esquemas no forman parte del modelo de la aplicación y no se cuentan:
+El conteo del esquema documentado es **60 tablas con RLS**. Las tablas de otros esquemas no forman parte del modelo de la aplicación y no se cuentan:
 
 - `auth` (usuarios y sesiones), `storage` (archivos), `realtime` y `vault`: esquemas internos de Supabase. La única relación que llega hasta ellos es `perfiles.id` → `auth.users.id` (borrado en cascada): cada perfil es la ficha de una cuenta de Supabase Auth.
 - El esquema `backup_20261117` (11 tablas) guarda copias de respaldo previas a la normalización del 17-11-2026; ninguna función, vista ni política lo usa y no es parte del modelo.
@@ -31,7 +29,7 @@ El conteo de la base viva es el que vale: **57 tablas**. Las tablas de otros esq
 | 7 | Administración, moderación y auditoría | 9 |
 | | **Total** | **57** |
 
-Cada tabla pertenece a un solo grupo y los grupos suman 57. Para ubicar un tema rápido:
+Cada tabla del snapshot pertenece a un solo grupo y esos grupos suman 57. `direcciones_cliente` entra al grupo 1, y `auditoria_consola` junto con `rate_limit_ventana` entran al grupo 7. Con esas tres, el esquema documentado queda en **60 tablas, todas con RLS**. Para ubicar un tema rápido:
 
 | Tema | Tablas | Grupo |
 |---|---|---|

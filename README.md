@@ -15,7 +15,7 @@
 | Web de clientes | Sitio React/Vite: buscar, reservar, pagar y seguir el pedido | [`MyWorksAppProyect/myworksapp_web/`](MyWorksAppProyect/myworksapp_web/), publicado en https://myworksapp.cl |
 | Consola de escritorio | App Tauri para el equipo interno: pedidos, pagos, disputas, profesionales y equipo | [`MyWorksAppProyect/myworksapp_desktop/`](MyWorksAppProyect/myworksapp_desktop/) |
 | Módulo compartido | Código TypeScript común a la web y la consola (sesión, pagos, chat, tipos) | [`MyWorksAppProyect/shared/`](MyWorksAppProyect/shared/) |
-| Backend | Supabase: PostgreSQL con RLS. El 22-11-2026 la base viva tenía 76 tablas. El detalle y la forma normal están en el diccionario y en `docs/normalizacion.md` | [`MyWorksAppProyect/myworksapp_app/supabase/`](MyWorksAppProyect/myworksapp_app/supabase/) |
+| Backend | Supabase: PostgreSQL. El esquema documentado tiene **60 tablas** en `public` y **RLS en las 60**. Son las 57 del diccionario del 17-11-2026 más `auditoria_consola`, `rate_limit_ventana` y `direcciones_cliente` | [`MyWorksAppProyect/myworksapp_app/supabase/`](MyWorksAppProyect/myworksapp_app/supabase/) |
 | Documentación técnica | Casos de uso, diccionario de datos, guías de despliegue y pruebas | [`MyWorksAppProyect/docs/`](MyWorksAppProyect/docs/) |
 | Índice de toda la documentación | Qué documento leer para cada tema | [`docs/INDICE.md`](docs/INDICE.md) |
 
@@ -175,6 +175,7 @@ Priorizar un flujo → acordar estados en BD → implementar (apps + Edge + SQL)
 - **Datos de la tarjeta de crédito/débito (PCI):** el usuario **no escribe el número de su tarjeta en My Works App**. Paga en la página oficial de **Transbank**.  
   En seguridad de pagos, al número de la tarjeta se le llama **PAN** (*Primary Account Number* = el número largo impreso en la tarjeta).  
   **En simple:** nosotros nunca pedimos ni guardamos ese número; Transbank lo maneja. Así reducimos el riesgo de fraude y cumplimos con buenas prácticas bancarias.
+- **Tokenización Oneclick:** con sesión, la Edge Function pide a Transbank el alta (`POST /rswebpaytransaction/api/oneclick/v1.2/inscriptions`). Transbank devuelve un `token` y la URL del formulario. En `metodos_pago_oneclick` queda una fila `pendiente` con `token_inscripcion`; el PAN no se guarda. El cliente termina en Transbank (`TBK_TOKEN`). `oneclick-return` confirma con `PUT /inscriptions/{token}`. Si `response_code` es 0, la fila pasa a `activa` y se guardan solo `tbk_user`, el tipo de tarjeta y los últimos 4 dígitos. Los cobros siguientes autorizan con ese `tbk_user` (`oneclick-charge`) y el pago queda `retenido`, igual que Webpay Plus. Si la vuelta no llega, se consulta el mismo token. Sin sesión o sin tarjeta inscrita, el cobro va por Webpay Plus. La tabla tiene RLS y el cliente no la lee: solo `service_role`.
 - **Escrow de negocio (plata “retenida”):** cuando Transbank confirma el cobro, el pago queda marcado como **retenido** en nuestra base. El profesional **no** recibe el dinero de inmediato: primero se completa el trabajo, el pago se libera y un administrador registra la transferencia. Eso da confianza al cliente.
 - **Comisión:** el código cobra un 5 % del pago principal, con un mínimo de $1.000 y nunca más que el pago (`comision_servicio_clp`); se descuenta del monto del profesional. En una orden de cambio el cliente paga el monto más un 8 %.
 - **Consola con mínimo privilegio:** las acciones con dinero y las invitaciones pasan por Edge Functions que llaman `is_admin()` con el JWT del usuario; cada acción queda en la bitácora inmutable `auditoria_consola`.
@@ -214,6 +215,18 @@ cd MyWorksAppProyect/myworksapp_app && flutter pub get && flutter run
 ```
 
 Configurar variables Supabase según `.env.example` de web/desktop y `--dart-define` en Flutter.
+
+### Pruebas
+
+```bash
+(cd MyWorksAppProyect/myworksapp_app && flutter test)
+(cd MyWorksAppProyect/shared && npm test)
+(cd MyWorksAppProyect/myworksapp_web && npm test)
+(cd MyWorksAppProyect/myworksapp_web && npm run build)
+(cd MyWorksAppProyect/myworksapp_desktop && npm test)
+```
+
+Playwright de la web (hace falta el Chromium de Playwright): `cd MyWorksAppProyect/myworksapp_web && npm run test:e2e`. El redondeo de tarifa, traslado y comisión del 5 % (mínimo $1.000) está en `myworksapp_app/test/clp_tarifa_traslado_comision_test.dart`.
 
 ---
 
