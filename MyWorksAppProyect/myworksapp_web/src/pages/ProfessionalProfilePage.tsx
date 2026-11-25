@@ -131,9 +131,11 @@ export function ProfessionalProfilePage({
           <article className="profile-public">
             <img
               src={profilePhotoOrInitials(row.ruta_foto_perfil, name, row.id_usuario)}
-              alt=""
+              alt={`Foto de ${name}`}
               width={96}
               height={96}
+              loading="lazy"
+              decoding="async"
             />
             <h1>{name}</h1>
             <p>{row.profesion || 'Sin dato de oficio'}</p>

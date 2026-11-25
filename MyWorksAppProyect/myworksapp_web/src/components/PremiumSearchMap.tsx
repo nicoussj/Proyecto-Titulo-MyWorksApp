@@ -333,7 +333,14 @@ export function PremiumSearchMap({
             className="premium-search-map-card"
             onClick={() => onSelectWorker(selected)}
           >
-            <img src={selected.photoUrl} alt="" width={44} height={44} />
+            <img
+              src={selected.photoUrl}
+              alt=""
+              width={44}
+              height={44}
+              loading="lazy"
+              decoding="async"
+            />
             <div>
               <strong>{selected.name}</strong>
               <span>

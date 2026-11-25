@@ -159,7 +159,15 @@ export function JobEvidencePanel({
               <video key={item.id} src={item.url} controls width={160} />
             ) : (
               <figure key={item.id} style={{ margin: 0 }}>
-                <img src={item.url} alt="" width={96} height={96} style={{ objectFit: 'cover' }} />
+                <img
+                  src={item.url}
+                  alt="Evidencia del trabajo"
+                  width={96}
+                  height={96}
+                  loading="lazy"
+                  decoding="async"
+                  style={{ objectFit: 'cover' }}
+                />
                 <figcaption>
                   {item.confianza === 'confiable' ? 'Verificada' : 'No verificada'}
                 </figcaption>

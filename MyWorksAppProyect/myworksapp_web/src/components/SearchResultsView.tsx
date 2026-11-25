@@ -320,7 +320,7 @@ export function SearchResultsView({
                   <button type="button" className="pro-card-hit" onClick={() => onSelectWorker(w)}>
                   <img
                     src={w.photoUrl}
-                    alt=""
+                    alt={`${w.name}, ${w.profession}`}
                     className="pro-card-photo"
                     width={72}
                     height={72}

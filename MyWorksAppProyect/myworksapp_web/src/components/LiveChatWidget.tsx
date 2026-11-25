@@ -104,7 +104,7 @@ export function LiveChatWidget({
     <div className="chat-widget modal-rise">
       <div className="chat-widget-header">
         <div className="chat-widget-user">
-          <img src={workerPhoto} alt="" />
+          <img src={workerPhoto} alt="" width={36} height={36} loading="lazy" decoding="async" />
           <div>
             <strong>{workerName}</strong>
             <span className="chat-widget-online">

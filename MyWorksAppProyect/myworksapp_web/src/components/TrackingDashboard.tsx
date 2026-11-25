@@ -246,7 +246,14 @@ export function TrackingDashboard({
           <div className="tracking-worker-block">
             <p className="tracking-block-label">TRABAJADOR</p>
             <div className="tracking-worker-row">
-              <img src={workerPhoto} alt={`Foto de ${workerName}`} className="tracking-worker-photo" />
+              <img
+                src={workerPhoto}
+                alt={`Foto de ${workerName}`}
+                className="tracking-worker-photo"
+                width={52}
+                height={52}
+                decoding="async"
+              />
               <div>
                 <strong>{workerName}</strong>
                 <div className="tracking-worker-rating">
@@ -283,7 +290,12 @@ export function TrackingDashboard({
                       className="tracking-evidence-thumb"
                       onClick={() => setPreviewSrc(photo.src ?? null)}
                     >
-                      <img src={photo.src} alt="Evidencia del trabajo" />
+                      <img
+                        src={photo.src}
+                        alt="Evidencia del trabajo"
+                        loading="lazy"
+                        decoding="async"
+                      />
                     </button>
                   ) : (
                     <div key={photo.id} className="tracking-evidence-video">Video</div>
@@ -528,7 +540,7 @@ export function TrackingDashboard({
           onClick={() => setPreviewSrc(null)}
           aria-label="Cerrar evidencia"
         >
-          <img src={previewSrc} alt="Evidencia ampliada" />
+          <img src={previewSrc} alt="Evidencia ampliada" decoding="async" />
         </button>
       ) : null}
     </div>
