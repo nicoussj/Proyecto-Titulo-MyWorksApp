@@ -82,7 +82,7 @@ void main() {
   testWidgets(
       'PasswordStrengthMeter completo (features/auth/presentation/widgets/password_strength_meter.dart)',
       (tester) async {
-    await smokeWidget(tester, () => f5.PasswordStrengthMeter(value: 'id-1'),
+    await smokeWidget(tester, () => f5.PasswordStrengthMeter(value: 'valor-de-prueba'),
         seeded: true, role: 'usuario');
   });
   testWidgets(

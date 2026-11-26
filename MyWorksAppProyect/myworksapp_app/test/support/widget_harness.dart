@@ -26,6 +26,23 @@ import 'model_samples.dart';
 /// Errores capturados en el último [smokeWidget] (para depurar).
 final List<Object> lastSmokeErrors = [];
 
+/// Errores del último [smokeWidget] que corresponden a los bugs corregidos
+/// del informe: controladores usados tras liberarse (B2, B5, B6, B8, B10),
+/// botones con ancho mínimo infinito (B1), desbordes de layout (O1, O3-O5)
+/// y el desplegable con un valor inexistente (O2).
+List<String> smokeBugErrors() => [
+      for (final e in lastSmokeErrors)
+        if (_bugPatterns.any('$e'.contains)) '$e'.split('\n').first,
+    ];
+
+const _bugPatterns = [
+  'used after being disposed',
+  '_dependents.isEmpty',
+  'forces an infinite width',
+  'overflowed by',
+  'There should be exactly one item with',
+];
+
 void _mockPlatformChannels() {
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
@@ -120,13 +137,17 @@ Future<void> smokeWidget(
   String role = 'usuario',
   Map<String, dynamic> overrides = const {},
   Size size = const Size(480, 2400),
-  // Solo para pantallas que abren el selector de ubicación: el tema de la app
-  // da ancho mínimo infinito a FilledButton y el botón "Usar este punto" (en una
-  // Row) no se puede dibujar. Ver el informe de bugs; aquí se acota para seguir.
+  // Acota el ancho mínimo de los botones del tema (infinito por diseño). Los
+  // botones del bug B1 ya fijan su propio mínimo; queda para otras pantallas.
   bool boundedButtons = false,
   // Si se indica, usa el router real de la app (routerProvider) y navega a
   // esta ruta en vez de montar [build] directamente.
   String? appRoute,
+  // Ajustes del backend falso después de la siembra genérica.
+  void Function(FakeBackend b)? setup,
+  // Guion propio que corre tras montar la pantalla (antes del recorrido
+  // genérico, que solo se ejecuta si [interact] es true).
+  Future<void> Function(WidgetTester tester)? script,
 }) async {
   lastSmokeErrors.clear();
   final container = ProviderContainer();
@@ -183,11 +204,12 @@ Future<void> smokeWidget(
             .loadCurrentUser(fakeUserId)
             .timeout(const Duration(seconds: 2), onTimeout: () {});
       }
+      setup?.call(b);
     });
     await runZonedGuarded(() async {
       try {
-        await _drive(
-            tester, build, interact, container, boundedButtons, appRoute);
+        await _drive(tester, build, interact, container, boundedButtons,
+            appRoute, script);
       } catch (e) {
         lastSmokeErrors.add(e);
       }
@@ -235,6 +257,7 @@ Future<void> _drive(
   ProviderContainer container,
   bool boundedButtons, [
   String? appRoute,
+  Future<void> Function(WidgetTester tester)? script,
 ]) async {
   final router = appRoute != null
       ? container.read(routerProvider)
@@ -296,6 +319,7 @@ Future<void> _drive(
     print(
         'SMOKE_REQ: ${FakeBackend.instance.requests.map((r) => '${r.method} ${r.url.path}').join(', ')}');
   }
+  if (script != null) await script(tester);
   if (!interact) return;
   // Escribe en los campos de texto visibles.
   final fields = find.byType(EditableText, skipOffstage: true);
@@ -425,10 +449,9 @@ ThemeData _bounded(ThemeData t) {
   );
 }
 
-/// Botones que el recorrido no toca porque disparan un bug ya reportado:
-/// "Editar dirección" (location_picker_widget.dart) libera su
-/// TextEditingController mientras el diálogo aún se está cerrando.
-const _avoidTooltips = {'Editar dirección'};
+/// Botones que el recorrido no toca. "Editar dirección" estuvo aquí por el
+/// bug B10 (controlador liberado durante el cierre); ya está corregido.
+const _avoidTooltips = <String>{};
 
 bool _avoided(Element e) {
   bool hit(Widget w) =>

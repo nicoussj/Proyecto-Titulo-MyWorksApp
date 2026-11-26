@@ -10,6 +10,9 @@ import 'package:http/http.dart' as http;
 import 'package:myworksapp/core/database/repositories/service_repository.dart';
 import 'package:myworksapp/core/database/repositories/user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'fake_geocoding.dart';
+import 'fake_plugins.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 const fakeSupabaseUrl = 'http://fake-supabase.invalid';
@@ -40,6 +43,9 @@ class FakeBackend {
   final Map<String, List<Map<String, dynamic>>> tables = {};
   final Map<String, FakeHandler> rpcs = {};
   final Map<String, FakeHandler> functions = {};
+
+  /// Respuesta de las Edge Functions sin manejador propio (null: {'ok': true}).
+  FakeHandler? defaultFunction;
   final List<FakeRequest> requests = [];
 
   /// Tablas creadas desde [defaultRows]: sus filas aceptan cualquier filtro.
@@ -50,6 +56,12 @@ class FakeBackend {
 
   /// Si es true, toda petición REST/RPC responde 500.
   bool failAll = false;
+
+  /// RPC que responden error de negocio con este mensaje.
+  final Map<String, String> rpcErrors = {};
+
+  /// Respuesta de error propia para Auth: (status HTTP, mensaje).
+  (int, String)? authFailure;
 
   Map<String, dynamic>? user;
 
@@ -75,9 +87,12 @@ class FakeBackend {
     tables.clear();
     rpcs.clear();
     functions.clear();
+    defaultFunction = null;
     requests.clear();
     failing.clear();
     failAll = false;
+    authFailure = null;
+    rpcErrors.clear();
     user = null;
   }
 
@@ -106,7 +121,9 @@ class FakeBackend {
       final name = path.substring(14);
       if (failing.contains('fn:$name')) return _err(500, 'falla simulada');
       final h = functions[name];
-      return _json(h == null ? {'ok': true} : h(r));
+      if (h != null) return _json(h(r));
+      return _json(
+          defaultFunction == null ? {'ok': true} : defaultFunction!(r));
     }
     return _json({});
   }
@@ -126,6 +143,8 @@ class FakeBackend {
 
   http.Response _rpc(FakeRequest r, String name) {
     if (failAll || failing.contains(name)) return _err(400, 'rpc falla: $name');
+    final negocio = rpcErrors[name];
+    if (negocio != null) return _err(400, negocio, code: 'P0001');
     final h = rpcs[name] ?? defaultRpc;
     final result = h == null ? null : h(r);
     return _json(result);
@@ -166,7 +185,10 @@ class FakeBackend {
   }
 
   http.Response _rest(FakeRequest r, String table) {
-    if (failAll || failing.contains(table)) {
+    // 'tabla:patch', 'tabla:post'… hace fallar solo ese método.
+    if (failAll ||
+        failing.contains(table) ||
+        failing.contains('$table:${r.method.toLowerCase()}')) {
       return _err(400, 'tabla falla: $table');
     }
     if (!tables.containsKey(table) && defaultRows != null) {
@@ -314,6 +336,14 @@ class FakeBackend {
       };
 
   http.Response _auth(FakeRequest r, String path) {
+    final custom = authFailure;
+    if (custom != null && !path.startsWith('logout')) {
+      return _json({
+        'code': custom.$1,
+        'msg': custom.$2,
+        'message': custom.$2,
+      }, status: custom.$1);
+    }
     if (failing.contains('auth') || failing.contains('auth:$path')) {
       return _json({
         'code': 400,
@@ -421,6 +451,9 @@ Future<FakeBackend> setUpFakeSupabase({bool signedIn = false}) async {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues(fakePrefs);
   FakeBackend.instance.reset();
+  installFakeGeocoding();
+  installFakePlugins();
+  geoModo = GeoModo.lugar;
   // Las cachés estáticas de los repositorios guardarían el resultado de un
   // escenario anterior (p. ej. "no encontrado"): se limpian en cada escenario.
   ServiceRepository.clearCache();
@@ -464,5 +497,5 @@ Future<FakeBackend> setUpFakeSupabase({bool signedIn = false}) async {
 
 Future<void> signInFake() async {
   await Supabase.instance.client.auth
-      .signInWithPassword(email: fakeUserEmail, password: 'secreto-test');
+      .signInWithPassword(email: fakeUserEmail, password: 'valor-de-prueba');
 }

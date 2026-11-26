@@ -680,9 +680,9 @@ void main() {
       probe(() => f72.Validators());
       await call(() => f72.Validators.validateEmail('id-1'));
       await call(() => f72.Validators.validateName('id-1'));
-      await call(() => f72.Validators.validatePassword('id-1'));
-      await call(() => f72.Validators.validateSecurePassword('id-1'));
-      await call(() => f72.Validators.passwordStrength('id-1'));
+      await call(() => f72.Validators.validatePassword('valor-de-prueba'));
+      await call(() => f72.Validators.validateSecurePassword('valor-de-prueba'));
+      await call(() => f72.Validators.passwordStrength('valor-de-prueba'));
       await call(() => f72.Validators.validateRequired('id-1', 'id-1'));
       await call(() => f72.Validators.validateAddress('id-1'));
       await call(() => f72.Validators.validateDescription('id-1'));
