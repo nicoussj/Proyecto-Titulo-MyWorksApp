@@ -1,3 +1,5 @@
+> **26-11-2026.** El Anexo A del Informe describe ahora **80 tablas** (A-1…A-80): las 60 del corte 17–20-nov, las 16 de la Tabla 18 / catálogo 24-nov (incluye `eventos`, omitida en la lista corta de 0-bis) y las 4 de `20261124140000`. Detalle columna a columna de A-61…A-80 en `Fase 2/Anexo_A_Diccionario_de_tablas.md`.
+
 # Diccionario de base de datos — My Works App
 
 > **Esquema documentado: 60 tablas en `public`, con RLS en las 60.** Son las 57 del snapshot del 17-11-2026 (RLS en las 57) más `auditoria_consola`, `rate_limit_ventana` y `direcciones_cliente`, creadas el 20-11-2026 con `ENABLE ROW LEVEL SECURITY` en cada una. El cuerpo de este archivo describe las 57; la sección 0 describe las 3 que completan las 60.
@@ -50,11 +52,12 @@ Consulta de solo lectura al catálogo de PostgreSQL de la base viva (`wxqrfcqifk
 | Última versión en `supabase_migrations.schema_migrations` | `20261123020000` |
 | Archivos `.sql` de migración en el repositorio | 133. La versión `20261123020000` y otras de consola e inteligencia artificial aplicadas en vivo no tienen archivo en este árbol |
 
-Quince tablas de esa lectura no aparecen en el cuerpo de este diccionario. Cada una tiene clave primaria de una sola columna y el resto de las columnas describe esa fila. Con eso cumplen la primera forma normal y no presentan el problema de la segunda (no hay clave compuesta). **El 22-11 no se reclasificaron a tercera forma normal, BCNF ni cuarta forma normal.** Esa frase deja constancia de la lectura de ese día. La sección 0-ter, del 23-11-2026, fija la clasificación: esas 15 tablas están en BCNF.
+Dieciséis tablas del catálogo del 24-nov (Tabla 18 del informe; la lectura 0-bis del 22-nov listó quince y omitió `eventos`) no aparecían en el cuerpo de este diccionario. Cada una tiene clave primaria de una sola columna y el resto de las columnas describe esa fila. Con eso cumplen la primera forma normal y no presentan el problema de la segunda (no hay clave compuesta). **El 22-11 no se reclasificaron a tercera forma normal, BCNF ni cuarta forma normal.** Esa frase deja constancia de la lectura de ese día. La sección 0-ter, del 23-11-2026, fija la clasificación: esas 15 tablas están en BCNF.
 
 | Tabla | Clave | Columnas además de la clave |
 |-------|--------|------------------------------|
 | `bloqueos_ip` | `id` | `creado_en`, `ip`, `hasta`, `motivo`, `activo` |
+| `eventos` | `id` | `user_id`, `tipo`, `entidad_id`, `metadata` (jsonb), `comuna`, `categoria`, `created_at` |
 | `cola_moderacion` | `id` | `id_mensaje`, `motivo`, `detalle`, `estado`, `veredicto_llm`, `creado_en`, `revisado_por`, `revisado_en` |
 | `eventos_acceso` | `id` | `creado_en`, `tipo`, `correo_enmascarado` |
 | `ia_banderas` | `clave` | `activa`, `nota` |

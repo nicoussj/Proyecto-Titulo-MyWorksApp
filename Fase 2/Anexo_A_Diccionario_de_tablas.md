@@ -1,12 +1,12 @@
 # Anexo A. Diccionario de datos
 
-> **22-11-2026.** La base viva tiene 76 tablas. Este anexo sigue describiendo 60. Las 15 que faltan, con su clave y sus columnas, están en la sección 0-bis de `MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md`. No se les asignó forma normal más allá de comprobar que la clave es de una columna.
+> **26-11-2026.** Este anexo describe **80 tablas** del esquema `public`: las 60 del corte del 17–20 de noviembre de 2026 (A-1 a A-60), las 16 del catálogo del 24 de noviembre (A-61 a A-76; Tabla 18 del informe) y las 4 de evidencia/disputas escalables de la migración `20261124140000` (A-77 a A-80). Las tablas de IA no tienen archivo de migración en este árbol; sus tipos se confirmaron por sondeo PostgREST de solo lectura el 26-nov-2026.
 
-A continuación se describe cada una de las 60 tablas del esquema public documentadas hasta el 20-11-2026. Las tablas A-1 a A-57 están alineadas a la base viva de Supabase (`wxqrfcqifkfgawrnqmnj`) al 2026-11-17 (America/Santiago), migración `20261117223850` (quitar_indice_duplicado_servicios); las tablas A-58 a A-60 salen de las migraciones del 20-11-2026 leídas del repositorio (`main` `d9d2c7c`), sin medirlas otra vez en la base viva. Los atributos se listan con su tipo de dato y su restricción. PK indica la clave primaria y FK la clave foránea. perfiles.id coincide con el identificador de autenticación de Supabase (auth.users.id). Hasta el 17-11 no había tipos ENUM en public (los conjuntos cerrados se restringen con CHECK); la migración `20261120130000` agrega el único ENUM, `accion_auditoria_consola`. Hay dos vistas: encuestas_testing_con_puntaje y cobros_profesional (migración `20261118053913`).
+A continuación se describen 80 tablas del esquema public. Las tablas A-1 a A-57 salen de la base en uso al 17 de noviembre de 2026 (migración 20261117223850); las tablas A-58 a A-60 salen de las migraciones del 20 de noviembre leídas del repositorio; las tablas A-61 a A-76 son las 16 que el catálogo contó el 24 de noviembre de 2026 además del corte de 60 (Tabla 18 del informe): siete de consola con DDL en el repositorio y nueve de inteligencia artificial cuyos tipos se confirmaron por sondeo de solo lectura el 26 de noviembre de 2026; las tablas A-77 a A-80 salen de la migración 20261124140000 (disputas escalables), presente en la base viva. Los atributos se listan con su tipo de dato y su restricción. PK indica la clave primaria y FK la clave foránea.
 
 Fuente: elaboración propia a partir del esquema real (modelo entidad-relación v2.5).
 
-Modelo entidad-relación: las figuras (mapa de dominios, diagrama general con las 57 tablas y un diagrama por dominio con columnas, tipos, PK/FK y cardinalidad) están en `Fase 2/modelo_entidad_relacion/figuras/`, con fuentes editables y un LEEME en la misma carpeta. Las figuras con las 60 tablas que usa el informe final están en `MyWorksAppProyect/docs/modelo_er60/`. La explicación de cada dominio, el flujo de pago y las decisiones de diseño están en la sección 2b de `MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md`.
+Modelo entidad-relación: las figuras (mapa de dominios, diagrama general con las 57 tablas y un diagrama por dominio con columnas, tipos, PK/FK y cardinalidad) están en `Fase 2/modelo_entidad_relacion/figuras/`, con fuentes editables y un LEEME en la misma carpeta. Las figuras del corte de 60 tablas están en `MyWorksAppProyect/docs/modelo_er60/`; las figuras A-12 a A-14 (consola de seguridad, IA y evidencia) se generaron con el corte de 80. La explicación de cada dominio, el flujo de pago y las decisiones de diseño están en la sección 2b de `MyWorksAppProyect/docs/DICCIONARIO_BASE_DATOS.md`.
 
 Respecto del anexo v2.3 (43 tablas, 2026-11-08) se agregan nueve tablas: acuerdos_trabajo, disputa_mensajes, reprogramaciones_trabajo (CU-33), pines_inicio_trabajo, bloqueos_pin_inicio, intentos_pin_inicio, cuentas_bancarias, dispositivos_push y verificacion_eventos. También se documentan los roles de consola soporte y qa, el alta de invitado (columnas de pagos) y los cambios de calificación bidireccional, horarios semanales y soporte automático de disputas.
 
@@ -1372,11 +1372,298 @@ RLS activo. Cada usuario ve y edita solo sus direcciones (ALL «direcciones_clie
 
 Relaciones: id_usuario apunta a perfiles (si se borra la fila de perfiles, también se borran sus direcciones).
 
+
+
+## Consola y seguridad
+
+### Tabla A-61. bloqueos_ip
+
+Bloqueo de una dirección IP por la consola de defensa. Migración 20261122180400.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+| `ip` | text | Obligatorio |
+| `hasta` | timestamptz | Opcional |
+| `motivo` | text | Obligatorio |
+| `activo` | boolean | Obligatorio, Default true |
+
+### Tabla A-62. eventos_acceso
+
+Intento fallido de acceso (login o MFA) registrado para umbrales. Migración 20261122180200.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+| `tipo` | text | Obligatorio. login_fallido | mfa_fallido |
+| `correo_enmascarado` | text | Obligatorio |
+
+### Tabla A-63. incidentes_seguridad
+
+Incidente de seguridad visible en la consola. Migración 20261122180200.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+| `tipo` | text | Obligatorio |
+| `severidad` | text | Obligatorio. baja | media | alta |
+| `resumen` | text | Obligatorio |
+| `detalle` | jsonb | Obligatorio, Default {} |
+| `estado` | text | Obligatorio, Default abierto. abierto | reconocido |
+| `id_usuario` | uuid | Opcional |
+
+### Tabla A-64. pruebas_seguridad
+
+Resultado de una prueba de seguridad de la consola. Migración 20261122180400.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+| `tipo` | text | Obligatorio |
+| `origen` | text | Obligatorio, Default servidor. servidor | navegador |
+| `resultado` | text | Obligatorio. ok | aviso | fallo |
+| `severidad` | text | Obligatorio. baja | media | alta |
+| `resumen` | text | Obligatorio |
+| `recomendacion` | text | Obligatorio |
+| `detalle` | jsonb | Obligatorio, Default {} |
+
+### Tabla A-65. respaldos_consola
+
+Respaldo lógico de dominios de la consola. Migraciones 20261122180400 y 20261122190000.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+| `tamano_bytes` | integer | Obligatorio |
+| `sha256` | text | Obligatorio |
+| `tablas` | text[] | Obligatorio |
+| `estado` | text | Obligatorio, Default listo. listo | restaurado |
+| `contenido` | text | Opcional |
+| `filas` | jsonb | Obligatorio, Default {} |
+| `ruta` | text | Opcional |
+| `origen` | text | Obligatorio, Default manual |
+
+### Tabla A-66. ticket_mensajes
+
+Mensaje de un ticket de soporte leído por la consola. Migración 20261122180200.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `id_ticket` | text | FK → tickets_soporte.id, Obligatorio |
+| `id_autor` | uuid | Opcional |
+| `cuerpo` | text | Obligatorio (2–2000 caracteres) |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+
+### Tabla A-67. umbrales_seguridad
+
+Umbral de alerta de la consola (clave/valor y ventana). Migración 20261122180200.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `clave` | text | PK, Obligatorio |
+| `valor` | integer | Obligatorio (0–100000) |
+| `ventana_minutos` | integer | Obligatorio (1–10080) |
+| `descripcion` | text | Obligatorio |
+
+## Inteligencia artificial
+
+### Tabla A-68. cola_moderacion
+
+Caso de revisión de un mensaje por moderación asistida. Presente en el catálogo vivo (sin archivo de migración en el árbol); tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio |
+| `id_mensaje` | text | Opcional |
+| `motivo` | text | Opcional |
+| `detalle` | text | Opcional |
+| `estado` | text | Opcional |
+| `veredicto_llm` | text | Opcional |
+| `creado_en` | timestamptz | Opcional |
+| `revisado_por` | uuid | Opcional |
+| `revisado_en` | timestamptz | Opcional |
+
+### Tabla A-69. eventos
+
+Hecho registrado por el dominio de inteligencia artificial (bitácora). Presente en el catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio |
+| `user_id` | uuid | Opcional |
+| `tipo` | text | Opcional |
+| `entidad_id` | text | Opcional |
+| `metadata` | jsonb | Opcional |
+| `comuna` | text | Opcional |
+| `categoria` | text | Opcional |
+| `created_at` | timestamptz | Opcional |
+
+### Tabla A-70. ia_banderas
+
+Interruptor clave/valor de funciones de inteligencia artificial. Catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `clave` | text | PK, Obligatorio |
+| `activa` | boolean | Opcional |
+| `nota` | text | Opcional |
+
+### Tabla A-71. ia_cambios_banco
+
+Aviso de cambio de cuenta bancaria revisado por IA. Catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio |
+| `user_id` | uuid | Opcional |
+| `creado_en` | timestamptz | Opcional |
+
+### Tabla A-72. ia_cola_embeddings
+
+Encargo de vectorización de un texto. Catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | bigint | PK, Obligatorio |
+| `tabla` | text | Opcional |
+| `entidad_id` | text | Opcional |
+| `texto` | text | Opcional |
+| `estado` | text | Opcional |
+| `creado_en` | timestamptz | Opcional |
+
+### Tabla A-73. ia_huellas
+
+Huella de dispositivo e IP asociada a un usuario. Catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio |
+| `user_id` | uuid | Opcional |
+| `device_hash` | text | Opcional |
+| `ip_hash` | text | Opcional |
+| `created_at` | timestamptz | Opcional |
+
+### Tabla A-74. ia_pesos_busqueda
+
+Peso de un factor de la búsqueda híbrida. Catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `clave` | text | PK, Obligatorio |
+| `peso` | numeric | Opcional |
+| `descripcion` | text | Opcional |
+
+### Tabla A-75. ia_resumen_resenas
+
+Resumen generado de reseñas por profesional. Catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id_profesional` | uuid | PK, Obligatorio |
+| `resumen` | text | Opcional |
+| `n_resenas` | integer | Opcional |
+| `origen` | text | Opcional |
+| `generado_en` | timestamptz | Opcional |
+
+### Tabla A-76. ia_sugerencias_perfil
+
+Sugerencia de texto para el perfil de un profesional. Catálogo vivo; tipos sondeados el 26-nov-2026.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio |
+| `user_id` | uuid | Opcional |
+| `texto_sugerido` | text | Opcional |
+| `estado` | text | Opcional |
+| `creado_en` | timestamptz | Opcional |
+
+## Evidencia y disputas escalables
+
+### Tabla A-77. evidencia_nonces
+
+Nonce de un solo uso para capturar evidencia desde la cámara de la app. Migración 20261124140000.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `nonce` | text | Obligatorio, Único |
+| `id_trabajo` | text | Obligatorio |
+| `id_usuario` | uuid | Obligatorio |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+| `expira_en` | timestamptz | Obligatorio |
+| `usado_en` | timestamptz | Opcional |
+| `id_foto` | text | Opcional |
+
+### Tabla A-78. evidencia_procedencia
+
+Procedencia de una foto de trabajo (hash, GPS, nonce, confianza). Migración 20261124140000.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `id_foto` | text | Obligatorio |
+| `id_trabajo` | text | Obligatorio |
+| `origen_captura` | text | Opcional |
+| `tipo_evidencia` | text | Opcional |
+| `hash_sha256` | text | Opcional |
+| `hash_original` | text | Opcional |
+| `hash_perceptual` | text | Opcional |
+| `latitud` | double precision | Opcional |
+| `longitud` | double precision | Opcional |
+| `distancia_metros` | numeric | Opcional |
+| `capturada_en` | timestamptz | Opcional |
+| `recibida_en` | timestamptz | Obligatorio, Default now() |
+| `nonce` | text | Opcional |
+| `confianza` | text | Obligatorio |
+| `motivo` | text | Opcional |
+| `duplicado_de` | text | Opcional |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+
+### Tabla A-79. alertas_evidencia
+
+Alerta por posible evidencia duplicada o anómala. Migración 20261124140000.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id` | uuid | PK, Obligatorio, Default gen_random_uuid() |
+| `tipo` | text | Obligatorio |
+| `id_foto` | text | Opcional |
+| `id_trabajo` | text | Opcional |
+| `id_foto_previa` | text | Opcional |
+| `id_trabajo_previo` | text | Opcional |
+| `hash_perceptual` | text | Opcional |
+| `detalle` | text | Opcional |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+
+### Tabla A-80. reembolsos_automaticos
+
+Cola de reembolso automático ligado a una disputa. Migración 20261124140000.
+
+| Atributo | Tipo de dato | Restricción |
+|----------|--------------|-------------|
+| `id_disputa` | text | PK, Obligatorio |
+| `id_pago` | text | Obligatorio |
+| `estado` | text | Obligatorio. pendiente | en_curso | ejecutado | fallido |
+| `intentos` | integer | Obligatorio, Default 0 |
+| `ultimo_error` | text | Opcional |
+| `solicitud_id` | bigint | Opcional |
+| `creado_en` | timestamptz | Obligatorio, Default now() |
+| `actualizado_en` | timestamptz | Obligatorio, Default now() |
+| `ejecutado_en` | timestamptz | Opcional |
+
 ### Columnas agregadas el 20-11-2026 a tablas ya descritas
 
 - disputa_mensajes.interna (boolean, Obligatorio, Default false): nota interna de la consola; las partes no la leen (migración `20261120130000`).
 - trabajadores.es_demo (boolean, Obligatorio, Default false): marca las cuentas demo, que se ocultan del catálogo cuando demo_modo no es 1 (migración `20261120140000`).
 - perfiles.telefono (text, Opcional; migración `20261120170000`).
+
+- Tablas A-77 a A-80 (evidencia): migración `20261124140000`, confirmadas en la base viva el 26-nov-2026. Con ellas el anexo llega a 80 tablas.
 
 ## Funciones relevantes
 
