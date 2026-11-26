@@ -309,15 +309,15 @@ void main() {
         await call(() => o.register(
             name: 'id-1',
             email: 'id-1',
-            password: 'id-1',
+            password: 'valor-de-prueba',
             role: f11.UserRole.values.first));
-        await call(() => o.login(email: 'id-1', password: 'id-1'));
+        await call(() => o.login(email: 'valor-de-prueba', password: 'valor-de-prueba'));
         await call(() => o.loginWithOAuth(f10.SocialAuthProvider.values.first));
         await call(() => o.completeOAuthSession());
         await call(() => o.logout());
         await call(() => o.restoreSession());
         await call(() => o.loadUser('00000000-0000-4000-8000-0000000000aa'));
-        await call(() => o.changePassword('id-1'));
+        await call(() => o.changePassword('valor-de-prueba'));
       }
     });
   });

@@ -515,7 +515,7 @@ void main() {
             id: '00000000-0000-4000-8000-0000000000aa',
             name: 'id-1',
             email: 'id-1',
-            password: 'id-1',
+            password: 'valor-de-prueba',
             role: 'id-1',
             accountStatus: 'id-1',
             profilePhotoPath: 'id-1',
@@ -1324,7 +1324,7 @@ void main() {
         await call(() => o.updateProfilePhotoPath(
             '00000000-0000-4000-8000-0000000000aa', 'id-1'));
         await call(() =>
-            o.updatePassword('00000000-0000-4000-8000-0000000000aa', 'id-1'));
+            o.updatePassword('00000000-0000-4000-8000-0000000000aa', 'valor-de-prueba'));
         await call(() => o.updateAccountStatus(
             '00000000-0000-4000-8000-0000000000aa', 'id-1'));
         await call(() => o.deleteUser('00000000-0000-4000-8000-0000000000aa'));

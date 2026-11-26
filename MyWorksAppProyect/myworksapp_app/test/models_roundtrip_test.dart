@@ -845,7 +845,7 @@ void main() {
       'id': 'v_id',
       'nombre': 'v_nombre',
       'correo': 'v_correo',
-      'password': 'v_password',
+      'password': 'valor_de_prueba',
       'rol': 'v_rol',
       'estado_cuenta': 'v_estado_cuenta',
       'ruta_foto_perfil': 'v_ruta_foto_perfil',
