@@ -88,7 +88,7 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
       setState(() => _controller = controller);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.toString().replaceFirst('StateError: ', ''));
+      setState(() => _error = e.toString().replaceFirst('Bad state: ', ''));
     }
   }
 
@@ -254,7 +254,10 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
                 onPressed: _recording ? null : () => Navigator.of(context).pop(),
               ),
             ),
+            // Con clave: al aparecer REC y el reloj arriba, el disparador
+            // conserva su estado y suelta el video al levantar el dedo.
             Align(
+              key: const ValueKey('evidence-shutter-panel'),
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 28),

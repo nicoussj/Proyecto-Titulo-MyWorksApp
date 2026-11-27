@@ -64,10 +64,12 @@ class _EvidenceShutterButtonState extends State<EvidenceShutterButton> {
               padding: const EdgeInsets.all(8),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 160),
+                // Siempre rectángulo: con radio 34 (la mitad de 68 px) es un
+                // círculo, y la animación no mezcla círculo con radio (eso
+                // dispara una aserción de BoxDecoration a mitad del cambio).
                 decoration: BoxDecoration(
                   color: recording ? const Color(0xFFE53935) : Colors.white,
-                  shape: recording ? BoxShape.rectangle : BoxShape.circle,
-                  borderRadius: recording ? BorderRadius.circular(12) : null,
+                  borderRadius: BorderRadius.circular(recording ? 12 : 34),
                 ),
               ),
             ),
