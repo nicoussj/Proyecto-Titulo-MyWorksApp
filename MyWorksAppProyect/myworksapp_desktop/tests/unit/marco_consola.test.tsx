@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,7 +23,11 @@ vi.mock('../../src/supabaseClient', async () => {
 import { Shell } from '../../src/shell/Shell';
 
 let ruta = '';
-function Ruta() { ruta = useLocation().pathname; return <input aria-label="Buscar en la tabla" />; }
+function Ruta() {
+  const { pathname } = useLocation();
+  useEffect(() => { ruta = pathname; }, [pathname]);
+  return <input aria-label="Buscar en la tabla" />;
+}
 const marco = (value = auth(), conTabla = true) => montar(
   <MemoryRouter initialEntries={['/resumen']}>
     <Shell>
@@ -31,7 +36,11 @@ const marco = (value = auth(), conTabla = true) => montar(
   </MemoryRouter>,
   value,
 );
-function RutaSola() { ruta = useLocation().pathname; return <p>contenido</p>; }
+function RutaSola() {
+  const { pathname } = useLocation();
+  useEffect(() => { ruta = pathname; }, [pathname]);
+  return <p>contenido</p>;
+}
 const tecla = (key: string, extra: KeyboardEventInit = {}, target: EventTarget = window) =>
   act(async () => { target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...extra })); });
 
