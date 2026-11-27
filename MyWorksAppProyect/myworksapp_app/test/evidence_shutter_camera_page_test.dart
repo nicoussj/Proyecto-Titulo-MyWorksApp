@@ -1,9 +1,10 @@
+// Las fakes usan las interfaces de plataforma que ya trae cada plugin.
+// ignore_for_file: depend_on_referenced_packages
 // Cámara de evidencia (toque = foto, mantener = video) contra una cámara y
 // permisos falsos: cubre permisos negados, sin cámara, foto, video corto,
 // video válido y los errores del plugin, sin hardware real.
 import 'dart:async';
 
-import 'package:camera/camera.dart';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -114,7 +115,10 @@ class _FakeCamera extends CameraPlatform with MockPlatformInterfaceMixin {
   Future<void> dispose(int cameraId) async => disposed++;
 }
 
+// Las fakes son privadas del archivo; las variables solo se usan aquí.
+// ignore: library_private_types_in_public_api
 late _FakeCamera camera;
+// ignore: library_private_types_in_public_api
 late _FakePermissions permissions;
 
 /// Abre la cámara desde un botón para poder leer lo que devuelve al cerrar.
@@ -126,7 +130,8 @@ Future<List<EvidenceCapture?>> _open(WidgetTester tester) async {
         body: TextButton(
           onPressed: () async {
             results.add(await Navigator.of(context).push<EvidenceCapture>(
-              MaterialPageRoute(builder: (_) => const EvidenceShutterCameraPage()),
+              MaterialPageRoute(
+                  builder: (_) => const EvidenceShutterCameraPage()),
             ));
           },
           child: const Text('abrir'),
@@ -278,7 +283,8 @@ void main() {
   testWidgets('cerrar mientras abre la cámara libera el controlador',
       (tester) async {
     camera.holdInit = Completer<void>();
-    await tester.pumpWidget(const MaterialApp(home: EvidenceShutterCameraPage()));
+    await tester
+        .pumpWidget(const MaterialApp(home: EvidenceShutterCameraPage()));
     await tester.pump();
     await tester.pumpWidget(const SizedBox());
     camera.holdInit!.complete();
@@ -291,7 +297,8 @@ void main() {
     final results = await _open(tester);
     final gesture = await _hold(tester);
     await tester.runAsync(
-      () => Future<void>.delayed(const Duration(seconds: 30, milliseconds: 200)),
+      () =>
+          Future<void>.delayed(const Duration(seconds: 30, milliseconds: 200)),
     );
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();

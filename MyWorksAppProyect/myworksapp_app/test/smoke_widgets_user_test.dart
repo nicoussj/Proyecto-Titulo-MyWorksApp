@@ -146,7 +146,7 @@ void main() {
         tester,
         () => f6.DynamicServiceForm(
             config: f7.ServiceConfigModel.fromMap(sampleServiceConfigModel),
-            initialValues: <String, dynamic>{'id': 'id-1'},
+            initialValues: const <String, dynamic>{'id': 'id-1'},
             onChanged: (_) {},
             formKey: null),
         seeded: true,
@@ -255,8 +255,8 @@ void main() {
         () => f14.TimeSlotSelector(
             selected: const TimeOfDay(hour: 10, minute: 0),
             onChanged: (_) {},
-            availableLabels: <String>['id-1'],
-            reservedLabels: <String>{},
+            availableLabels: const <String>['id-1'],
+            reservedLabels: const <String>{},
             emptyHint: 'id-1'),
         seeded: true,
         role: 'usuario');

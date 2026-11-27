@@ -1,3 +1,5 @@
+// Las fakes usan las interfaces de plataforma que ya trae cada plugin.
+// ignore_for_file: depend_on_referenced_packages
 // Apertura del handoff de Transbank: valida la URL y respeta lo que responde
 // url_launcher. No toca la lógica de cobro: solo cómo se abre la página.
 import 'package:flutter_test/flutter_test.dart';

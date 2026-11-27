@@ -284,8 +284,9 @@ class FakeBackend {
         if (!prefer.contains('return=representation')) {
           return http.Response('', 201);
         }
-        if (single)
+        if (single) {
           return _json(inserted.isEmpty ? {} : inserted.first, status: 201);
+        }
         return _json(inserted, status: 201);
       case 'PATCH':
         final patch = Map<String, dynamic>.from((r.json as Map?) ?? {});

@@ -76,7 +76,7 @@ void _seed(FakeBackend b) {
     for (final (i, resuelto) in [(1, 0), (2, 1)])
       {
         'id': 'ab$i',
-        'id_usuario': '$fakeUserId'.padRight(36, '0'),
+        'id_usuario': fakeUserId.padRight(36, '0'),
         'tipo_abuso': 'spam_mensajes',
         'conteo': i * 3,
         'detectado_en': '2026-05-01T10:00:00Z',

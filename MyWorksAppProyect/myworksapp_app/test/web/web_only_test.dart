@@ -1,3 +1,5 @@
+// Las fakes usan las interfaces de plataforma que ya trae cada plugin.
+// ignore_for_file: depend_on_referenced_packages
 // Ramas solo-web (kIsWeb): se corren con `flutter test --platform chrome test/web`.
 @TestOn('browser')
 library;

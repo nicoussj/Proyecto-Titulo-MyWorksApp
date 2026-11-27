@@ -1,3 +1,5 @@
+// Las fakes usan las interfaces de plataforma que ya trae cada plugin.
+// ignore_for_file: depend_on_referenced_packages
 // PushService con FCM configurado y Firebase falso. Solo corre con:
 //   flutter test test/push_service_enabled_test.dart \
 //     --dart-define=FCM_API_KEY=test --dart-define=FCM_APP_ID=1:1:android:1 \

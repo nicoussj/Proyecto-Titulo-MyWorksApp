@@ -12,6 +12,8 @@ int emitRealtimeInsert(
 ) {
   var hits = 0;
   for (final channel in Supabase.instance.client.getChannels()) {
+    // El topic es interno del paquete; aquí solo se lee para elegir el canal.
+    // ignore: invalid_use_of_internal_member
     if (!channel.topic.contains(topicContains)) continue;
     channel.trigger('postgres_changes', {
       'event': 'INSERT',

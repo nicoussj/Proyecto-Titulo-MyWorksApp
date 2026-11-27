@@ -6,7 +6,6 @@ import 'package:myworksapp/core/utils/chile_comunas.dart';
 import 'package:myworksapp/core/utils/service_worker_mapper.dart';
 import 'package:myworksapp/features/worker/presentation/pages/worker_register_page.dart';
 
-import 'support/fake_supabase.dart';
 import 'support/widget_harness.dart';
 
 Future<void> _pasos(WidgetTester t, [int n = 3]) async {
