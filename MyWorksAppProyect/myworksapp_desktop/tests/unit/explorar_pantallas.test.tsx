@@ -73,11 +73,15 @@ beforeEach(() => {
   URL.revokeObjectURL = vi.fn();
 });
 
-describe.each(['ok', 'error', 'mixto', 'totp'] as const)('operador recorre cada pantalla (backend %s)', (modo) => {
+/**
+ * captura: modo de captura local del servidor de desarrollo (?captura=local), sin dinero real.
+ * totp_mixto: segundo factor reciente con escrituras y functions que fallan.
+ */
+describe.each(['ok', 'error', 'mixto', 'totp', 'captura', 'totp_mixto'] as const)('operador recorre cada pantalla (backend %s)', (modo) => {
   it.each(rutas)('%s', async (ruta) => {
-    cli.modo = modo;
-    if (modo === 'totp') markTotpVerified();
-    window.history.pushState({}, '', ruta);
+    cli.modo = modo === 'captura' ? 'totp' : modo === 'totp_mixto' ? 'mixto' : modo;
+    if (modo !== 'ok' && modo !== 'error' && modo !== 'mixto') markTotpVerified();
+    window.history.pushState({}, '', modo === 'captura' ? `${ruta}?captura=local` : ruta);
     montar(<App />);
     const pulsados = await explorar(80);
     await llenarCampos(document.querySelector('main') ?? document);
