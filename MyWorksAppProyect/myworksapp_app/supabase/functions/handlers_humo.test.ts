@@ -70,6 +70,28 @@ const fila = () => ({
 });
 
 let modo: Modo = "anonimo";
+/** Estados por tabla que dejan avanzar el flujo principal de cada función. */
+let ESTADOS: Record<string, Record<string, unknown> | null> = {};
+const VARIANTES: Array<Record<string, Record<string, unknown> | null>> = [
+  {
+    trabajos: { estado: "esperando_pago" },
+    pagos: { estado: "pendiente" },
+    app_config: { clave: "defensa_bloqueo", valor: "0" },
+    disputas: { estado: "abierta" },
+    metodos_pago_oneclick: { estado: "activa" },
+  },
+  {
+    trabajos: { estado: "completado", estado_pago: "retenido" },
+    pagos: { estado: "retenido", metodo_pago: "oneclick" },
+    app_config: { clave: "defensa_bloqueo", valor: "0" },
+    disputas: { estado: "resuelta" },
+    metodos_pago_oneclick: {
+      estado: "pendiente",
+      tbk_user: null,
+      tbk_user_prev: "prev",
+    },
+  },
+];
 const fetchSimulado = (
   input: string | URL | Request,
   init?: RequestInit,
@@ -125,8 +147,13 @@ const fetchSimulado = (
     }
     if (path.startsWith("/rest/v1/rpc/")) return json(200, true);
     if (path.startsWith("/rest/v1/")) {
+      const tabla = path.slice("/rest/v1/".length);
       const objeto = (headers.get("Accept") || "").includes("vnd.pgrst.object");
-      return json(200, objeto ? fila() : [fila()]);
+      if (tabla === "bloqueos_ip" || ESTADOS[tabla] === null) {
+        return json(200, objeto ? null : []);
+      }
+      const row = { ...fila(), ...(ESTADOS[tabla] ?? {}) };
+      return json(200, objeto ? row : [row]);
     }
     return json(200, { signedURL: "/x", path: "x" });
   }
@@ -161,6 +188,9 @@ const pedidos = (nombre: string): Request[] => {
   const auth = {
     Authorization: "Bearer jwt-prueba",
     "x-cron-secret": "cron-prueba",
+    "x-soporte-secret": "cron-prueba",
+    "x-respaldo-secret": "cron-prueba",
+    "x-reconcile-secret": "cron-prueba",
     ...origen,
   };
   const cuerpo = {
@@ -194,8 +224,81 @@ const pedidos = (nombre: string): Request[] => {
     serviceId: ID,
     workerId: ID,
     direccion: "Calle Uno 123",
+    name: "Ana Pérez",
+    phone: "+56912345678",
+    address: "Calle Uno 123, Puerto Montt",
+    description: "Visita de prueba",
+    amountClp: 25000,
+    scheduledAt: new Date(Date.now() + 3 * 86400000).toISOString(),
+    turnstileToken: "captcha",
+    pago_id: ID,
+    disputa_id: ID,
+    resolucion: "motivo de prueba suficiente",
+    referencia: "transferencia 123",
+    transferRef: "transferencia 123",
+    confirmExternal: true,
+    frase: "RESTAURAR",
+    tablas: null,
+    nonce: "n",
+    provider: "resend",
+    client: "web",
+    clientReturnOrigin: "https://myworksapp-cl.vercel.app",
+    latitude: -41.47,
+    longitude: -72.94,
+    type: "INSERT",
+    table: "notificaciones",
+    record: {
+      id: ID,
+      id_usuario: ID,
+      titulo: "Hola",
+      mensaje: "Mensaje",
+      tipo: "pago",
+    },
+    notes: "nota",
+    origen: "web",
+    metadata: {},
   };
+  const acciones = [
+    "status",
+    "enroll",
+    "replace",
+    "restore",
+    "remove",
+    "charge",
+    "verificar",
+    "firmar",
+    "restaurar",
+    "crear",
+  ];
+  const variantes = acciones.map((action, i) =>
+    new Request(base, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...cuerpo,
+        action,
+        accion: action,
+        decision: i % 2 ? "liberar" : "reembolsar",
+        recover: true,
+      }),
+    })
+  );
+  const conServicio = [cuerpo, { ...cuerpo, type: "UPDATE" }, {
+    ...cuerpo,
+    record: { id: ID },
+  }].map((b) =>
+    new Request(base, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer service-prueba",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(b),
+    })
+  );
   return [
+    ...conServicio,
+    ...variantes,
     new Request(base, { method: "OPTIONS", headers: origen }),
     new Request(base, { method: "GET" }),
     new Request(
@@ -233,9 +336,69 @@ const pedidos = (nombre: string): Request[] => {
         `token_ws=tok-prueba&TBK_TOKEN=tok&TBK_ORDEN_COMPRA=A1&TBK_ID_SESION=${ID}`,
     }),
     new Request(base, { method: "PUT", headers: auth }),
+    new Request(`${base}?t=${encodeURIComponent(TICKET)}`, {
+      method: "GET",
+      headers: origen,
+    }),
+    new Request(`${base}?token_ws=tok-prueba`, {
+      method: "GET",
+      headers: origen,
+    }),
+    new Request(`${base}?TBK_TOKEN=tok&TBK_ORDEN_COMPRA=A1`, {
+      method: "GET",
+      headers: origen,
+    }),
+    new Request(base, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        ...origen,
+      },
+      body: "TBK_TOKEN=tok&TBK_ORDEN_COMPRA=A1",
+    }),
+    new Request(base, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...cuerpo,
+        previewOnly: true,
+        changeOrderId: ID,
+        ticket: TICKET,
+        alta: TICKET,
+        token: TICKET,
+      }),
+    }),
   ];
 };
 
+let TICKET = "x";
+let ipSec = 1;
+let CUENTA_FCM = "";
+/** Cuenta de servicio de prueba con una llave RSA generada en el momento. */
+async function cuentaServicioFcm(): Promise<string> {
+  if (CUENTA_FCM) return CUENTA_FCM;
+  const k = await crypto.subtle.generateKey(
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    },
+    true,
+    ["sign", "verify"],
+  );
+  const der = new Uint8Array(
+    await crypto.subtle.exportKey("pkcs8", k.privateKey),
+  );
+  const b64 = btoa(String.fromCharCode(...der)).replace(/(.{64})/g, "$1\n");
+  CUENTA_FCM = JSON.stringify({
+    project_id: "proyecto-prueba",
+    client_email: "push@proyecto-prueba.iam.gserviceaccount.com",
+    private_key:
+      `-----BEGIN PRIVATE KEY-----\n${b64}\n-----END PRIVATE KEY-----\n`,
+  });
+  return CUENTA_FCM;
+}
 const funciones = [...Deno.readDirSync(new URL(".", import.meta.url))]
   .filter((e) => e.isDirectory && !e.name.startsWith("_"))
   .map((e) => e.name)
@@ -249,6 +412,9 @@ for (const nombre of funciones) {
     sanitizeResources: false,
     fn: async () => {
       for (const [k, v] of Object.entries(ENV)) Deno.env.set(k, v);
+      const { signHandoffTicket } = await import("./_shared/security.ts");
+      TICKET = await signHandoffTicket(ID);
+      Deno.env.set("FCM_SERVICE_ACCOUNT", await cuentaServicioFcm());
       const fetchReal = globalThis.fetch;
       const serveReal = Deno.serve;
       const logReal = [console.log, console.error, console.warn, console.info];
@@ -278,10 +444,32 @@ for (const nombre of funciones) {
       try {
         await import(`./${nombre}/index.ts`);
         assert.ok(handler, `${nombre} no registró un manejador`);
-        for (const m of ["anonimo", "usuario", "falla"] as const) {
+        for (
+          const [m, estados] of [
+            ["anonimo", VARIANTES[0]],
+            ["usuario", VARIANTES[0]],
+            ["usuario", VARIANTES[1]],
+            ["falla", VARIANTES[0]],
+          ] as const
+        ) {
           modo = m;
+          ESTADOS = estados;
           for (const req of pedidos(nombre)) {
+            // IP distinta por pedido para que el límite en memoria no corte el recorrido.
+            req.headers.set(
+              "cf-connecting-ip",
+              `10.0.${(ipSec >> 8) & 255}.${ipSec++ & 255}`,
+            );
             const res = await (handler as Handler)(req);
+            if (Deno.env.get("HUMO_TRAZA") === nombre) {
+              logReal[2](
+                m,
+                req.method,
+                req.url,
+                res.status,
+                await res.clone().text(),
+              );
+            }
             assert.ok(res instanceof Response, `${nombre} ${m} ${req.method}`);
             assert.ok(res.status >= 100 && res.status < 600);
             await res.body?.cancel();
