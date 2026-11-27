@@ -1,4 +1,4 @@
--- Portado desde MathiasAlejandr0/MyWorksAppProyect PR #55 (20261114000006_horarios_semanales.sql).
+-- Portado desde el PR #55 de la rama de integración (20261114000006_horarios_semanales.sql).
 -- Aplicada en vivo dentro de 20261115051320–20261115051532.
 -- No reaplicar el SQL en wxqrfcqifkfgawrnqmnj: ya está en la base.
 

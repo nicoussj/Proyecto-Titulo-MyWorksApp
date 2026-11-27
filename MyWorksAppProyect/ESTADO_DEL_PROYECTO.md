@@ -6,7 +6,7 @@ Documento de referencia para **memoria de título**, **presentaciones universita
 
 **Última actualización:** 22 de noviembre de 2026, 23:07 hora de Chile (23 de noviembre de 2026, 02:07 UTC), en la rama `cursor/informe-cierre-5321`. `origin/main` está en `19d1da3` y no tiene commits posteriores. El inventario del 20-11 (`d9d2c7c`) y el cierre sobre `a5f2f7d` quedan debajo, corregidos donde esta lectura los dejó falsos.  
 **Versiones:** app Flutter 1.0.15+16 (`pubspec.yaml`, commit `19d1da3` del 22 de noviembre de 2026, 22:36 hora de Chile); web 1.0.0 y consola 0.1.0 (`package.json`, `tauri.conf.json`). Esa versión oculta en Mi Perfil la carta de boleta del SII, porque el formulario solo guarda RUT, giro y tipo de documento en el teléfono y la boleta no está integrada.  
-**Repositorio:** https://github.com/nicoussj/Proyecto-Titulo-MyWorksApp (el espejo `MathiasAlejandr0/MyWorksAppProyect` tiene un historial distinto y no se usa como fuente).
+**Repositorio:** https://github.com/nicoussj/Proyecto-Titulo-MyWorksApp.
 
 **Base remedida.** El 22 de noviembre de 2026, a las 23:04 hora de Chile, Supabase respondió sobre `wxqrfcqifkfgawrnqmnj`: 76 tablas en `public`, las 76 con RLS, 94 claves foráneas y última migración `20261123020000`. `app_config.demo_modo` sigue en 1. No se modificó la base, no se tocaron comisiones y no se ejecutó `seed_historial_puerto_montt.sql`. De 82 perfiles, 34 tienen foto en el bucket público `fotos-demo` y 48 siguen sin `ruta_foto_perfil`. El piso de forma normal no cambia: 2FN en el esquema auditado el 16-11, la mayoría de esas tablas en BCNF, 4FN solo en las listas del profesional, y tres tablas a propósito en 2FN (`mensajes`, `tickets_soporte`, `trabajadores`). Las 15 tablas nuevas no se reclasificaron.
 

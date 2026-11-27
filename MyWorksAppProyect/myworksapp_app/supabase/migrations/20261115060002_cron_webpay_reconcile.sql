@@ -1,4 +1,4 @@
--- Portado desde MathiasAlejandr0/MyWorksAppProyect PR #55 (20261115060002_cron_webpay_reconcile.sql).
+-- Portado desde el PR #55 de la rama de integración (20261115060002_cron_webpay_reconcile.sql).
 -- El job mwa_webpay_reconcile ya corre cada 5 minutos, pero no hay fila en schema_migrations. Reparar esta versión como applied antes de db push.
 -- No reaplicar el SQL en wxqrfcqifkfgawrnqmnj: ya está en la base.
 

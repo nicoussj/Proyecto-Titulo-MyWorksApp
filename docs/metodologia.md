@@ -35,7 +35,7 @@ Identificadores en el historial de Git (`git log`, al 2026-11-17, 221 commits en
 
 | Identificador de autor | Commits | Primer y último commit |
 |------------------------|--------:|------------------------|
-| Mathias (cuatro identidades de autor: `Mathias Jara`, `Mathias`, `Mathias Alejandro Jara Alvarado` con dos correos; cuenta de GitHub `MathiasAlejandr0`) | 144 | 2026-08-16 a 2026-11-16 |
+| Mathias (cuatro identidades de autor: `Mathias Jara`, `Mathias`, `Mathias Alejandro Jara Alvarado` con dos correos) | 144 | 2026-08-16 a 2026-11-16 |
 | Gabriel (cuenta de GitHub `gabitopop`, autor «Gabriel») | 47 | 2026-08-14 a 2026-11-16 |
 | Nicolas Chiguay (cuenta de GitHub `nicoussj`) | 24 | 2026-08-10 a 2026-11-10 |
 | Cursor Agent (agente de código) | 5 | 2026-11-15 a 2026-11-16 |
@@ -140,7 +140,7 @@ Las historias se infieren de las funciones que existen en el código. La columna
 | Sprint Retrospective | Todos los fines de semana, después de la Review. Los diarios de reflexión de cada fase complementan la retrospectiva individual. | Confirmado por el equipo (2026-11-17); `Fase 1/Evidencias Individual/`; diarios de reflexión de la Fase 2 en `Fase 2/`. |
 | Refinamiento del backlog | En el tablero de GitHub Projects, a cargo del Product Owner, antes de cada Sprint Planning. | Confirmado por el equipo (2026-11-17). |
 
-Evidencia de revisión de código en el repositorio: GitHub registra 74 pull requests en `nicoussj/Proyecto-Titulo-MyWorksApp` (consulta a la API de GitHub el 2026-11-17). De ellos, 40 los abrió `dependabot[bot]`, 32 la cuenta `MathiasAlejandr0` y 2 la cuenta `nicoussj`. El repositorio no tiene issues. La rama principal registra 30 merges de pull request (`git log --merges`, corte en `514781d`).
+Evidencia de revisión de código en el repositorio: al 26-nov-2026, GitHub registra 120 pull requests creados en `nicoussj/Proyecto-Titulo-MyWorksApp`, de los cuales 60 se integraron a main. El repositorio no tiene issues. La rama principal registra 65 commits de integración (`git log --merges`, corte en `1fad6ef`). Cifra anterior (17-nov-2026): 74 pull requests y 30 integraciones.
 
 ## 6. Herramienta de tablero
 

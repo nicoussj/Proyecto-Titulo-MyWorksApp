@@ -1,4 +1,4 @@
--- Portado desde MathiasAlejandr0/MyWorksAppProyect PR #55 (20261115060001_trabajador_horarios_pk_por_dia.sql).
+-- Portado desde el PR #55 de la rama de integración (20261115060001_trabajador_horarios_pk_por_dia.sql).
 -- Aplicada en vivo exactamente como 20261115052827. El nombre del archivo coincide con schema_migrations.
 -- No reaplicar el SQL en wxqrfcqifkfgawrnqmnj: ya está en la base.
 
