@@ -2,6 +2,7 @@
 // estilo Positron OK, estilo caído con respaldo OpenStreetMap, baldosas que
 // bajan, quedan en caché o fallan a una baldosa en blanco. Nada sale a la red.
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -33,6 +34,15 @@ const _style = {
     },
   ],
 };
+
+bool _pidioOsm(_Net net) =>
+    net.urls.any((u) => u.contains('tile.openstreetmap.org'));
+
+void _borrarCacheDeEstilo() {
+  final dir = Directory(
+      '${Directory.systemTemp.path}/mwa_test_docs/flutter_map_vector_tiles');
+  if (dir.existsSync()) dir.deleteSync(recursive: true);
+}
 
 /// El cliente de baldosas es estático: una sola red falsa para todo el archivo.
 final _net = _Net();
@@ -80,9 +90,9 @@ Widget _map() => const MaterialApp(
 
 /// Deja correr la red simulada. Con [until] sigue esperando (hasta ~6 s
 /// reales) a que aparezca ese widget: en CI el estilo puede tardar más.
-Future<void> _settle(WidgetTester tester, {Finder? until}) async {
+Future<void> _settle(WidgetTester tester, {bool Function()? until}) async {
   for (var i = 0; i < 6 || (until != null && i < 60); i++) {
-    if (i >= 6 && until!.evaluate().isNotEmpty) break;
+    if (i >= 6 && until!()) break;
     await tester
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
     await tester.pump(const Duration(milliseconds: 300));
@@ -98,6 +108,9 @@ void main() {
       ..clearLiveImages();
     MapTileCache.debugReset();
     MapTileCache.debugInWidgetTestOverride = false;
+    // El estilo queda en la caché de disco del paquete: sin borrarla, un test
+    // que simula el estilo caído leería el que guardó el test anterior.
+    _borrarCacheDeEstilo();
   });
   tearDown(MapTileCache.debugReset);
 
@@ -106,7 +119,8 @@ void main() {
     final net = _net..reset();
     await http.runWithClient(() async {
       await tester.pumpWidget(_map());
-      await _settle(tester, until: find.byType(vt.VectorTileLayer));
+      await _settle(tester,
+          until: () => find.byType(vt.VectorTileLayer).evaluate().isNotEmpty);
     }, () => net.client);
     expect(find.byType(vt.VectorTileLayer), findsOneWidget);
     expect(find.text(AppMapTiles.attribution), findsOneWidget);
@@ -119,7 +133,7 @@ void main() {
     final net = _net..reset(styleOk: false);
     await http.runWithClient(() async {
       await tester.pumpWidget(_map());
-      await _settle(tester);
+      await _settle(tester, until: () => _pidioOsm(net));
       expect(find.byType(vt.VectorTileLayer), findsNothing);
       expect(find.byType(TileLayer), findsOneWidget);
       expect(net.urls.where((u) => u.contains('tile.openstreetmap.org')),
@@ -143,7 +157,7 @@ void main() {
     final net = _net..reset(styleOk: false, tileStatus: 500);
     await http.runWithClient(() async {
       await tester.pumpWidget(_map());
-      await _settle(tester);
+      await _settle(tester, until: () => _pidioOsm(net));
       final tiles =
           net.urls.where((u) => u.contains('tile.openstreetmap.org')).toList();
       expect(tiles, isNotEmpty);
