@@ -1,0 +1,52 @@
+
+ RUN  v5.1.2 myworksapp_web
+      Coverage enabled with v8
+
+
+ Test Files  23 passed (23)
+      Tests  229 passed (229)
+   Start at  01:32:57
+   Duration  5.35s (tests 39%, environment 37%, import 10%, setup 8%, transform 3%, worker 2%)
+
+Environment  jsdom was created 23 times · 10.66s total, 37% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   98.51 |    94.16 |   99.38 |   99.83 |                   
+ src               |   98.86 |    90.95 |     100 |   99.74 |                   
+  App.tsx          |    98.8 |    90.41 |     100 |   99.73 | 1270,1330         
+ src/components    |   98.27 |    95.13 |   98.79 |   99.82 |                   
+  ...iceBanner.tsx |      96 |       90 |     100 |     100 | 18                
+  AuthModal.tsx    |     100 |    98.31 |     100 |     100 | 72,316            
+  ...rderPanel.tsx |   98.18 |     90.9 |    92.3 |     100 | 35,47             
+  ...ntActions.tsx |   98.27 |    87.87 |     100 |     100 | ...15,299,349-361 
+  ...encePanel.tsx |     100 |    92.72 |     100 |     100 | 74,123            
+  ...cationMap.tsx |   95.12 |       75 |     100 |     100 | 47-64             
+  ...hatWidget.tsx |   98.03 |    98.07 |     100 |     100 | 82                
+  ...koutModal.tsx |   94.28 |    93.75 |     100 |   96.82 | 122-123           
+  ...SearchMap.tsx |   97.81 |    94.52 |     100 |     100 | 139,210,252,291   
+  ...ookingBar.tsx |   96.42 |    92.77 |     100 |     100 | ...81,155,190,246 
+  ...sultsView.tsx |     100 |    98.59 |     100 |     100 | 191               
+  ...Dashboard.tsx |   96.47 |    94.19 |    92.3 |     100 | ...91,350-356,515 
+ src/context       |   96.21 |    90.16 |     100 |     100 |                   
+  AuthContext.tsx  |   96.06 |    89.83 |     100 |     100 | ...,73,82,112,127 
+ src/hooks         |     100 |     98.5 |     100 |     100 |                   
+  useDialogA11y.ts |     100 |    95.45 |     100 |     100 | 14                
+ src/map           |   97.36 |    95.45 |     100 |     100 |                   
+  basemap.ts       |   97.36 |    95.45 |     100 |     100 | 24                
+ src/pages         |   98.03 |    91.03 |     100 |     100 |                   
+  AccountPage.tsx  |     100 |     92.3 |     100 |     100 | 43-45,49,104      
+  ...ofilePage.tsx |   93.87 |     90.1 |     100 |     100 | ...94,111,153-155 
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 98.51% ( 2714/2755 )
+Branches     : 94.16% ( 2067/2195 )
+Functions    : 99.38% ( 644/648 )
+Lines        : 99.83% ( 2450/2454 )
+================================================================================
+EXIT_VITEST=0

@@ -184,21 +184,21 @@ void main() {
 
     group('integración', () {
       test('roundtrip cliente: dbValue -> fromDb', () {
-        final role = UserRole.cliente;
+        const role = UserRole.cliente;
         final dbValue = role.dbValue;
         final parsed = UserRole.fromDb(dbValue);
         expect(parsed, role);
       });
 
       test('roundtrip especialista: dbValue -> fromDb', () {
-        final role = UserRole.especialista;
+        const role = UserRole.especialista;
         final dbValue = role.dbValue;
         final parsed = UserRole.fromDb(dbValue);
         expect(parsed, role);
       });
 
       test('roundtrip administrador: dbValue -> fromDb', () {
-        final role = UserRole.administrador;
+        const role = UserRole.administrador;
         final dbValue = role.dbValue;
         final parsed = UserRole.fromDb(dbValue);
         expect(parsed, role);

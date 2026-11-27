@@ -78,7 +78,8 @@ class _AppMapStyle {
   static bool debugForceOsmFallback = false;
 
   static bool get _inWidgetTest {
-    return WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    return MapTileCache.debugInWidgetTestOverride ??
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
   }
 
   static Future<vt.Style?> load() {
@@ -237,8 +238,13 @@ class MapTileCache {
     _waiters.remove(onServed);
   }
 
+  /// Permite a una prueba simular el teléfono real (red falsa, sin atajos).
+  @visibleForTesting
+  static bool? debugInWidgetTestOverride;
+
   @visibleForTesting
   static void debugReset() {
+    debugInWidgetTestOverride = null;
     _entries.clear();
     served = 0;
     _waiters.clear();

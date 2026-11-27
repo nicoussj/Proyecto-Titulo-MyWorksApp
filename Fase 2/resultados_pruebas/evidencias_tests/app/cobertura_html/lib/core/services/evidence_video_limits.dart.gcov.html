@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/services/evidence_video_limits.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/services">lib/core/services</a> - evidence_video_limits.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">15</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : import 'dart:async';</span>
+<span id="L2"><span class="lineNum">       2</span>              : </span>
+<span id="L3"><span class="lineNum">       3</span>              : import 'package:crypto/crypto.dart';</span>
+<span id="L4"><span class="lineNum">       4</span>              : </span>
+<span id="L5"><span class="lineNum">       5</span>              : import 'evidence_storage_path.dart';</span>
+<span id="L6"><span class="lineNum">       6</span>              : </span>
+<span id="L7"><span class="lineNum">       7</span>              : /// Tope de la cámara de evidencia en el plan gratuito de Storage (~720p, 30 s).</span>
+<span id="L8"><span class="lineNum">       8</span>              : class EvidenceVideoLimits {</span>
+<span id="L9"><span class="lineNum">       9</span>              :   static const Duration minDuration = Duration(seconds: 1);</span>
+<span id="L10"><span class="lineNum">      10</span>              :   static const Duration maxDuration = Duration(seconds: 30);</span>
+<span id="L11"><span class="lineNum">      11</span>              :   /// Un segundo extra por el cierre del encoder al auto-detener.</span>
+<span id="L12"><span class="lineNum">      12</span>              :   static const int maxDurationSecondsGrace = 31;</span>
+<span id="L13"><span class="lineNum">      13</span>              :   static const int maxBytes = EvidenceStoragePath.maxVideoBytes;</span>
+<span id="L14"><span class="lineNum">      14</span>              :   /// ResolutionPreset.high del paquete camera (1280×720).</span>
+<span id="L15"><span class="lineNum">      15</span>              :   static const int maxHeight = 720;</span>
+<span id="L16"><span class="lineNum">      16</span>              : </span>
+<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC">           3 :   static String? validate({</span></span>
+<span id="L18"><span class="lineNum">      18</span>              :     required int byteLength,</span>
+<span id="L19"><span class="lineNum">      19</span>              :     required Duration duration,</span>
+<span id="L20"><span class="lineNum">      20</span>              :     String? mime,</span>
+<span id="L21"><span class="lineNum">      21</span>              :   }) {</span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">           6 :     if (mime != null &amp;&amp; mime.isNotEmpty &amp;&amp; !mime.startsWith('video/')) {</span></span>
+<span id="L23"><span class="lineNum">      23</span>              :       return 'El archivo no es un video';</span>
+<span id="L24"><span class="lineNum">      24</span>              :     }</span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">           2 :     if (byteLength &lt;= 0) {</span></span>
+<span id="L26"><span class="lineNum">      26</span>              :       return 'El video está vacío';</span>
+<span id="L27"><span class="lineNum">      27</span>              :     }</span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">           2 :     if (byteLength &gt; maxBytes) {</span></span>
+<span id="L29"><span class="lineNum">      29</span>              :       return 'El video supera el tope de 20 MB';</span>
+<span id="L30"><span class="lineNum">      30</span>              :     }</span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">           2 :     if (duration &lt; minDuration) {</span></span>
+<span id="L32"><span class="lineNum">      32</span>              :       return 'El video es demasiado corto. Mantén presionado el disparador, o toca para una foto.';</span>
+<span id="L33"><span class="lineNum">      33</span>              :     }</span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           4 :     if (duration &gt; maxDuration + const Duration(seconds: 1)) {</span></span>
+<span id="L35"><span class="lineNum">      35</span>              :       return 'El video no puede durar más de 30 segundos';</span>
+<span id="L36"><span class="lineNum">      36</span>              :     }</span>
+<span id="L37"><span class="lineNum">      37</span>              :     return null;</span>
+<span id="L38"><span class="lineNum">      38</span>              :   }</span>
+<span id="L39"><span class="lineNum">      39</span>              : }</span>
+<span id="L40"><span class="lineNum">      40</span>              : </span>
+<span id="L41"><span class="lineNum">      41</span>              : /// Misma regla de procedencia que la foto: nonce, SHA-256 y GPS, más el tope de video.</span>
+<span id="L42"><span class="lineNum">      42</span>              : class EvidenceVideoProvenance {</span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           9 :   static final RegExp _sha256 = RegExp(r'^[0-9a-f]{64}$');</span></span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           3 :   static String? validate({</span></span>
+<span id="L46"><span class="lineNum">      46</span>              :     required String nonce,</span>
+<span id="L47"><span class="lineNum">      47</span>              :     required String hashSha256,</span>
+<span id="L48"><span class="lineNum">      48</span>              :     required int byteLength,</span>
+<span id="L49"><span class="lineNum">      49</span>              :     required Duration duration,</span>
+<span id="L50"><span class="lineNum">      50</span>              :     required String mime,</span>
+<span id="L51"><span class="lineNum">      51</span>              :     double? lat,</span>
+<span id="L52"><span class="lineNum">      52</span>              :     double? lng,</span>
+<span id="L53"><span class="lineNum">      53</span>              :   }) {</span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           6 :     if (nonce.trim().isEmpty) {</span></span>
+<span id="L55"><span class="lineNum">      55</span>              :       return 'falta el nonce';</span>
+<span id="L56"><span class="lineNum">      56</span>              :     }</span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           9 :     if (!_sha256.hasMatch(hashSha256.toLowerCase())) {</span></span>
+<span id="L58"><span class="lineNum">      58</span>              :       return 'hash sha256 invalido';</span>
+<span id="L59"><span class="lineNum">      59</span>              :     }</span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           2 :     final limits = EvidenceVideoLimits.validate(</span></span>
+<span id="L61"><span class="lineNum">      61</span>              :       byteLength: byteLength,</span>
+<span id="L62"><span class="lineNum">      62</span>              :       duration: duration,</span>
+<span id="L63"><span class="lineNum">      63</span>              :       mime: mime,</span>
+<span id="L64"><span class="lineNum">      64</span>              :     );</span>
+<span id="L65"><span class="lineNum">      65</span>              :     if (limits != null) return limits;</span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          12 :     if (lat == null || lng == null || lat &lt; -90 || lat &gt; 90 || lng &lt; -180 || lng &gt; 180) {</span></span>
+<span id="L67"><span class="lineNum">      67</span>              :       return 'falta el gps de la captura';</span>
+<span id="L68"><span class="lineNum">      68</span>              :     }</span>
+<span id="L69"><span class="lineNum">      69</span>              :     return null;</span>
+<span id="L70"><span class="lineNum">      70</span>              :   }</span>
+<span id="L71"><span class="lineNum">      71</span>              : }</span>
+<span id="L72"><span class="lineNum">      72</span>              : </span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           1 : Future&lt;String&gt; sha256OfBytesStream(Stream&lt;List&lt;int&gt;&gt; bytes) async {</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           2 :   final digest = await sha256.bind(bytes).first;</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           1 :   return digest.toString();</span></span>
+<span id="L76"><span class="lineNum">      76</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

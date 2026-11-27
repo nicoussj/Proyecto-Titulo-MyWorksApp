@@ -142,11 +142,11 @@ void main() {
     await smokeWidget(
         tester,
         () => f3.AppGuidedTour(
-            child: const SizedBox(),
-            steps: [f3.GuidedTourStep(title: 'id-1', description: 'id-1')],
+            steps: const [f3.GuidedTourStep(title: 'id-1', description: 'id-1')],
             shouldShow: () async => true,
             onComplete: () async {},
-            badgeLabel: 'id-1'),
+            badgeLabel: 'id-1',
+            child: const SizedBox()),
         seeded: true,
         role: 'usuario');
   });
@@ -155,10 +155,10 @@ void main() {
     await smokeWidget(
         tester,
         () => f3.AppGuidedTour(
-            child: const SizedBox(),
-            steps: [f3.GuidedTourStep(title: 'id-1', description: 'id-1')],
+            steps: const [f3.GuidedTourStep(title: 'id-1', description: 'id-1')],
             shouldShow: () async => true,
-            onComplete: () async {}),
+            onComplete: () async {},
+            child: const SizedBox()),
         seeded: false,
         role: 'usuario');
   });
@@ -198,8 +198,8 @@ void main() {
     await smokeWidget(
         tester,
         () => f5.DemoTourOverlay(
-            child: const SizedBox(),
-            steps: [f3.GuidedTourStep(title: 'id-1', description: 'id-1')]),
+            steps: const [f3.GuidedTourStep(title: 'id-1', description: 'id-1')],
+            child: const SizedBox()),
         seeded: true,
         role: 'usuario');
   });
@@ -211,8 +211,8 @@ void main() {
         () => f6.AppAuthScaffold(
             title: 'id-1',
             subtitle: 'id-1',
-            child: const SizedBox(),
-            badge: 'id-1'),
+            badge: 'id-1',
+            child: const SizedBox()),
         seeded: true,
         role: 'usuario');
   });
@@ -259,7 +259,7 @@ void main() {
         tester,
         () => f8.AppGradientAppBar(
             title: const SizedBox(),
-            actions: [const SizedBox()],
+            actions: const [SizedBox()],
             leading: const SizedBox(),
             automaticallyImplyLeading: true,
             bottom: null,
@@ -278,7 +278,6 @@ void main() {
     await smokeWidget(
         tester,
         () => f9.AppleCard(
-            child: const SizedBox(),
             onTap: () {},
             padding: EdgeInsets.zero,
             margin: EdgeInsets.zero,
@@ -286,7 +285,8 @@ void main() {
             accentColor: const Color(0xFF000000),
             borderRadius: 1.0,
             isGlass: true,
-            enablePressEffect: true),
+            enablePressEffect: true,
+            child: const SizedBox()),
         seeded: true,
         role: 'usuario');
   });
@@ -301,7 +301,8 @@ void main() {
     await smokeWidget(
         tester,
         () => f11.AuthSoftBackground(
-            child: const SizedBox(), showDecorations: true),
+            showDecorations: true,
+            child: const SizedBox()),
         seeded: true,
         role: 'usuario');
   });
@@ -735,11 +736,11 @@ void main() {
             leading: const SizedBox(),
             headerBadge: 'id-1',
             headerBadgeColor: const Color(0xFF000000),
-            badges: [
+            badges: const [
               f35.WorkerCardBadge(
                   icon: Icons.star,
                   label: 'id-1',
-                  color: const Color(0xFF000000))
+                  color: Color(0xFF000000))
             ],
             footnote: 'id-1',
             showChevron: true,

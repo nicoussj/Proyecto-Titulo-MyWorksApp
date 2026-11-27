@@ -20,6 +20,7 @@ function turnstileApi(): TurnstileApi | null {
 export function TurnstileWidget({ onToken }: { onToken: (token: string) => void }) {
   const host = useRef<HTMLDivElement>(null);
   const onTokenRef = useRef(onToken);
+  // oxlint-disable-next-line react/refs -- patron latest-ref: guarda el ultimo valor para callbacks ya registrados
   onTokenRef.current = onToken;
 
   useEffect(() => {

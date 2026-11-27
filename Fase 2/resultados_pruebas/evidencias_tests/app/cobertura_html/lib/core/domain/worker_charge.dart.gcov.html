@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/domain/worker_charge.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/domain">lib/core/domain</a> - worker_charge.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntry">22</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : /// Un cobro del profesional tal como lo entrega la vista `cobros_profesional`.</span>
+<span id="L2"><span class="lineNum">       2</span>              : ///</span>
+<span id="L3"><span class="lineNum">       3</span>              : /// La base calcula bruto, comisión y neto (función `comision_servicio_clp`):</span>
+<span id="L4"><span class="lineNum">       4</span>              : /// la app solo los muestra, no los recalcula.</span>
+<span id="L5"><span class="lineNum">       5</span>              : class WorkerCharge {</span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           8 :   const WorkerCharge({</span></span>
+<span id="L7"><span class="lineNum">       7</span>              :     required this.paymentId,</span>
+<span id="L8"><span class="lineNum">       8</span>              :     required this.jobId,</span>
+<span id="L9"><span class="lineNum">       9</span>              :     required this.paymentType,</span>
+<span id="L10"><span class="lineNum">      10</span>              :     required this.paymentStatus,</span>
+<span id="L11"><span class="lineNum">      11</span>              :     required this.grossClp,</span>
+<span id="L12"><span class="lineNum">      12</span>              :     required this.feeClp,</span>
+<span id="L13"><span class="lineNum">      13</span>              :     required this.netClp,</span>
+<span id="L14"><span class="lineNum">      14</span>              :     this.transferStatus,</span>
+<span id="L15"><span class="lineNum">      15</span>              :     this.transferReference,</span>
+<span id="L16"><span class="lineNum">      16</span>              :     this.settledAt,</span>
+<span id="L17"><span class="lineNum">      17</span>              :     this.releasedAt,</span>
+<span id="L18"><span class="lineNum">      18</span>              :     this.createdAt,</span>
+<span id="L19"><span class="lineNum">      19</span>              :   });</span>
+<span id="L20"><span class="lineNum">      20</span>              : </span>
+<span id="L21"><span class="lineNum">      21</span>              :   static const String view = 'cobros_profesional';</span>
+<span id="L22"><span class="lineNum">      22</span>              :   static const String columns =</span>
+<span id="L23"><span class="lineNum">      23</span>              :       'id_pago, id_trabajo, id_trabajador, tipo_pago, estado_pago, bruto_clp, '</span>
+<span id="L24"><span class="lineNum">      24</span>              :       'comision_clp, neto_clp, estado_transferencia, referencia_transferencia, '</span>
+<span id="L25"><span class="lineNum">      25</span>              :       'liquidado_en, liberado_en, creado_en';</span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span>              :   final String paymentId;</span>
+<span id="L28"><span class="lineNum">      28</span>              :   final String jobId;</span>
+<span id="L29"><span class="lineNum">      29</span>              :   final String paymentType;</span>
+<span id="L30"><span class="lineNum">      30</span>              :   final String paymentStatus;</span>
+<span id="L31"><span class="lineNum">      31</span>              : </span>
+<span id="L32"><span class="lineNum">      32</span>              :   /// Lo que pagó el cliente.</span>
+<span id="L33"><span class="lineNum">      33</span>              :   final int grossClp;</span>
+<span id="L34"><span class="lineNum">      34</span>              : </span>
+<span id="L35"><span class="lineNum">      35</span>              :   /// Comisión del servicio que se descuenta al profesional.</span>
+<span id="L36"><span class="lineNum">      36</span>              :   final int feeClp;</span>
+<span id="L37"><span class="lineNum">      37</span>              : </span>
+<span id="L38"><span class="lineNum">      38</span>              :   /// Lo que se le transfiere al profesional.</span>
+<span id="L39"><span class="lineNum">      39</span>              :   final int netClp;</span>
+<span id="L40"><span class="lineNum">      40</span>              : </span>
+<span id="L41"><span class="lineNum">      41</span>              :   /// `transferido` cuando el administrador ya registró la transferencia.</span>
+<span id="L42"><span class="lineNum">      42</span>              :   final String? transferStatus;</span>
+<span id="L43"><span class="lineNum">      43</span>              :   final String? transferReference;</span>
+<span id="L44"><span class="lineNum">      44</span>              :   final DateTime? settledAt;</span>
+<span id="L45"><span class="lineNum">      45</span>              :   final DateTime? releasedAt;</span>
+<span id="L46"><span class="lineNum">      46</span>              :   final DateTime? createdAt;</span>
+<span id="L47"><span class="lineNum">      47</span>              : </span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           8 :   factory WorkerCharge.fromRow(Map&lt;String, dynamic&gt; row) {</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">          16 :     final gross = _int(row['bruto_clp']);</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">          16 :     final fee = _int(row['comision_clp']);</span></span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">          25 :     final net = row['neto_clp'] == null ? gross - fee : _int(row['neto_clp']);</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           8 :     return WorkerCharge(</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">          16 :       paymentId: '${row['id_pago'] ?? ''}',</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">          16 :       jobId: '${row['id_trabajo'] ?? ''}',</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">          16 :       paymentType: '${row['tipo_pago'] ?? 'principal'}',</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">          16 :       paymentStatus: '${row['estado_pago'] ?? ''}',</span></span>
+<span id="L57"><span class="lineNum">      57</span>              :       grossClp: gross,</span>
+<span id="L58"><span class="lineNum">      58</span>              :       feeClp: fee,</span>
+<span id="L59"><span class="lineNum">      59</span>              :       netClp: net,</span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           8 :       transferStatus: row['estado_transferencia'] as String?,</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           8 :       transferReference: row['referencia_transferencia'] as String?,</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">          16 :       settledAt: _date(row['liquidado_en']),</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">          16 :       releasedAt: _date(row['liberado_en']),</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">          16 :       createdAt: _date(row['creado_en']),</span></span>
+<span id="L65"><span class="lineNum">      65</span>              :     );</span>
+<span id="L66"><span class="lineNum">      66</span>              :   }</span>
+<span id="L67"><span class="lineNum">      67</span>              : </span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           8 :   static int _int(Object? value) {</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">          16 :     if (value is num) return value.round();</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">          13 :     if (value is String) return num.tryParse(value)?.round() ?? 0;</span></span>
+<span id="L71"><span class="lineNum">      71</span>              :     return 0;</span>
+<span id="L72"><span class="lineNum">      72</span>              :   }</span>
+<span id="L73"><span class="lineNum">      73</span>              : </span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           8 :   static DateTime? _date(Object? value) {</span></span>
+<span id="L75"><span class="lineNum">      75</span>              :     if (value == null) return null;</span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">          16 :     final text = '$value'.trim();</span></span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">           8 :     if (text.isEmpty) return null;</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">          16 :     final parsed = DateTime.tryParse(text.replaceFirst(' ', 'T'));</span></span>
+<span id="L79"><span class="lineNum">      79</span>              :     return parsed;</span>
+<span id="L80"><span class="lineNum">      80</span>              :   }</span>
+<span id="L81"><span class="lineNum">      81</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

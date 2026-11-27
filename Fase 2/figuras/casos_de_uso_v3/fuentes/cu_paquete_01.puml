@@ -1,0 +1,23 @@
+@startuml cu_paquete_01
+left to right direction
+title Paquete 1: Acceso y cuenta
+actor "Visitante" as Visitante
+actor "Cliente" as Cliente
+actor "Profesional" as Profesional
+actor "Cliente invitado" as Cliente_invitado
+rectangle "MyWorksApp" {
+  usecase "CU-01 Registrarse\n[Web, app]" as CU01
+  usecase "CU-02 Iniciar sesión\n[Web, app]" as CU02
+  usecase "CU-03 Recuperar contraseña\n[Web, app]" as CU03
+  usecase "CU-04 Ejercer derechos sobre los datos (exportar / eliminar cuenta)\n[App]" as CU04
+  usecase "CU-10 Definir contraseña tras pagar como invitado\n[Web]" as CU10
+}
+Visitante --> CU01
+Cliente --> CU02
+Profesional --> CU02
+Cliente --> CU03
+Profesional --> CU03
+Cliente --> CU04
+Profesional --> CU04
+Cliente_invitado --> CU10
+@enduml

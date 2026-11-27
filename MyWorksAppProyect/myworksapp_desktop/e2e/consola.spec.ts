@@ -2,7 +2,10 @@ import { createHmac } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
-const OUT = '/opt/cursor/artifacts/consola';
+const OUT = process.env.CAPTURAS_DIR ?? 'test-results/capturas/consola';
+
+// Requiere un Supabase local con el admin de prueba (supabase start + seed local).
+test.skip(!process.env.E2E_SUPABASE_LOCAL, 'Necesita E2E_SUPABASE_LOCAL=1 y un Supabase local.');
 
 const RUTAS = [
   ['/resumen', 'inicio'],

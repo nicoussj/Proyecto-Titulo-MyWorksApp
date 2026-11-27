@@ -396,8 +396,8 @@ void main() {
     await smokeWidget(
         tester,
         () => f15.WorkerDemoTourOverlay(
-            child: const SizedBox(),
-            steps: [f16.GuidedTourStep(title: 'id-1', description: 'id-1')]),
+            steps: const [f16.GuidedTourStep(title: 'id-1', description: 'id-1')],
+            child: const SizedBox()),
         seeded: true,
         role: 'trabajador');
   });
@@ -451,7 +451,7 @@ void main() {
     await smokeWidget(
         tester,
         () => f21.WorkerHoursEditor(
-            hours: [f22.WorkerHourSlot(weekday: 1, time: 'id-1')],
+            hours: const [f22.WorkerHourSlot(weekday: 1, time: 'id-1')],
             selectedWeekday: 1,
             onSelectWeekday: (_) {},
             onAddHour: (_) async {},
@@ -743,7 +743,7 @@ void main() {
         tester,
         () => f25.WorkerPricingTiersEditor(
             category: 'id-1',
-            initialTiers: <String, int>{},
+            initialTiers: const <String, int>{},
             onChanged: (_) {},
             enabled: true),
         seeded: true,
@@ -755,7 +755,7 @@ void main() {
     await smokeWidget(
         tester,
         () => f25.WorkerPricingTiersEditor(
-            category: 'id-1', initialTiers: <String, int>{}, onChanged: (_) {}),
+            category: 'id-1', initialTiers: const <String, int>{}, onChanged: (_) {}),
         seeded: false,
         role: 'trabajador');
   });
@@ -767,16 +767,16 @@ void main() {
         () => f26.WorkerProfileSectionCard(
             icon: Icons.star,
             title: 'id-1',
-            summary: <String>['id-1'],
+            summary: const <String>['id-1'],
             editing: true,
             onEdit: () {},
             onCancel: () {},
             onSave: () {},
             saving: true,
-            child: const SizedBox(),
             alwaysShowBody: true,
             showSaveActions: true,
-            saveLabel: 'id-1'),
+            saveLabel: 'id-1',
+            child: const SizedBox()),
         seeded: true,
         role: 'trabajador');
   });
@@ -788,7 +788,7 @@ void main() {
         () => f26.WorkerProfileSectionCard(
             icon: Icons.star,
             title: 'id-1',
-            summary: <String>['id-1'],
+            summary: const <String>['id-1'],
             editing: true,
             onEdit: () {}),
         seeded: false,

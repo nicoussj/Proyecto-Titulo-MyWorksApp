@@ -158,5 +158,5 @@ Coincide con P-17 en la causa (CPU de la base y cola de PostgREST). Producción 
 | Informe completo de las pruebas | [`anexos/2026-11-20-pruebas-unitarias-rendimiento/INFORME_PRUEBAS.md`](anexos/2026-11-20-pruebas-unitarias-rendimiento/INFORME_PRUEBAS.md) |
 | Figuras del informe final | [`anexos/2026-11-20-pruebas-unitarias-rendimiento/figuras/`](anexos/2026-11-20-pruebas-unitarias-rendimiento/figuras/) |
 | Capturas citadas en el informe de pruebas (salidas de cada suite, cobertura, gráficos y paneles de k6) | [`anexos/2026-11-20-pruebas-unitarias-rendimiento/capturas/`](anexos/2026-11-20-pruebas-unitarias-rendimiento/capturas/) |
-| Resultados crudos de k6, scripts y réplica | En la máquina de pruebas (`/workspace/mwa_tests/`); no están en el repositorio |
+| Resultados crudos de k6, scripts y réplica | En la máquina de pruebas del equipo; no están en el repositorio |
 | Parche de pruebas y correcciones | Se entrega aparte al Programador (3 commits sobre `d9d2c7c`) |

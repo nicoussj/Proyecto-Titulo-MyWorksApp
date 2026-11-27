@@ -1,4 +1,4 @@
--- Portado desde MathiasAlejandr0/MyWorksAppProyect PR #55 (20261114000001_asesor_acuerdos_search_path_fk.sql).
+-- Portado desde el PR #55 de la rama de integración (20261114000001_asesor_acuerdos_search_path_fk.sql).
 -- Aplicada en vivo dentro de 20261115051320–20261115051532. El archivo local usa otra versión para ordenar después de 20261115000001.
 -- No reaplicar el SQL en wxqrfcqifkfgawrnqmnj: ya está en la base.
 

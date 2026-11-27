@@ -2,7 +2,6 @@
 // permisos (denegado, denegado para siempre, concedido tras pedirlo), error
 // del plugin, punto fuera de Chile, dirección con lugar/parcial/vacía/error,
 // edición manual de la dirección y selección en el mapa.
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

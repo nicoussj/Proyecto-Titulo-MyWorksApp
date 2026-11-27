@@ -61,7 +61,7 @@ describe("push FCM", () => {
     const ok = await crypto.subtle.verify(
       "RSASSA-PKCS1-v1_5",
       publicKey,
-      b64urlToBytes(s),
+      b64urlToBytes(s) as BufferSource,
       new TextEncoder().encode(`${h}.${c}`),
     );
     assert.equal(ok, true);

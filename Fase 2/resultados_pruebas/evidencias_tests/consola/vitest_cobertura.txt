@@ -1,0 +1,259 @@
+
+ RUN  v5.1.2 myworksapp_desktop
+      Coverage enabled with v8
+
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+
+ Test Files  23 passed (23)
+      Tests  319 passed (319)
+   Start at  02:30:46
+   Duration  272.16s (tests 96%, environment 2%, import 1%)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   91.02 |    82.48 |   88.19 |   93.06 |                   
+ src               |   98.87 |    96.66 |     100 |   98.63 |                   
+  App.tsx          |     100 |    97.29 |     100 |     100 | 153               
+  authAccess.ts    |   93.75 |     87.5 |     100 |   93.75 | 120               
+ src/captura       |   86.53 |     88.7 |    72.5 |   88.31 |                   
+  cliente.ts       |   86.53 |     88.7 |    72.5 |   88.31 | 121,134,151-160   
+ src/components    |   95.08 |    93.93 |   93.54 |     100 |                   
+  AdminMfaGate.tsx |   92.85 |    89.47 |    90.9 |     100 | 35,42,50-66       
+  ...ginScreen.tsx |   96.42 |      100 |   91.66 |     100 |                   
+ src/context       |   95.74 |    87.87 |     100 |    98.5 |                   
+  AuthContext.tsx  |   96.32 |    89.06 |     100 |   98.46 | 103,168           
+  auth-store.ts    |      80 |       50 |     100 |     100 | 19                
+ src/features      |   85.95 |    77.33 |   83.14 |    87.9 |                   
+  colaResenas.tsx  |     100 |    93.54 |     100 |     100 | 19,33             
+  screens.tsx      |   80.28 |    69.61 |   76.36 |   83.12 | ...1712,1754-1758 
+  ...dad-checks.ts |   91.66 |    71.42 |     100 |      90 | 30,53             
+  ...ramientas.tsx |   96.63 |    95.72 |   94.33 |   95.95 | 165,210,226,288   
+  seguridad.tsx    |   97.39 |    95.41 |   97.43 |   98.07 | 256,335           
+  updateNotice.tsx |     100 |    93.75 |      90 |     100 | 38                
+ ...tures/disputas |   95.65 |    73.33 |     100 |   93.75 |                   
+  bandeja.ts       |   95.65 |    73.33 |     100 |   93.75 | 14                
+ ...atures/premium |   95.57 |    82.47 |   95.89 |    97.4 |                   
+  Banda.tsx        |   93.33 |       80 |     100 |   97.87 | 51                
+  TablaMil.tsx     |   85.71 |      100 |      75 |   85.71 | 21                
+  graficos.tsx     |     100 |       80 |     100 |     100 | 41,83             
+  modelo.ts        |   95.12 |    77.27 |     100 |     100 | 31,55,125-151     
+  muestras.ts      |   96.96 |    91.66 |     100 |   96.77 | 116               
+  resenas.tsx      |   96.55 |     82.5 |    90.9 |   96.07 | 117,175           
+ src/lib           |   95.57 |     87.5 |     100 |   98.93 |                   
+  authCallback.ts  |   96.42 |    95.65 |     100 |   96.29 | 70                
+  csv.ts           |     100 |       75 |     100 |     100 | 3                 
+  errors.ts        |   91.42 |    87.17 |     100 |     100 | 24-25,39,59-60    
+  format.ts        |      96 |       95 |     100 |     100 | 82                
+  lists.ts         |     100 |     90.9 |     100 |     100 | 64,114-115        
+  redirect.ts      |   77.77 |    66.66 |     100 |     100 | 8-11              
+  senalesResena.ts |     100 |    66.66 |     100 |     100 | 49-58             
+  session.ts       |     100 |       50 |     100 |     100 | 8-29              
+  totpQr.ts        |      88 |       90 |     100 |   95.23 | 14                
+ src/shell         |   98.98 |    93.44 |   97.46 |   99.39 |                   
+  Shell.tsx        |   99.37 |    94.82 |      98 |   99.21 | 315               
+  periodo.tsx      |   92.85 |    66.66 |      80 |     100 | 14-29             
+ src/ui            |     100 |      100 |   96.96 |     100 |                   
+  toast-store.ts   |     100 |      100 |      50 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 91.02% ( 2141/2352 )
+Branches     : 82.48% ( 1639/1987 )
+Functions    : 88.19% ( 695/788 )
+Lines        : 93.06% ( 1853/1991 )
+================================================================================
+EXIT 0

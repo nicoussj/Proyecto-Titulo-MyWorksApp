@@ -1,9 +1,10 @@
+// Las fakes usan las interfaces de plataforma que ya trae cada plugin.
+// ignore_for_file: depend_on_referenced_packages
 // Plataformas falsas de plugins federados (path_provider, image_picker y
 // flutter_image_compress): en los tests no hay implementación nativa y los
 // flujos de fotos se cortarían en el primer paso.
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter_image_compress_platform_interface/flutter_image_compress_platform_interface.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';

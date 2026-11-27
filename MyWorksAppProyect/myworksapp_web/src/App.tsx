@@ -286,6 +286,7 @@ export function App() {
   const location = useLocation();
   const [view, setViewState] = useState<AppView>(() => viewFromPath(location.pathname));
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
     setViewState(viewFromPath(location.pathname));
   }, [location.pathname]);
   const setView = (next: AppView) => {
@@ -318,6 +319,7 @@ export function App() {
   const [clientStartPin, setClientStartPin] = useState<string | null>(null);
   const [jobEvidence, setJobEvidence] = useState<JobEvidencePhoto[]>([]);
   const jobEvidenceRef = useRef<JobEvidencePhoto[]>([]);
+  // oxlint-disable-next-line react/refs -- patron latest-ref: guarda el ultimo valor para callbacks ya registrados
   jobEvidenceRef.current = jobEvidence;
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -371,6 +373,7 @@ export function App() {
 
   useEffect(() => {
     if (!selectedWorker) {
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       setBookingSlots([]);
       setBookingSlotsLoading(false);
       return;
@@ -645,11 +648,14 @@ export function App() {
     restoredJob.current = true;
     if (parseCheckoutReturn(window.location.search).kind !== 'none') return;
     const jobId = sessionStorage.getItem('mwa-active-job');
+    // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
     if (jobId) void openJobTracking(jobId);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- dependencias intencionales: el efecto solo debe correr con estas entradas
   }, [profile]);
 
   useEffect(() => {
     if (!profile) {
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       setUnreadCount(0);
       return;
     }
@@ -689,6 +695,7 @@ export function App() {
         .filter((id) => id.length > 0),
     )];
     if (ids.length === 0) {
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       setNoticeJobTitles({});
       return;
     }
@@ -775,6 +782,7 @@ export function App() {
       const amount = returned.amount || pending.savedAmount;
       const workerName = pending.workerName;
       const paymentId = returned.paymentId;
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       if (jobIdParam) setCheckoutJobId(jobIdParam);
       setBookingError(null);
       setPaidVerifyError(null);
@@ -873,6 +881,7 @@ export function App() {
       setBookingError(returned.message);
       window.history.replaceState({}, '', window.location.pathname);
     }
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- dependencias intencionales: el efecto solo debe correr con estas entradas
   }, []);
 
 
@@ -959,18 +968,22 @@ export function App() {
     if (serviceMatch?.category === slug) return;
     const row = ALL_SERVICE_CATEGORIES.find((item) => item.id === slug);
     if (!row) {
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       setCatalogError('Esa categoría no está en el catálogo.');
       setIsSearching(false);
       return;
     }
     void searchService(row.searchQuery);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- dependencias intencionales: el efecto solo debe correr con estas entradas
   }, [location.pathname]);
 
   useEffect(() => {
     const jobId = recordIdFromPath(location.pathname, 'pedido');
     if (!jobId || !profile) return;
     if (checkoutJobId === jobId && jobSnapshot) return;
+    // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
     void openJobTracking(jobId);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- dependencias intencionales: el efecto solo debe correr con estas entradas
   }, [location.pathname, profile, checkoutJobId, jobSnapshot]);
 
   const loadMoreWorkers = async () => {
@@ -1030,6 +1043,7 @@ export function App() {
     }
     const site = chargeSite;
     if (!site) {
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       setPayableTotalClp(null);
       setChargeLocking(false);
       setChargeLockError('Indica dónde es el trabajo: GPS, una dirección o el punto en el mapa.');
@@ -1111,6 +1125,7 @@ export function App() {
       return;
     }
     let cancelled = false;
+    // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
     setGuestPayableClp(null);
     setGuestQuoteError(null);
     void previewGuestCharge(supabase, {

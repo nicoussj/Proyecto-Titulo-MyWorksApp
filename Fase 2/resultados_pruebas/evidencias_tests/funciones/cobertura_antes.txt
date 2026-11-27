@@ -1,0 +1,24 @@
+| File                    | Branch % | Function % | Line % |
+| ----------------------- | -------- | ---------- | ------ |
+| abandon_payment.ts      |    100.0 |      100.0 |  100.0 |
+| chile_input.ts          |     76.9 |      100.0 |   83.3 |
+| commit_guard.ts         |     88.5 |      100.0 |   93.3 |
+| cors_origin.ts          |     86.0 |      100.0 |   94.7 |
+| email_layout.ts         |     45.0 |       75.0 |   85.5 |
+| email_send.ts           |     66.7 |       66.7 |   75.5 |
+| fcm.ts                  |     81.0 |       80.0 |   82.0 |
+| guest_ticket.ts         |     82.9 |      100.0 |   92.5 |
+| invite_html.ts          |     83.3 |      100.0 |   93.3 |
+| oneclick_inscription.ts |     89.3 |      100.0 |   97.4 |
+| oneclick_return_base.ts |     92.3 |      100.0 |  100.0 |
+| open_job_after_hold.ts  |     75.0 |      100.0 |   89.7 |
+| rate_limit_db.ts        |     87.5 |      100.0 |   89.5 |
+| reconcile_auth.ts       |    100.0 |      100.0 |  100.0 |
+| reconcile_hold.ts       |    100.0 |      100.0 |  100.0 |
+| require_admin.ts        |     89.5 |       71.4 |   54.8 |
+| safe_error.ts           |     50.0 |      100.0 |   56.5 |
+| tbk.ts                  |     97.6 |       25.9 |   25.7 |
+| transbank_form.ts       |     66.7 |      100.0 |   95.3 |
+| turnstile_gate.ts       |    100.0 |      100.0 |  100.0 |
+| webpay_return.ts        |     83.3 |      100.0 |   97.1 |
+| All files               |     83.6 |       71.7 |   67.2 |

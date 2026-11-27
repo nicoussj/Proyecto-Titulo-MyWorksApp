@@ -1,3 +1,5 @@
+// Las fakes usan las interfaces de plataforma que ya trae cada plugin.
+// ignore_for_file: depend_on_referenced_packages
 // Geocodificación falsa (geocoding 5): sin plataforma real en los tests,
 // `Geocoding(...)` fallaría siempre. Devuelve un lugar de Puerto Montt o, si
 // se pide, una lista vacía o un error, para recorrer cada rama.

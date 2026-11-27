@@ -37,7 +37,7 @@ export function evaluarCors(allowOrigin: string | null, status: number): Hallazg
 }
 
 /** No devuelve valores. Solo nombres de variables y si el valor parece un JWT de service role. */
-export function evaluarSecretos(env: Record<string, string | undefined>): Hallazgo {
+export function evaluarSecretos(env: Record<string, unknown>): Hallazgo {
   const nombres = Object.keys(env).filter((key) => SECRETO.test(key));
   const serviceRole = Object.entries(env).filter(([, value]) => pareceServiceRole(value)).map(([key]) => key);
   if (serviceRole.length > 0) {
@@ -67,8 +67,9 @@ export function evaluarSecretos(env: Record<string, string | undefined>): Hallaz
   };
 }
 
-function pareceServiceRole(value: string | undefined): boolean {
-  if (!value || value.split('.').length !== 3) return false;
+function pareceServiceRole(value: unknown): boolean {
+  // import.meta.env también trae DEV, PROD y SSR como booleanos.
+  if (typeof value !== 'string' || value.split('.').length !== 3) return false;
   try {
     const body = value.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
     const padded = body + '='.repeat((4 - (body.length % 4)) % 4);

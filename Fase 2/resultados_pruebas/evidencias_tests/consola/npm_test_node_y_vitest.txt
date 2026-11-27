@@ -1,0 +1,292 @@
+
+> myworksapp_desktop@0.1.0 test
+> node --import tsx --test src/authAccess.test.ts src/lib/format.test.ts src/lib/csv.test.ts src/lib/idle.test.ts src/lib/redirect.test.ts src/lib/authCallback.test.ts src/lib/lists.test.ts src/lib/errors.test.ts src/lib/senalesResena.test.ts src/features/disputas/bandeja.test.ts src/features/seguridad-model.test.ts src/features/seguridad-checks.test.ts src/features/premium/modelo.test.ts src/lib/totpQr.test.ts && vitest run
+
+▶ canAccessDesktopHub
+  ✔ permite administrador, soporte y qa (0.471263ms)
+  ✔ rechaza usuario, trabajador y legacy admin (0.11663ms)
+✔ canAccessDesktopHub (1.349252ms)
+▶ consolePermissions (mínimo privilegio)
+  ✔ solo administrador mueve dinero, ve métricas e invita (0.242438ms)
+  ✔ soporte ve evidencia y deja notas; QA solo lee la cola y seguridad (1.204195ms)
+  ✔ etiqueta legible por rol (0.120823ms)
+✔ consolePermissions (mínimo privilegio) (1.79993ms)
+✔ la bandeja ordena alta antes que baja y filtra prioridad (1.57912ms)
+✔ la procedencia distingue verificada de no verificada y el duplicado (0.288331ms)
+✔ clasifica por estrellas y marca temas (1.524862ms)
+✔ la variación compara contra el período anterior (0.136199ms)
+✔ redacta rut, teléfono y correo (0.30982ms)
+✔ el rango deja el período anterior del mismo largo (0.442748ms)
+✔ la ventana virtual no pinta las 10.000 filas (0.253124ms)
+▶ chequeos de la consola
+  ✔ marca el comodin CORS como aviso (0.638352ms)
+  ✔ detecta un JWT de service role sin copiar el valor (1.321749ms)
+  ✔ acepta el cliente solo con la anon key (0.205146ms)
+  ✔ tolera las banderas booleanas que Vite agrega a import.meta.env (0.111539ms)
+✔ chequeos de la consola (3.477365ms)
+✔ asNum ignora valores que no son número (0.814087ms)
+✔ asRows solo conserva objetos (0.563094ms)
+✔ asText muestra un guion cuando falta el dato (0.110979ms)
+▶ parseAuthDeepLink
+  ✔ lee el code de PKCE (1.009116ms)
+  ✔ lee token_hash y type (0.144783ms)
+  ✔ lee el fragmento con los dos tokens (0.113256ms)
+  ✔ ignora basura (0.127597ms)
+✔ parseAuthDeepLink (2.233624ms)
+▶ CSV
+  ✔ escapa comillas, comas y saltos, y neutraliza fórmulas (1.10905ms)
+✔ CSV (2.067654ms)
+▶ mensajes de error
+  ✔ traduce la sesión ausente y otros textos de Auth en inglés (1.200279ms)
+  ✔ conserva un motivo que ya viene en español (0.457204ms)
+  ✔ no muestra un error de red como si el registro no existiera (0.330357ms)
+✔ mensajes de error (3.000431ms)
+▶ estados de disputa en la cola
+  ✔ incluye abierta y los estados que cuenta el resumen (0.188777ms)
+  ✔ la migración usa la cola activa y exige admin para leer ajustes (0.543412ms)
+✔ estados de disputa en la cola (0.908737ms)
+▶ formato de la consola
+  ✔ muestra pesos chilenos (2.563521ms)
+  ✔ indica la zona de Santiago (0.424326ms)
+  ✔ no muestra el valor técnico de un pago (0.415249ms)
+✔ formato de la consola (5.920065ms)
+▶ cierre por inactividad
+  ✔ avisa a los 13 minutos y cierra a los 15 (1.405004ms)
+✔ cierre por inactividad (3.296415ms)
+▶ orden estable de las listas
+  ✔ cada lista tiene una columna de desempate (1.059549ms)
+  ✔ pedidos, errores y catálogo no quedan sin orden (0.601101ms)
+✔ orden estable de las listas (2.86847ms)
+▶ búsqueda y filtros
+  ✔ quita comodines y limita el largo (0.18122ms)
+  ✔ arma un or de ilike y filtra pagos y reembolsos (0.301487ms)
+✔ búsqueda y filtros (0.726182ms)
+▶ exportación por páginas
+  ✔ junta todas las páginas y se detiene en la última corta (0.389615ms)
+  ✔ no pasa de total ni de un tope de páginas (0.395929ms)
+  ✔ devuelve vacío si la primera página no trae filas (0.271715ms)
+✔ exportación por páginas (1.295383ms)
+▶ redirect de autenticación
+  ✔ en el navegador vuelve al origen con la marca de restablecer (0.598271ms)
+  ✔ el esquema de la app instalada es estable (0.10963ms)
+✔ redirect de autenticación (1.59819ms)
+▶ cola de reseñas dudosas
+  ✔ traduce la señal que ya escribió el trigger (0.600532ms)
+  ✔ junta las señales de una misma reseña en una sola acción (0.699155ms)
+✔ cola de reseñas dudosas (2.119399ms)
+▶ QR TOTP de la consola
+  ✔ reconoce un otpauth de TOTP con secreto base32 (0.697321ms)
+  ✔ codifica el # del SVG para que el <img> no corte el data URI (0.262086ms)
+  ✔ genera un PNG escaneable cuyo contenido es el otpauth (47.03514ms)
+✔ QR TOTP de la consola (49.0338ms)
+ℹ tests 47
+ℹ suites 15
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 432.435036
+
+ RUN  v5.1.2 myworksapp_desktop
+
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's print() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+
+ Test Files  23 passed (23)
+      Tests  319 passed (319)
+   Start at  02:39:32
+   Duration  253.90s (tests 97%, environment 2%, import 1%)
+
+EXIT 0

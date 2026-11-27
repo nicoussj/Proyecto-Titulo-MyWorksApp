@@ -39,6 +39,7 @@ export function LiveChatWidget({
 
   useEffect(() => {
     if (!jobId || !senderId) {
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       setLoading(false);
       return;
     }

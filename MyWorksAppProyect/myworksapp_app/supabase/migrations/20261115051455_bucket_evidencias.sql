@@ -1,4 +1,4 @@
--- Portado desde MathiasAlejandr0/MyWorksAppProyect PR #55 (20261114000002_bucket_evidencias.sql).
+-- Portado desde el PR #55 de la rama de integración (20261114000002_bucket_evidencias.sql).
 -- Aplicada en vivo dentro de 20261115051320–20261115051532.
 -- No reaplicar el SQL en wxqrfcqifkfgawrnqmnj: ya está en la base.
 

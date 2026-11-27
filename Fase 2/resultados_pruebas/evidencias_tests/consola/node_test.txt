@@ -1,0 +1,86 @@
+▶ canAccessDesktopHub
+  ✔ permite administrador, soporte y qa (1.655281ms)
+  ✔ rechaza usuario, trabajador y legacy admin (0.173186ms)
+✔ canAccessDesktopHub (3.034285ms)
+▶ consolePermissions (mínimo privilegio)
+  ✔ solo administrador mueve dinero, ve métricas e invita (0.186827ms)
+  ✔ soporte ve evidencia y deja notas; QA solo lee la cola y seguridad (1.41315ms)
+  ✔ etiqueta legible por rol (0.197194ms)
+✔ consolePermissions (mínimo privilegio) (2.362508ms)
+✔ la bandeja ordena alta antes que baja y filtra prioridad (1.26856ms)
+✔ la procedencia distingue verificada de no verificada y el duplicado (0.246338ms)
+✔ clasifica por estrellas y marca temas (1.53037ms)
+✔ la variación compara contra el período anterior (0.235521ms)
+✔ redacta rut, teléfono y correo (0.305059ms)
+✔ el rango deja el período anterior del mismo largo (0.46611ms)
+✔ la ventana virtual no pinta las 10.000 filas (0.150566ms)
+▶ chequeos de la consola
+  ✔ marca el comodin CORS como aviso (0.630591ms)
+  ✔ detecta un JWT de service role sin copiar el valor (8.655101ms)
+  ✔ acepta el cliente solo con la anon key (0.217689ms)
+  ✔ tolera las banderas booleanas que Vite agrega a import.meta.env (0.11981ms)
+✔ chequeos de la consola (11.443382ms)
+✔ asNum ignora valores que no son número (0.687017ms)
+✔ asRows solo conserva objetos (1.335257ms)
+✔ asText muestra un guion cuando falta el dato (0.156319ms)
+▶ parseAuthDeepLink
+  ✔ lee el code de PKCE (9.01561ms)
+  ✔ lee token_hash y type (1.119789ms)
+  ✔ lee el fragmento con los dos tokens (0.185258ms)
+  ✔ ignora basura (0.148237ms)
+✔ parseAuthDeepLink (11.544876ms)
+▶ CSV
+  ✔ escapa comillas, comas y saltos, y neutraliza fórmulas (1.002084ms)
+✔ CSV (2.083705ms)
+▶ mensajes de error
+  ✔ traduce la sesión ausente y otros textos de Auth en inglés (1.119315ms)
+  ✔ conserva un motivo que ya viene en español (0.395079ms)
+  ✔ no muestra un error de red como si el registro no existiera (0.330855ms)
+✔ mensajes de error (2.685559ms)
+▶ estados de disputa en la cola
+  ✔ incluye abierta y los estados que cuenta el resumen (0.124863ms)
+  ✔ la migración usa la cola activa y exige admin para leer ajustes (1.099271ms)
+✔ estados de disputa en la cola (1.414665ms)
+▶ formato de la consola
+  ✔ muestra pesos chilenos (0.827382ms)
+  ✔ indica la zona de Santiago (0.201412ms)
+  ✔ no muestra el valor técnico de un pago (0.207668ms)
+✔ formato de la consola (2.376086ms)
+▶ cierre por inactividad
+  ✔ avisa a los 13 minutos y cierra a los 15 (0.453701ms)
+✔ cierre por inactividad (1.113959ms)
+▶ orden estable de las listas
+  ✔ cada lista tiene una columna de desempate (1.922124ms)
+  ✔ pedidos, errores y catálogo no quedan sin orden (0.890537ms)
+✔ orden estable de las listas (6.306441ms)
+▶ búsqueda y filtros
+  ✔ quita comodines y limita el largo (0.176186ms)
+  ✔ arma un or de ilike y filtra pagos y reembolsos (0.290244ms)
+✔ búsqueda y filtros (0.658007ms)
+▶ exportación por páginas
+  ✔ junta todas las páginas y se detiene en la última corta (0.274312ms)
+  ✔ no pasa de total ni de un tope de páginas (0.567617ms)
+  ✔ devuelve vacío si la primera página no trae filas (0.292023ms)
+✔ exportación por páginas (1.407214ms)
+▶ redirect de autenticación
+  ✔ en el navegador vuelve al origen con la marca de restablecer (0.816078ms)
+  ✔ el esquema de la app instalada es estable (0.158691ms)
+✔ redirect de autenticación (1.945639ms)
+▶ cola de reseñas dudosas
+  ✔ traduce la señal que ya escribió el trigger (0.46964ms)
+  ✔ junta las señales de una misma reseña en una sola acción (0.687836ms)
+✔ cola de reseñas dudosas (1.916845ms)
+▶ QR TOTP de la consola
+  ✔ reconoce un otpauth de TOTP con secreto base32 (0.60431ms)
+  ✔ codifica el # del SVG para que el <img> no corte el data URI (0.220464ms)
+  ✔ genera un PNG escaneable cuyo contenido es el otpauth (49.725645ms)
+✔ QR TOTP de la consola (51.479675ms)
+ℹ tests 47
+ℹ suites 15
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 508.1675
+EXIT 0

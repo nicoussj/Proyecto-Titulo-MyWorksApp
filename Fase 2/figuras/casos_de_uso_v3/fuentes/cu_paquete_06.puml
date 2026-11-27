@@ -1,0 +1,22 @@
+@startuml cu_paquete_06
+left to right direction
+title Paquete 6: Administración y sistema
+actor "Administrador" as Administrador
+actor "Colaborador interno" as Colaborador_interno
+actor "Sistema" as Sistema
+rectangle "MyWorksApp" {
+  usecase "CU-28 Acceder a la consola con segundo factor\n[Escritorio]" as CU28
+  usecase "CU-29 Verificar profesionales\n[Escritorio]" as CU29
+  usecase "CU-30 Supervisar métricas, pagos y liquidar al profesional\n[Escritorio]" as CU30
+  usecase "CU-31 Invitar colaborador interno\n[Escritorio]" as CU31
+  usecase "CU-32 Ejecutar procesos automáticos de pagos y soporte\n[Backend]" as CU32
+  usecase "CU-34 Atender la cola de soporte con mínimo privilegio\n[Escritorio]" as CU34
+}
+Administrador --> CU28
+Colaborador_interno --> CU28
+Administrador --> CU29
+Administrador --> CU30
+Administrador --> CU31
+Sistema --> CU32
+Colaborador_interno --> CU34
+@enduml

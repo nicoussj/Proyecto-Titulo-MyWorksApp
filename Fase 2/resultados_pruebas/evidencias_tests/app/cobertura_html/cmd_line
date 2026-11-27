@@ -1,0 +1,1 @@
+genhtml -q evidencias_tests/app/lcov.info -o evidencias_tests/app/cobertura_html

@@ -1,0 +1,198 @@
+[0m[38;5;245mrunning 2 tests from ./_shared/chile_input.test.ts[0m
+teléfono de Chile ...
+  normaliza móvil y rechaza un número corto ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+teléfono de Chile ... [0m[32mok[0m [0m[38;5;245m(8ms)[0m
+dirección ...
+  pide calle y un segundo término ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+dirección ... [0m[32mok[0m [0m[38;5;245m(894µs)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/email_layout.test.ts[0m
+renderEmail escapa script y rechaza javascript en el boton ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245mrunning 2 tests from ./_shared/email_send.test.ts[0m
+sin secretos no llama a Resend ... [0m[32mok[0m [0m[38;5;245m(995µs)[0m
+fetch simulado devuelve el id y no escribe el correo en el log ... [0m[32mok[0m [0m[38;5;245m(9ms)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/fcm.test.ts[0m
+push FCM ...
+  lee la cuenta de servicio solo si trae los 3 campos ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+  firma un JWT RS256 verificable con los claims de FCM ... [0m[32mok[0m [0m[38;5;245m(194ms)[0m
+  acepta la clave con \n escapados como viene en el JSON de Google ... [0m[32mok[0m [0m[38;5;245m(136ms)[0m
+  arma el mensaje con canal Android y datos para abrir el trabajo ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  detecta tokens muertos ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+push FCM ... [0m[32mok[0m [0m[38;5;245m(336ms)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/invite_html.test.ts[0m
+correo de invitación ...
+  escapa un nombre con HTML ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  no acepta un enlace javascript ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  el redirect de la app instalada está permitido y un origen arbitrario no ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  escapeHtml cubre comillas ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+correo de invitación ... [0m[32mok[0m [0m[38;5;245m(4ms)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/oneclick_inscription.test.ts[0m
+tarjeta Oneclick inscrita varias veces ...
+  cierra la inscripción si Transbank ya la tiene lista aunque la vuelta no llegó ... [0m[32mok[0m [0m[38;5;245m(20ms)[0m
+  deja la inscripción pendiente mientras el cliente no termina en Transbank (-96) ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  no rompe si Transbank no responde ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  no vuelve a consultar una tarjeta ya activa ni una rechazada ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  toma los últimos 4 dígitos ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  reconoce la tarjeta que Transbank ya dio de baja ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+tarjeta Oneclick inscrita varias veces ... [0m[32mok[0m [0m[38;5;245m(24ms)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/oneclick_return_base.test.ts[0m
+vuelta de Oneclick después del banco ...
+  la app vuelve al sitio https que el WebView sabe seguir ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  la web vuelve al origen que inició la inscripción si está permitido ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  sin origen válido nunca cae en localhost ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  usa WEBPAY_WEB_RETURN_URL solo si es https ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+vuelta de Oneclick después del banco ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+[0m[38;5;245mrunning 2 tests from ./_shared/open_job_after_hold.test.ts[0m
+holdOptionsForPayment ...
+  incluye el id de la orden de cambio ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  un cobro principal deja changeOrderId en null ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+holdOptionsForPayment ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+openJobAfterHold ...
+  con ambos ids llama marcar_orden_cambio_pagada y no toca trabajos ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  con solo paymentId pasa el trabajo de esperando_pago a pendiente ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+openJobAfterHold ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/rate_limit_db.test.ts[0m
+rate limit global ...
+  acepta solo cuando la RPC responde true ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  falla cerrado si la RPC no está o la clave viene vacía ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+rate limit global ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+[0m[38;5;245mrunning 7 tests from ./_shared/reconcile_auth.test.ts[0m
+safeEqual compara exacto ... [0m[32mok[0m [0m[38;5;245m(811µs)[0m
+sin credenciales rechaza y no consulta Vault ... [0m[32mok[0m [0m[38;5;245m(114µs)[0m
+Bearer service role autoriza ... [0m[32mok[0m [0m[38;5;245m(52µs)[0m
+header igual al secreto de entorno autoriza ... [0m[32mok[0m [0m[38;5;245m(33µs)[0m
+sin secreto de entorno valida contra Vault ... [0m[32mok[0m [0m[38;5;245m(60µs)[0m
+secreto de entorno distinto cae a Vault ... [0m[32mok[0m [0m[38;5;245m(80µs)[0m
+error de Vault rechaza ... [0m[32mok[0m [0m[38;5;245m(276µs)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/reconcile_hold.test.ts[0m
+reconciliación de Webpay capturado ...
+  confirma una sola vez mientras la ventana sigue abierta ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  no vuelve a abrir el trabajo si ya salió de esperando pago ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  espera si Transbank aún no confirma y reembolsa al vencer ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+reconciliación de Webpay capturado ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+[0m[38;5;245mrunning 2 tests from ./_shared/require_admin.test.ts[0m
+is_admin en el servidor ...
+  un JWT aal1 (is_admin false) responde 403 y no cambia pagos ni disputas ...
+[0m[38;5;245m------- post-test output -------[0m
+is_admin rechazó la sesión (data=false)
+[0m[38;5;245m----- post-test output end -----[0m
+  un JWT aal1 (is_admin false) responde 403 y no cambia pagos ni disputas ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+  una cuenta suspendida (is_admin false) responde 403 y no muta ...
+[0m[38;5;245m------- post-test output -------[0m
+is_admin rechazó la sesión (data=null)
+[0m[38;5;245m----- post-test output end -----[0m
+  una cuenta suspendida (is_admin false) responde 403 y no muta ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  un error de la RPC responde 403 y no muta ...
+[0m[38;5;245m------- post-test output -------[0m
+is_admin rechazó la sesión (rpc_error)
+[0m[38;5;245m----- post-test output end -----[0m
+  un error de la RPC responde 403 y no muta ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  admin aal2 con cuenta activa (is_admin true) deja ejecutar la mutación ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  solo acepta el booleano true ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  el motivo de una acción de dinero exige al menos 10 caracteres ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  requireAdmin no filtra el detalle al cliente ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+is_admin en el servidor ... [0m[32mok[0m [0m[38;5;245m(6ms)[0m
+las funciones de consola no leen perfiles.rol ...
+  webpay-release/index.ts ... [0m[32mok[0m [0m[38;5;245m(5ms)[0m
+  webpay-resolve-dispute/index.ts ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  webpay-refund/index.ts ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  invitar-colaborador/index.ts ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  el reembolso de cancelación usa is_admin para el atajo de admin ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+las funciones de consola no leen perfiles.rol ... [0m[32mok[0m [0m[38;5;245m(8ms)[0m
+[0m[38;5;245mrunning 2 tests from ./_shared/safe_error.test.ts[0m
+el índice de un solo cobro se explica en español ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+un RAISE de cobro en curso conserva la frase de negocio ... [0m[32mok[0m [0m[38;5;245m(117µs)[0m
+[0m[38;5;245mrunning 6 tests from ./_shared/security_round6.test.ts[0m
+ticket de contraseña del invitado ...
+  solo se firma en el primer paso de pendiente a retenido ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  el ticket de invitado solo sale si este request pasó el pago a retenido ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  en la demo confirma el correo y en producción pide el correo de alta ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  si falla el correo de confirmación la clave queda guardada y se avisa (sin 502) ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  rechaza correos de dominios reservados en el checkout invitado ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  exige jti y rechaza el formato viejo de cuatro partes ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  el nonce se compara por hash, no en claro ... [0m[32mok[0m [0m[38;5;245m(2ms)[0m
+ticket de contraseña del invitado ... [0m[32mok[0m [0m[38;5;245m(6ms)[0m
+Turnstile ...
+  sin secreto falla cerrado, también en integración ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  el flag explícito es el único atajo sin secreto ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  con secreto siempre verifica ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+Turnstile ... [0m[32mok[0m [0m[38;5;245m(633µs)[0m
+commit de Webpay ...
+  no reescribe un pago ya retenido ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  un cobro ya capturado no se vuelve a autorizar ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  exige monto y orden iguales antes de retener ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+commit de Webpay ... [0m[32mok[0m [0m[38;5;245m(911µs)[0m
+pago abandonado en Webpay ...
+  anula el cobro pendiente si el cliente cancela con TBK_TOKEN ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  marca fallido un rechazo o un monto distinto ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  no toca un pago ya retenido o liberado ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+pago abandonado en Webpay ... [0m[32mok[0m [0m[38;5;245m(527µs)[0m
+CORS ...
+  no refleja un origen supabase.co si no está en la lista ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  no acepta Origin: null (iframe sandbox, file://) ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  en integración acepta el vite local y el escritorio ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  en integración acepta el puerto que elige Flutter web ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  en producción no abre localhost salvo allowlist ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+CORS ... [0m[32mok[0m [0m[38;5;245m(3ms)[0m
+web pública ...
+  es un origen exacto, sin comodines ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  CORS la acepta en integración y en producción sin secret ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  CORS no abre otros vercel.app ni variantes del nombre ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  CORS mantiene CORS_ALLOWED_ORIGINS y localhost como antes ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  el retorno de Transbank puede volver a la web pública ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+web pública ... [0m[32mok[0m [0m[38;5;245m(975µs)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/tbk.config.test.ts[0m
+credenciales Transbank de integración ...
+  usa la llave pública oficial y los códigos de comercio documentados ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  falla si TBK_ENV no está definido ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  respeta secretos explícitos en integración ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  en producción falla si faltan secretos ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  en producción rechaza la llave y los códigos públicos ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  un TBK_ENV distinto de integration o production no usa el fallback ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  producción con secretos reales no sustituye la llave ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+credenciales Transbank de integración ... [0m[32mok[0m [0m[38;5;245m(4ms)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/transbank_form.test.ts[0m
+redirect a Transbank ...
+  agrega token_ws por query ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  redirige a la página puente que hace el POST (no sirve HTML desde Supabase) ... [0m[32mok[0m [0m[38;5;245m(5ms)[0m
+  no arma la puente para un host que no es Transbank ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  usa TBK_TOKEN en la inscripción Oneclick ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  rechaza un host que no es Transbank ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+redirect a Transbank ... [0m[32mok[0m [0m[38;5;245m(9ms)[0m
+[0m[38;5;245mrunning 1 test from ./_shared/webpay_return.test.ts[0m
+retorno Webpay ...
+  lee token_ws y TBK_TOKEN de la query o del formulario ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  arma la vuelta con pago, invitado y alta ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  la vuelta de la app pasa a https y conserva pago=ok ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+  un http de la web no se reescribe ... [0m[32mok[0m [0m[38;5;245m(1ms)[0m
+  un abandono solo marca pago=fail ... [0m[32mok[0m [0m[38;5;245m(0ms)[0m
+retorno Webpay ... [0m[32mok[0m [0m[38;5;245m(4ms)[0m
+
+[0m[32mok[0m | 33 passed (85 steps) | 0 failed [0m[38;5;245m(2s)[0m
+
+| File                    | Branch % | Function % | Line % |
+| ----------------------- | -------- | ---------- | ------ |
+| [0m[32mabandon_payment.ts     [0m | [0m[32m   100.0[0m | [0m[32m     100.0[0m | [0m[32m 100.0[0m |
+| [0m[32mchile_input.ts         [0m | [0m[33m    76.9[0m | [0m[32m     100.0[0m | [0m[32m  83.3[0m |
+| [0m[32mcommit_guard.ts        [0m | [0m[32m    88.5[0m | [0m[32m     100.0[0m | [0m[32m  93.3[0m |
+| [0m[32mcors_origin.ts         [0m | [0m[32m    86.0[0m | [0m[32m     100.0[0m | [0m[32m  94.7[0m |
+| [0m[32memail_layout.ts        [0m | [0m[31m    45.0[0m | [0m[33m      75.0[0m | [0m[32m  85.5[0m |
+| [0m[33memail_send.ts          [0m | [0m[33m    66.7[0m | [0m[33m      66.7[0m | [0m[33m  75.5[0m |
+| [0m[32mfcm.ts                 [0m | [0m[32m    81.0[0m | [0m[32m      80.0[0m | [0m[32m  82.0[0m |
+| [0m[32mguest_ticket.ts        [0m | [0m[32m    82.9[0m | [0m[32m     100.0[0m | [0m[32m  92.5[0m |
+| [0m[32minvite_html.ts         [0m | [0m[32m    83.3[0m | [0m[32m     100.0[0m | [0m[32m  93.3[0m |
+| [0m[32moneclick_inscription.ts[0m | [0m[32m    89.3[0m | [0m[32m     100.0[0m | [0m[32m  97.4[0m |
+| [0m[32moneclick_return_base.ts[0m | [0m[32m    92.3[0m | [0m[32m     100.0[0m | [0m[32m 100.0[0m |
+| [0m[32mopen_job_after_hold.ts [0m | [0m[33m    75.0[0m | [0m[32m     100.0[0m | [0m[32m  89.7[0m |
+| [0m[32mrate_limit_db.ts       [0m | [0m[32m    87.5[0m | [0m[32m     100.0[0m | [0m[32m  89.5[0m |
+| [0m[32mreconcile_auth.ts      [0m | [0m[32m   100.0[0m | [0m[32m     100.0[0m | [0m[32m 100.0[0m |
+| [0m[32mreconcile_hold.ts      [0m | [0m[32m   100.0[0m | [0m[32m     100.0[0m | [0m[32m 100.0[0m |
+| [0m[33mrequire_admin.ts       [0m | [0m[32m    89.5[0m | [0m[33m      71.4[0m | [0m[33m  54.8[0m |
+| [0m[33msafe_error.ts          [0m | [0m[33m    50.0[0m | [0m[32m     100.0[0m | [0m[33m  56.5[0m |
+| [0m[31mtbk.ts                 [0m | [0m[32m    97.6[0m | [0m[31m      25.9[0m | [0m[31m  25.7[0m |
+| [0m[32mtransbank_form.ts      [0m | [0m[33m    66.7[0m | [0m[32m     100.0[0m | [0m[32m  95.3[0m |
+| [0m[32mturnstile_gate.ts      [0m | [0m[32m   100.0[0m | [0m[32m     100.0[0m | [0m[32m 100.0[0m |
+| [0m[32mwebpay_return.ts       [0m | [0m[32m    83.3[0m | [0m[32m     100.0[0m | [0m[32m  97.1[0m |
+| [0m[33mAll files              [0m | [0m[32m    83.6[0m | [0m[33m      71.7[0m | [0m[33m  67.2[0m |
+Lcov coverage report has been generated at file:///tmp/denocov/lcov.info
+HTML coverage report has been generated at file:///tmp/denocov/html/index.html
+EXIT=0

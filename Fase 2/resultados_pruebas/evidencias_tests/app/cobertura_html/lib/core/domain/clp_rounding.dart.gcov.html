@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/domain/clp_rounding.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/domain">lib/core/domain</a> - clp_rounding.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">94.9&nbsp;%</td>
+            <td class="headerCovTableEntry">39</td>
+            <td class="headerCovTableEntry">37</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : /// Pesos enteros con la misma regla que `round(numeric)` de Postgres:</span>
+<span id="L2"><span class="lineNum">       2</span>              : /// el ,5 sube, y un entero no se vuelve a redondear.</span>
+<span id="L3"><span class="lineNum">       3</span> <span class="tlaGNC">          41 : int roundClp(num value) {</span></span>
+<span id="L4"><span class="lineNum">       4</span> <span class="tlaGNC">          41 :   if (value is int) return value;</span></span>
+<span id="L5"><span class="lineNum">       5</span> <span class="tlaGNC">          35 :   final number = value.toDouble();</span></span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">          70 :   if (number.isNaN || number.isInfinite) return 0;</span></span>
+<span id="L7"><span class="lineNum">       7</span> <span class="tlaGNC">          35 :   final negative = number &lt; 0;</span></span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaUNC">           0 :   final magnitude = negative ? -number : number;</span></span>
+<span id="L9"><span class="lineNum">       9</span> <span class="tlaGNC">          35 :   final whole = magnitude.truncate();</span></span>
+<span id="L10"><span class="lineNum">      10</span> <span class="tlaGNC">          35 :   final fraction = magnitude - whole;</span></span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">          37 :   final rounded = fraction &gt;= 0.5 ? whole + 1 : whole;</span></span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaUNC">           0 :   return negative ? -rounded : rounded;</span></span>
+<span id="L13"><span class="lineNum">      13</span>              : }</span>
+<span id="L14"><span class="lineNum">      14</span>              : </span>
+<span id="L15"><span class="lineNum">      15</span>              : /// `round(numerador / denominador)` para montos positivos.</span>
+<span id="L16"><span class="lineNum">      16</span>              : /// El resto se compara con la mitad del denominador, sin pasar por un double.</span>
+<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC">          13 : int roundHalfAway(int numerator, int denominator) {</span></span>
+<span id="L18"><span class="lineNum">      18</span> <span class="tlaGNC">          13 :   if (denominator &lt;= 0) return 0;</span></span>
+<span id="L19"><span class="lineNum">      19</span> <span class="tlaGNC">          13 :   if (numerator &lt;= 0) return 0;</span></span>
+<span id="L20"><span class="lineNum">      20</span> <span class="tlaGNC">          13 :   final quotient = numerator ~/ denominator;</span></span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">          13 :   final remainder = numerator % denominator;</span></span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">          31 :   if (remainder * 2 &gt;= denominator) return quotient + 1;</span></span>
+<span id="L23"><span class="lineNum">      23</span>              :   return quotient;</span>
+<span id="L24"><span class="lineNum">      24</span>              : }</span>
+<span id="L25"><span class="lineNum">      25</span>              : </span>
+<span id="L26"><span class="lineNum">      26</span>              : /// Kilómetros que entran al recargo: 3 decimales (1 metro), half-away.</span>
+<span id="L27"><span class="lineNum">      27</span>              : /// Así la fórmula `asin` y la `atan2` no mueven el peso por ruido de punto flotante.</span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">          13 : double quantizeChargeKm(double kilometers) {</span></span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">          39 :   if (kilometers.isNaN || kilometers.isInfinite || kilometers &lt;= 0) return 0;</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">          33 :   return (kilometers * 1000).round() / 1000.0;</span></span>
+<span id="L31"><span class="lineNum">      31</span>              : }</span>
+<span id="L32"><span class="lineNum">      32</span>              : </span>
+<span id="L33"><span class="lineNum">      33</span>              : /// Tarifa publicada en pesos. Por m² se redondea la unidad y después se multiplica,</span>
+<span id="L34"><span class="lineNum">      34</span>              : /// que es lo que hace `monto_esperado_trabajo`.</span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           4 : int publishedServiceClp({</span></span>
+<span id="L36"><span class="lineNum">      36</span>              :   required num rate,</span>
+<span id="L37"><span class="lineNum">      37</span>              :   int? squareMeters,</span>
+<span id="L38"><span class="lineNum">      38</span>              : }) {</span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           4 :   final unit = roundClp(rate);</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           4 :   if (unit &lt;= 0) return 0;</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           2 :   if (squareMeters != null &amp;&amp; squareMeters &gt; 0) return unit * squareMeters;</span></span>
+<span id="L42"><span class="lineNum">      42</span>              :   return unit;</span>
+<span id="L43"><span class="lineNum">      43</span>              : }</span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span>              : /// 8 % de una orden de cambio. Igual que `(monto * 8 + 50) / 100` en Postgres,</span>
+<span id="L46"><span class="lineNum">      46</span>              : /// que coincide con `round(numeric * 0.08)` para un monto entero.</span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           6 : int changeOrderFeeClp(int amountClp) =&gt; roundHalfAway(amountClp * 8, 100);</span></span>
+<span id="L48"><span class="lineNum">      48</span>              : </span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           1 : int changeOrderTotalClp(int amountClp) {</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           1 :   if (amountClp &lt;= 0) return 0;</span></span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           2 :   return amountClp + changeOrderFeeClp(amountClp);</span></span>
+<span id="L52"><span class="lineNum">      52</span>              : }</span>
+<span id="L53"><span class="lineNum">      53</span>              : </span>
+<span id="L54"><span class="lineNum">      54</span>              : /// Tarifa hora que cobra un bloque: visita redondeada × 2,5, entre $15.000 y $120.000.</span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           4 : int hourlyRateFromVisitFee(int visitFeeClp) {</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           4 :   if (visitFeeClp &lt;= 0) return 15000;</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           8 :   final rate = roundHalfAway(visitFeeClp * 5, 2);</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           4 :   if (rate &lt; 15000) return 15000;</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           2 :   if (rate &gt; 120000) return 120000;</span></span>
+<span id="L60"><span class="lineNum">      60</span>              :   return rate;</span>
+<span id="L61"><span class="lineNum">      61</span>              : }</span>
+<span id="L62"><span class="lineNum">      62</span>              : </span>
+<span id="L63"><span class="lineNum">      63</span>              : /// Factores de comuna en centésimas, para no multiplicar por 1,08 en binario.</span>
+<span id="L64"><span class="lineNum">      64</span>              : const Map&lt;String, int&gt; comunaFactorHundredths = {</span>
+<span id="L65"><span class="lineNum">      65</span>              :   'osorno': 98,</span>
+<span id="L66"><span class="lineNum">      66</span>              :   'providencia': 108,</span>
+<span id="L67"><span class="lineNum">      67</span>              :   'las_condes': 110,</span>
+<span id="L68"><span class="lineNum">      68</span>              :   'maipu': 95,</span>
+<span id="L69"><span class="lineNum">      69</span>              :   'puente_alto': 92,</span>
+<span id="L70"><span class="lineNum">      70</span>              : };</span>
+<span id="L71"><span class="lineNum">      71</span>              : </span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           2 : int applyComunaFactor(int amountClp, String? comunaKey) {</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           4 :   final hundredths = comunaFactorHundredths[comunaKey?.toLowerCase()] ?? 100;</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           4 :   return roundHalfAway(amountClp * hundredths, 100);</span></span>
+<span id="L75"><span class="lineNum">      75</span>              : }</span>
+<span id="L76"><span class="lineNum">      76</span>              : </span>
+<span id="L77"><span class="lineNum">      77</span>              : /// Horas extra: monto × factor de comuna × 1,15, un solo redondeo al final.</span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           3 : int overtimeAmountClp({</span></span>
+<span id="L79"><span class="lineNum">      79</span>              :   required int hourlyRateClp,</span>
+<span id="L80"><span class="lineNum">      80</span>              :   required int extraHours,</span>
+<span id="L81"><span class="lineNum">      81</span>              :   String? comunaKey,</span>
+<span id="L82"><span class="lineNum">      82</span>              : }) {</span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">           6 :   if (hourlyRateClp &lt;= 0 || extraHours &lt;= 0) return 0;</span></span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">           6 :   final hundredths = comunaFactorHundredths[comunaKey?.toLowerCase()] ?? 100;</span></span>
+<span id="L85"><span class="lineNum">      85</span> <span class="tlaGNC">          12 :   return roundHalfAway(hourlyRateClp * extraHours * hundredths * 115, 10000);</span></span>
+<span id="L86"><span class="lineNum">      86</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

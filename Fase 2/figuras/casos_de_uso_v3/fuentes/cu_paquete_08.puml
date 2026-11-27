@@ -1,0 +1,22 @@
+@startuml cu_paquete_08
+left to right direction
+title Paquete 8: Consola: operación diaria
+actor "Equipo de consola" as Equipo_de_consola
+actor "Administrador" as Administrador
+rectangle "MyWorksApp" {
+  usecase "CU-42 Consultar el panel de inicio con indicadores\n[Escritorio]" as CU42
+  usecase "CU-43 Seguir y analizar pedidos\n[Escritorio]" as CU43
+  usecase "CU-44 Atender la bandeja de disputas con plazos y evidencia\n[Escritorio]" as CU44
+  usecase "CU-45 Analizar reseñas y la cola de reseñas dudosas\n[Escritorio]" as CU45
+  usecase "CU-46 Gestionar reportes de abuso\n[Escritorio]" as CU46
+  usecase "CU-47 Enviar y revisar notificaciones\n[Escritorio]" as CU47
+  usecase "CU-48 Intervenir un pedido\n[Escritorio]" as CU48
+}
+Equipo_de_consola --> CU42
+Equipo_de_consola --> CU43
+Equipo_de_consola --> CU44
+Equipo_de_consola --> CU45
+Equipo_de_consola --> CU46
+Equipo_de_consola --> CU47
+Administrador --> CU48
+@enduml

@@ -1,0 +1,225 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/shell/nav.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="../../theme.js"></script>
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        
+        <label class="theme-select quiet">
+            Theme
+            <select id="themeSelect" autocomplete="off">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="legacy">Legacy</option>
+            </select>
+        </label>
+
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/shell</a> nav.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>25/25</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/0</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>24/24</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>25/25</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line high'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-yes">1793x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { ConsolePermissions } from '../authAccess';
+&nbsp;
+export interface NavItem {
+  to: string;
+  label: string;
+  group: string;
+  icon: string;
+  badge?: 'disputas' | 'verificaciones' | 'seguridad';
+  allow: (permissions: ConsolePermissions) =&gt; boolean;
+}
+&nbsp;
+/**
+ * Orden del trabajo real: el pedido, la disputa y el soporte;
+ * después las personas; después el dinero en el orden en que se mueve
+ * (cobro, conciliación, liquidación, reembolso, resumen);
+ * al final el contenido, la empresa y el sistema.
+ */
+export const NAV: NavItem[] = [
+  { to: '/resumen', label: 'Inicio', group: 'General', icon: 'Home', allow: () =&gt; true },
+  { to: '/pedidos', label: 'Pedidos', group: 'Operación', icon: 'ClipboardList', allow: (p) =&gt; p.viewOrders },
+  { to: '/disputas', label: 'Disputas', group: 'Operación', icon: 'Scale', badge: 'disputas', allow: (p) =&gt; p.supportQueue },
+  { to: '/pagos', label: 'Pagos y comisiones', group: 'Operación', icon: 'Wallet', allow: (p) =&gt; p.viewMoney },
+  { to: '/resenas', label: 'Reseñas', group: 'Operación', icon: 'Star', allow: (p) =&gt; p.viewPeople },
+  { to: '/usuarios', label: 'Clientes', group: 'Personas', icon: 'Users', allow: (p) =&gt; p.viewPeople },
+  { to: '/profesionales', label: 'Trabajadores', group: 'Personas', icon: 'Wrench', allow: (p) =&gt; p.viewPeople },
+  { to: '/verificaciones', label: 'Verificaciones', group: 'Personas', icon: 'BadgeCheck', badge: 'verificaciones', allow: (p) =&gt; p.viewPeople },
+  { to: '/tickets', label: 'Soporte y moderación', group: 'Comunicación', icon: 'LifeBuoy', allow: (p) =&gt; p.supportQueue },
+  { to: '/notificaciones', label: 'Notificaciones', group: 'Comunicación', icon: 'Bell', allow: () =&gt; true },
+  { to: '/seguridad', label: 'Seguridad', group: 'Control', icon: 'Shield', badge: 'seguridad', allow: (p) =&gt; p.people },
+  { to: '/informes', label: 'Reportes', group: 'Control', icon: 'BarChart3', allow: (p) =&gt; p.executive },
+  { to: '/auditoria', label: 'Auditoría', group: 'Control', icon: 'ScrollText', allow: (p) =&gt; p.viewAudit },
+  { to: '/ajustes', label: 'Configuración', group: 'Control', icon: 'Settings', allow: (p) =&gt; p.manageCatalog },
+  { to: '/liquidaciones', label: 'Liquidaciones', group: 'Operación', icon: 'Landmark', allow: (p) =&gt; p.viewMoney },
+  { to: '/reembolsos', label: 'Reembolsos', group: 'Operación', icon: 'RefreshCw', allow: (p) =&gt; p.viewMoney },
+  { to: '/conciliacion', label: 'Conciliación', group: 'Operación', icon: 'Scale', allow: (p) =&gt; p.viewMoney },
+  { to: '/finanzas', label: 'Finanzas', group: 'Operación', icon: 'BarChart3', allow: (p) =&gt; p.executive },
+  { to: '/reportes', label: 'Reportes de abuso', group: 'Comunicación', icon: 'AlertTriangle', allow: (p) =&gt; p.viewPeople },
+  { to: '/catalogo', label: 'Catálogo', group: 'Control', icon: 'Tags', allow: (p) =&gt; p.manageCatalog },
+  { to: '/equipo', label: 'Equipo y roles', group: 'Control', icon: 'Users', allow: (p) =&gt; p.people },
+  { to: '/salud', label: 'Salud del servicio', group: 'Control', icon: 'Activity', allow: (p) =&gt; p.security },
+  { to: '/errores', label: 'Errores de la app', group: 'Control', icon: 'Bug', allow: (p) =&gt; p.viewErrors },
+  { to: '/sistema-diseno', label: 'Sistema de diseño', group: 'General', icon: 'Tags', allow: () =&gt; true },
+];
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://vitest.dev/" target="_blank" rel="noopener noreferrer">Vitest</a>
+                at 2026-11-27T05:35:18.597Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

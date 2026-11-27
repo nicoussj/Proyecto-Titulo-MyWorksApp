@@ -1,0 +1,62 @@
+@startuml cu_00_contexto
+left to right direction
+title MyWorksApp: contexto de casos de uso (13 paquetes)
+actor "Visitante" as Visitante
+actor "Cliente" as Cliente
+actor "Profesional" as Profesional
+actor "Cliente invitado" as Cliente_invitado
+actor "Cliente registrado" as Cliente_registrado
+actor "Administrador" as Administrador
+actor "Sistema" as Sistema
+actor "Colaborador interno" as Colaborador_interno
+actor "Equipo de consola" as Equipo_de_consola
+actor "QA" as QA
+rectangle "MyWorksApp" {
+  package "1. Acceso y cuenta" as P1
+  package "2. Búsqueda, reserva y pago" as P2
+  package "3. Ejecución del servicio" as P3
+  package "4. Cierre, reputación y excepciones" as P4
+  package "5. Comunicación y gestión del profesional" as P5
+  package "6. Administración y sistema" as P6
+  package "7. Cotización, tarjeta, encuesta y direcciones" as P7
+  package "8. Consola: operación diaria" as P8
+  package "9. Consola: dinero" as P9
+  package "10. Consola: personas, seguridad y control" as P10
+  package "11. IA en la búsqueda" as P11
+  package "12. IA en la solicitud y la verificación" as P12
+  package "13. IA operativa y de control" as P13
+}
+Administrador --> P4
+Administrador --> P6
+Administrador --> P8
+Administrador --> P9
+Administrador --> P10
+Administrador --> P13
+Cliente --> P1
+Cliente --> P3
+Cliente --> P4
+Cliente --> P5
+Cliente_invitado --> P1
+Cliente_invitado --> P2
+Cliente_registrado --> P2
+Cliente_registrado --> P7
+Cliente_registrado --> P12
+Colaborador_interno --> P6
+Equipo_de_consola --> P8
+Equipo_de_consola --> P10
+Profesional --> P1
+Profesional --> P2
+Profesional --> P3
+Profesional --> P4
+Profesional --> P5
+Profesional --> P7
+Profesional --> P12
+QA --> P10
+Sistema --> P4
+Sistema --> P6
+Sistema --> P9
+Sistema --> P13
+Visitante --> P1
+Visitante --> P2
+Visitante --> P11
+@enduml

@@ -1,0 +1,24 @@
+@startuml cu_paquete_10
+left to right direction
+title Paquete 10: Consola: personas, seguridad y control
+actor "Equipo de consola" as Equipo_de_consola
+actor "Administrador" as Administrador
+actor "QA" as QA
+rectangle "MyWorksApp" {
+  usecase "CU-54 Consultar clientes y trabajadores\n[Escritorio]" as CU54
+  usecase "CU-55 Vigilar la seguridad y sus alertas en tiempo real\n[Escritorio]" as CU55
+  usecase "CU-56 Generar reportes ejecutivos y exportarlos\n[Escritorio]" as CU56
+  usecase "CU-57 Consultar la bitácora de auditoría\n[Escritorio]" as CU57
+  usecase "CU-58 Configurar la plataforma y el catálogo de oficios\n[Escritorio]" as CU58
+  usecase "CU-59 Revisar la salud del servicio y los errores de la app\n[Escritorio]" as CU59
+  usecase "CU-60 Generar un respaldo de datos\n[Escritorio, backend]" as CU60
+}
+Equipo_de_consola --> CU54
+Administrador --> CU55
+Administrador --> CU56
+Administrador --> CU57
+Administrador --> CU58
+Administrador --> CU59
+QA --> CU59
+Administrador --> CU60
+@enduml

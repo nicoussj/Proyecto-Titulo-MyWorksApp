@@ -60,6 +60,7 @@ export function ProfessionalProfilePage({
 
   useEffect(() => {
     let cancelled = false;
+    // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
     setResumen(null);
     setParecidos([]);
     const db = supabase as unknown as Loose;

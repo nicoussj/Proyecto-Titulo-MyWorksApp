@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const DIR = '/agent/repos/MyWorksAppProyect/MyWorksAppProyect/docs/pruebas/consola-premium/capturas';
+const DIR = process.env.CAPTURAS_DIR ?? 'test-results/capturas/consola-real';
 
 const SECCIONES = [
   ['/resumen', 'inicio'],
@@ -24,6 +24,9 @@ const SECCIONES = [
 ] as const;
 
 test.use({ video: 'off', viewport: { width: 1440, height: 900 } });
+
+// Requiere un Supabase local con el admin de prueba (supabase start + seed local).
+test.skip(!process.env.E2E_SUPABASE_LOCAL, 'Necesita E2E_SUPABASE_LOCAL=1 y un Supabase local.');
 
 test('la sesión real con aal2 recorre reseñas, pedidos, disputas y pagos', async ({ page }) => {
   await mkdir(DIR, { recursive: true });

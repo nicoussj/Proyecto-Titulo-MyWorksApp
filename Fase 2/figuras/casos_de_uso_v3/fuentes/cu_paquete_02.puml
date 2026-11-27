@@ -1,0 +1,23 @@
+@startuml cu_paquete_02
+left to right direction
+title Paquete 2: Búsqueda, reserva y pago
+actor "Visitante" as Visitante
+actor "Cliente registrado" as Cliente_registrado
+actor "Cliente invitado" as Cliente_invitado
+actor "Profesional" as Profesional
+rectangle "MyWorksApp" {
+  usecase "CU-05 Buscar profesionales con mapa y filtros\n[Web, app]" as CU05
+  usecase "CU-06 Ver perfil del profesional y horas libres\n[Web, app]" as CU06
+  usecase "CU-07 Solicitar servicio y reservar hora\n[Web, app]" as CU07
+  usecase "CU-08 Pagar con Webpay en garantía\n[Web, app]" as CU08
+  usecase "CU-09 Comprar como invitado\n[Web]" as CU09
+  usecase "CU-33 Reagendar la visita\n[Web, app]" as CU33
+}
+Visitante --> CU05
+Visitante --> CU06
+Cliente_registrado --> CU07
+Cliente_registrado --> CU08
+Cliente_invitado --> CU09
+Cliente_registrado --> CU33
+Profesional --> CU33
+@enduml

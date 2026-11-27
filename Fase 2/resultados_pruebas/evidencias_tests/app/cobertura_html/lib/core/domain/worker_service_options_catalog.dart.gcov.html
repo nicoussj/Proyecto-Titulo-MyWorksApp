@@ -1,0 +1,558 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/domain/worker_service_options_catalog.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/domain">lib/core/domain</a> - worker_service_options_catalog.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryMed">86.2&nbsp;%</td>
+            <td class="headerCovTableEntry">94</td>
+            <td class="headerCovTableEntry">81</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : import 'package:flutter/material.dart';</span>
+<span id="L2"><span class="lineNum">       2</span>              : </span>
+<span id="L3"><span class="lineNum">       3</span>              : import '../database/models/service_model.dart';</span>
+<span id="L4"><span class="lineNum">       4</span>              : import '../database/models/worker_model.dart';</span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span>              : enum WorkerPriceUnit { fixed, perSqm }</span>
+<span id="L7"><span class="lineNum">       7</span>              : </span>
+<span id="L8"><span class="lineNum">       8</span>              : /// Opción de trabajo con tarifa definida por el profesional.</span>
+<span id="L9"><span class="lineNum">       9</span>              : class WorkerServiceOptionDef {</span>
+<span id="L10"><span class="lineNum">      10</span> <span class="tlaGNC">           8 :   const WorkerServiceOptionDef({</span></span>
+<span id="L11"><span class="lineNum">      11</span>              :     required this.id,</span>
+<span id="L12"><span class="lineNum">      12</span>              :     required this.title,</span>
+<span id="L13"><span class="lineNum">      13</span>              :     required this.subtitle,</span>
+<span id="L14"><span class="lineNum">      14</span>              :     required this.icon,</span>
+<span id="L15"><span class="lineNum">      15</span>              :     required this.defaultPriceClp,</span>
+<span id="L16"><span class="lineNum">      16</span>              :     this.unit = WorkerPriceUnit.fixed,</span>
+<span id="L17"><span class="lineNum">      17</span>              :     this.isCustom = false,</span>
+<span id="L18"><span class="lineNum">      18</span>              :   });</span>
+<span id="L19"><span class="lineNum">      19</span>              : </span>
+<span id="L20"><span class="lineNum">      20</span>              :   final String id;</span>
+<span id="L21"><span class="lineNum">      21</span>              :   final String title;</span>
+<span id="L22"><span class="lineNum">      22</span>              :   final String subtitle;</span>
+<span id="L23"><span class="lineNum">      23</span>              :   final IconData icon;</span>
+<span id="L24"><span class="lineNum">      24</span>              :   final int defaultPriceClp;</span>
+<span id="L25"><span class="lineNum">      25</span>              :   final WorkerPriceUnit unit;</span>
+<span id="L26"><span class="lineNum">      26</span>              :   final bool isCustom;</span>
+<span id="L27"><span class="lineNum">      27</span>              : </span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">           7 :   String priceLabel(int priceClp) {</span></span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">           7 :     final formatted = _formatClp(priceClp);</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">          16 :     if (unit == WorkerPriceUnit.perSqm) return '$formatted/m²';</span></span>
+<span id="L31"><span class="lineNum">      31</span>              :     return formatted;</span>
+<span id="L32"><span class="lineNum">      32</span>              :   }</span>
+<span id="L33"><span class="lineNum">      33</span>              : </span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           7 :   static String _formatClp(int value) {</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           7 :     final s = value.toString();</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          15 :     if (s.length &lt;= 3) return '\$$s';</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           7 :     final buf = StringBuffer('\$');</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">          21 :     for (var i = 0; i &lt; s.length; i++) {</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">          42 :       if (i &gt; 0 &amp;&amp; (s.length - i) % 3 == 0) buf.write('.');</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">          14 :       buf.write(s[i]);</span></span>
+<span id="L41"><span class="lineNum">      41</span>              :     }</span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           7 :     return buf.toString();</span></span>
+<span id="L43"><span class="lineNum">      43</span>              :   }</span>
+<span id="L44"><span class="lineNum">      44</span>              : }</span>
+<span id="L45"><span class="lineNum">      45</span>              : </span>
+<span id="L46"><span class="lineNum">      46</span>              : /// Catálogo de trabajos posibles según el oficio.</span>
+<span id="L47"><span class="lineNum">      47</span>              : class WorkerServiceOptionsCatalog {</span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaUNC">           0 :   WorkerServiceOptionsCatalog._();</span></span>
+<span id="L49"><span class="lineNum">      49</span>              : </span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">          10 :   static List&lt;WorkerServiceOptionDef&gt; optionsFor(String? category) {</span></span>
+<span id="L51"><span class="lineNum">      51</span>              :     switch (category) {</span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">          10 :       case ServiceCategories.assembly:</span></span>
+<span id="L53"><span class="lineNum">      53</span>              :         return const [</span>
+<span id="L54"><span class="lineNum">      54</span>              :           WorkerServiceOptionDef(</span>
+<span id="L55"><span class="lineNum">      55</span>              :             id: 'small_furniture',</span>
+<span id="L56"><span class="lineNum">      56</span>              :             title: 'Muebles pequeños',</span>
+<span id="L57"><span class="lineNum">      57</span>              :             subtitle: 'Silla, mesa auxiliar, repisa, buró',</span>
+<span id="L58"><span class="lineNum">      58</span>              :             icon: Icons.chair_outlined,</span>
+<span id="L59"><span class="lineNum">      59</span>              :             defaultPriceClp: 25000,</span>
+<span id="L60"><span class="lineNum">      60</span>              :           ),</span>
+<span id="L61"><span class="lineNum">      61</span>              :           WorkerServiceOptionDef(</span>
+<span id="L62"><span class="lineNum">      62</span>              :             id: 'medium_furniture',</span>
+<span id="L63"><span class="lineNum">      63</span>              :             title: 'Muebles medianos',</span>
+<span id="L64"><span class="lineNum">      64</span>              :             subtitle: 'Escritorio, estantería, cama, cómoda',</span>
+<span id="L65"><span class="lineNum">      65</span>              :             icon: Icons.weekend_outlined,</span>
+<span id="L66"><span class="lineNum">      66</span>              :             defaultPriceClp: 45000,</span>
+<span id="L67"><span class="lineNum">      67</span>              :           ),</span>
+<span id="L68"><span class="lineNum">      68</span>              :           WorkerServiceOptionDef(</span>
+<span id="L69"><span class="lineNum">      69</span>              :             id: 'large_furniture',</span>
+<span id="L70"><span class="lineNum">      70</span>              :             title: 'Muebles grandes',</span>
+<span id="L71"><span class="lineNum">      71</span>              :             subtitle: 'Clóset, rack, cocina modular, walk-in',</span>
+<span id="L72"><span class="lineNum">      72</span>              :             icon: Icons.king_bed_outlined,</span>
+<span id="L73"><span class="lineNum">      73</span>              :             defaultPriceClp: 75000,</span>
+<span id="L74"><span class="lineNum">      74</span>              :           ),</span>
+<span id="L75"><span class="lineNum">      75</span>              :         ];</span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">           9 :       case ServiceCategories.gardening:</span></span>
+<span id="L77"><span class="lineNum">      77</span>              :         return const [</span>
+<span id="L78"><span class="lineNum">      78</span>              :           WorkerServiceOptionDef(</span>
+<span id="L79"><span class="lineNum">      79</span>              :             id: 'garden_small',</span>
+<span id="L80"><span class="lineNum">      80</span>              :             title: 'Jardín pequeño',</span>
+<span id="L81"><span class="lineNum">      81</span>              :             subtitle: 'Hasta 30 m² — poda, césped o limpieza',</span>
+<span id="L82"><span class="lineNum">      82</span>              :             icon: Icons.yard_outlined,</span>
+<span id="L83"><span class="lineNum">      83</span>              :             defaultPriceClp: 35000,</span>
+<span id="L84"><span class="lineNum">      84</span>              :           ),</span>
+<span id="L85"><span class="lineNum">      85</span>              :           WorkerServiceOptionDef(</span>
+<span id="L86"><span class="lineNum">      86</span>              :             id: 'garden_medium',</span>
+<span id="L87"><span class="lineNum">      87</span>              :             title: 'Jardín mediano',</span>
+<span id="L88"><span class="lineNum">      88</span>              :             subtitle: '31 a 80 m² — mantención completa',</span>
+<span id="L89"><span class="lineNum">      89</span>              :             icon: Icons.grass_outlined,</span>
+<span id="L90"><span class="lineNum">      90</span>              :             defaultPriceClp: 65000,</span>
+<span id="L91"><span class="lineNum">      91</span>              :           ),</span>
+<span id="L92"><span class="lineNum">      92</span>              :           WorkerServiceOptionDef(</span>
+<span id="L93"><span class="lineNum">      93</span>              :             id: 'garden_large',</span>
+<span id="L94"><span class="lineNum">      94</span>              :             title: 'Jardín grande',</span>
+<span id="L95"><span class="lineNum">      95</span>              :             subtitle: 'Más de 80 m² — poda, riego y limpieza',</span>
+<span id="L96"><span class="lineNum">      96</span>              :             icon: Icons.park_outlined,</span>
+<span id="L97"><span class="lineNum">      97</span>              :             defaultPriceClp: 95000,</span>
+<span id="L98"><span class="lineNum">      98</span>              :           ),</span>
+<span id="L99"><span class="lineNum">      99</span>              :         ];</span>
+<span id="L100"><span class="lineNum">     100</span> <span class="tlaGNC">           9 :       case ServiceCategories.cleaning:</span></span>
+<span id="L101"><span class="lineNum">     101</span>              :         return const [</span>
+<span id="L102"><span class="lineNum">     102</span>              :           WorkerServiceOptionDef(</span>
+<span id="L103"><span class="lineNum">     103</span>              :             id: 'cleaning_one_room',</span>
+<span id="L104"><span class="lineNum">     104</span>              :             title: 'Un ambiente',</span>
+<span id="L105"><span class="lineNum">     105</span>              :             subtitle: 'Dormitorio, baño u oficina pequeña',</span>
+<span id="L106"><span class="lineNum">     106</span>              :             icon: Icons.cleaning_services_outlined,</span>
+<span id="L107"><span class="lineNum">     107</span>              :             defaultPriceClp: 22000,</span>
+<span id="L108"><span class="lineNum">     108</span>              :           ),</span>
+<span id="L109"><span class="lineNum">     109</span>              :           WorkerServiceOptionDef(</span>
+<span id="L110"><span class="lineNum">     110</span>              :             id: 'cleaning_apartment',</span>
+<span id="L111"><span class="lineNum">     111</span>              :             title: 'Departamento completo',</span>
+<span id="L112"><span class="lineNum">     112</span>              :             subtitle: 'Limpieza estándar del hogar',</span>
+<span id="L113"><span class="lineNum">     113</span>              :             icon: Icons.home_outlined,</span>
+<span id="L114"><span class="lineNum">     114</span>              :             defaultPriceClp: 45000,</span>
+<span id="L115"><span class="lineNum">     115</span>              :           ),</span>
+<span id="L116"><span class="lineNum">     116</span>              :           WorkerServiceOptionDef(</span>
+<span id="L117"><span class="lineNum">     117</span>              :             id: 'cleaning_deep',</span>
+<span id="L118"><span class="lineNum">     118</span>              :             title: 'Limpieza profunda',</span>
+<span id="L119"><span class="lineNum">     119</span>              :             subtitle: 'Post-obra, mudanza o fin de arriendo',</span>
+<span id="L120"><span class="lineNum">     120</span>              :             icon: Icons.auto_awesome_outlined,</span>
+<span id="L121"><span class="lineNum">     121</span>              :             defaultPriceClp: 65000,</span>
+<span id="L122"><span class="lineNum">     122</span>              :           ),</span>
+<span id="L123"><span class="lineNum">     123</span>              :         ];</span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">           9 :       case ServiceCategories.plumbing:</span></span>
+<span id="L125"><span class="lineNum">     125</span>              :         return const [</span>
+<span id="L126"><span class="lineNum">     126</span>              :           WorkerServiceOptionDef(</span>
+<span id="L127"><span class="lineNum">     127</span>              :             id: 'plumbing_minor',</span>
+<span id="L128"><span class="lineNum">     128</span>              :             title: 'Arreglo menor',</span>
+<span id="L129"><span class="lineNum">     129</span>              :             subtitle: 'Grifo, sifón, llave de paso, WC',</span>
+<span id="L130"><span class="lineNum">     130</span>              :             icon: Icons.plumbing_outlined,</span>
+<span id="L131"><span class="lineNum">     131</span>              :             defaultPriceClp: 28000,</span>
+<span id="L132"><span class="lineNum">     132</span>              :           ),</span>
+<span id="L133"><span class="lineNum">     133</span>              :           WorkerServiceOptionDef(</span>
+<span id="L134"><span class="lineNum">     134</span>              :             id: 'plumbing_install',</span>
+<span id="L135"><span class="lineNum">     135</span>              :             title: 'Instalación estándar',</span>
+<span id="L136"><span class="lineNum">     136</span>              :             subtitle: 'Calefón, lavatorio, artefactos nuevos',</span>
+<span id="L137"><span class="lineNum">     137</span>              :             icon: Icons.water_drop_outlined,</span>
+<span id="L138"><span class="lineNum">     138</span>              :             defaultPriceClp: 48000,</span>
+<span id="L139"><span class="lineNum">     139</span>              :           ),</span>
+<span id="L140"><span class="lineNum">     140</span>              :           WorkerServiceOptionDef(</span>
+<span id="L141"><span class="lineNum">     141</span>              :             id: 'plumbing_project',</span>
+<span id="L142"><span class="lineNum">     142</span>              :             title: 'Proyecto o remodelación',</span>
+<span id="L143"><span class="lineNum">     143</span>              :             subtitle: 'Baño completo, red de agua, varias piezas',</span>
+<span id="L144"><span class="lineNum">     144</span>              :             icon: Icons.bathtub_outlined,</span>
+<span id="L145"><span class="lineNum">     145</span>              :             defaultPriceClp: 90000,</span>
+<span id="L146"><span class="lineNum">     146</span>              :           ),</span>
+<span id="L147"><span class="lineNum">     147</span>              :         ];</span>
+<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">           6 :       case ServiceCategories.electrical:</span></span>
+<span id="L149"><span class="lineNum">     149</span>              :         return const [</span>
+<span id="L150"><span class="lineNum">     150</span>              :           WorkerServiceOptionDef(</span>
+<span id="L151"><span class="lineNum">     151</span>              :             id: 'electrical_point',</span>
+<span id="L152"><span class="lineNum">     152</span>              :             title: 'Punto eléctrico',</span>
+<span id="L153"><span class="lineNum">     153</span>              :             subtitle: 'Enchufe, interruptor o luminaria',</span>
+<span id="L154"><span class="lineNum">     154</span>              :             icon: Icons.power_outlined,</span>
+<span id="L155"><span class="lineNum">     155</span>              :             defaultPriceClp: 24000,</span>
+<span id="L156"><span class="lineNum">     156</span>              :           ),</span>
+<span id="L157"><span class="lineNum">     157</span>              :           WorkerServiceOptionDef(</span>
+<span id="L158"><span class="lineNum">     158</span>              :             id: 'electrical_multiple',</span>
+<span id="L159"><span class="lineNum">     159</span>              :             title: 'Varios puntos',</span>
+<span id="L160"><span class="lineNum">     160</span>              :             subtitle: 'Tablero pequeño, varias luminarias',</span>
+<span id="L161"><span class="lineNum">     161</span>              :             icon: Icons.electrical_services_outlined,</span>
+<span id="L162"><span class="lineNum">     162</span>              :             defaultPriceClp: 48000,</span>
+<span id="L163"><span class="lineNum">     163</span>              :           ),</span>
+<span id="L164"><span class="lineNum">     164</span>              :           WorkerServiceOptionDef(</span>
+<span id="L165"><span class="lineNum">     165</span>              :             id: 'electrical_major',</span>
+<span id="L166"><span class="lineNum">     166</span>              :             title: 'Instalación mayor',</span>
+<span id="L167"><span class="lineNum">     167</span>              :             subtitle: 'Cableado, tablero nuevo, ampliación',</span>
+<span id="L168"><span class="lineNum">     168</span>              :             icon: Icons.bolt_outlined,</span>
+<span id="L169"><span class="lineNum">     169</span>              :             defaultPriceClp: 85000,</span>
+<span id="L170"><span class="lineNum">     170</span>              :           ),</span>
+<span id="L171"><span class="lineNum">     171</span>              :           WorkerServiceOptionDef(</span>
+<span id="L172"><span class="lineNum">     172</span>              :             id: 'electrical_per_sqm',</span>
+<span id="L173"><span class="lineNum">     173</span>              :             title: 'Cobro por metro cuadrado',</span>
+<span id="L174"><span class="lineNum">     174</span>              :             subtitle: 'Tarifa para proyectos grandes eléctricos',</span>
+<span id="L175"><span class="lineNum">     175</span>              :             icon: Icons.square_foot_outlined,</span>
+<span id="L176"><span class="lineNum">     176</span>              :             defaultPriceClp: 18000,</span>
+<span id="L177"><span class="lineNum">     177</span>              :             unit: WorkerPriceUnit.perSqm,</span>
+<span id="L178"><span class="lineNum">     178</span>              :           ),</span>
+<span id="L179"><span class="lineNum">     179</span>              :         ];</span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">           6 :       case ServiceCategories.construction:</span></span>
+<span id="L181"><span class="lineNum">     181</span>              :         return const [</span>
+<span id="L182"><span class="lineNum">     182</span>              :           WorkerServiceOptionDef(</span>
+<span id="L183"><span class="lineNum">     183</span>              :             id: 'construction_patch',</span>
+<span id="L184"><span class="lineNum">     184</span>              :             title: 'Reparación puntual',</span>
+<span id="L185"><span class="lineNum">     185</span>              :             subtitle: 'Filtración, muro, cerámica suelta',</span>
+<span id="L186"><span class="lineNum">     186</span>              :             icon: Icons.build_outlined,</span>
+<span id="L187"><span class="lineNum">     187</span>              :             defaultPriceClp: 38000,</span>
+<span id="L188"><span class="lineNum">     188</span>              :           ),</span>
+<span id="L189"><span class="lineNum">     189</span>              :           WorkerServiceOptionDef(</span>
+<span id="L190"><span class="lineNum">     190</span>              :             id: 'construction_half_day',</span>
+<span id="L191"><span class="lineNum">     191</span>              :             title: 'Medio día de obra',</span>
+<span id="L192"><span class="lineNum">     192</span>              :             subtitle: 'Aprox. 4 horas de trabajo en terreno',</span>
+<span id="L193"><span class="lineNum">     193</span>              :             icon: Icons.schedule_outlined,</span>
+<span id="L194"><span class="lineNum">     194</span>              :             defaultPriceClp: 62000,</span>
+<span id="L195"><span class="lineNum">     195</span>              :           ),</span>
+<span id="L196"><span class="lineNum">     196</span>              :           WorkerServiceOptionDef(</span>
+<span id="L197"><span class="lineNum">     197</span>              :             id: 'construction_project',</span>
+<span id="L198"><span class="lineNum">     198</span>              :             title: 'Proyecto por etapas',</span>
+<span id="L199"><span class="lineNum">     199</span>              :             subtitle: 'Ampliación, remodelación u obra gruesa',</span>
+<span id="L200"><span class="lineNum">     200</span>              :             icon: Icons.architecture_outlined,</span>
+<span id="L201"><span class="lineNum">     201</span>              :             defaultPriceClp: 120000,</span>
+<span id="L202"><span class="lineNum">     202</span>              :           ),</span>
+<span id="L203"><span class="lineNum">     203</span>              :           WorkerServiceOptionDef(</span>
+<span id="L204"><span class="lineNum">     204</span>              :             id: 'construction_per_sqm',</span>
+<span id="L205"><span class="lineNum">     205</span>              :             title: 'Cobro por metro cuadrado',</span>
+<span id="L206"><span class="lineNum">     206</span>              :             subtitle: 'Tarifa para proyectos grandes de construcción',</span>
+<span id="L207"><span class="lineNum">     207</span>              :             icon: Icons.square_foot_outlined,</span>
+<span id="L208"><span class="lineNum">     208</span>              :             defaultPriceClp: 45000,</span>
+<span id="L209"><span class="lineNum">     209</span>              :             unit: WorkerPriceUnit.perSqm,</span>
+<span id="L210"><span class="lineNum">     210</span>              :           ),</span>
+<span id="L211"><span class="lineNum">     211</span>              :         ];</span>
+<span id="L212"><span class="lineNum">     212</span> <span class="tlaGNC">           4 :       case ServiceCategories.techSupport:</span></span>
+<span id="L213"><span class="lineNum">     213</span>              :         return const [</span>
+<span id="L214"><span class="lineNum">     214</span>              :           WorkerServiceOptionDef(</span>
+<span id="L215"><span class="lineNum">     215</span>              :             id: 'tech_single',</span>
+<span id="L216"><span class="lineNum">     216</span>              :             title: 'Un equipo',</span>
+<span id="L217"><span class="lineNum">     217</span>              :             subtitle: 'PC, notebook, impresora o router',</span>
+<span id="L218"><span class="lineNum">     218</span>              :             icon: Icons.computer_outlined,</span>
+<span id="L219"><span class="lineNum">     219</span>              :             defaultPriceClp: 25000,</span>
+<span id="L220"><span class="lineNum">     220</span>              :           ),</span>
+<span id="L221"><span class="lineNum">     221</span>              :           WorkerServiceOptionDef(</span>
+<span id="L222"><span class="lineNum">     222</span>              :             id: 'tech_multi',</span>
+<span id="L223"><span class="lineNum">     223</span>              :             title: 'Varios equipos',</span>
+<span id="L224"><span class="lineNum">     224</span>              :             subtitle: 'Formateo, respaldo u optimización',</span>
+<span id="L225"><span class="lineNum">     225</span>              :             icon: Icons.devices_outlined,</span>
+<span id="L226"><span class="lineNum">     226</span>              :             defaultPriceClp: 45000,</span>
+<span id="L227"><span class="lineNum">     227</span>              :           ),</span>
+<span id="L228"><span class="lineNum">     228</span>              :           WorkerServiceOptionDef(</span>
+<span id="L229"><span class="lineNum">     229</span>              :             id: 'tech_network',</span>
+<span id="L230"><span class="lineNum">     230</span>              :             title: 'Red u oficina pequeña',</span>
+<span id="L231"><span class="lineNum">     231</span>              :             subtitle: 'Wi-Fi, cableado, varios puestos',</span>
+<span id="L232"><span class="lineNum">     232</span>              :             icon: Icons.lan_outlined,</span>
+<span id="L233"><span class="lineNum">     233</span>              :             defaultPriceClp: 70000,</span>
+<span id="L234"><span class="lineNum">     234</span>              :           ),</span>
+<span id="L235"><span class="lineNum">     235</span>              :         ];</span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">           4 :       case ServiceCategories.moving:</span></span>
+<span id="L237"><span class="lineNum">     237</span>              :         return const [</span>
+<span id="L238"><span class="lineNum">     238</span>              :           WorkerServiceOptionDef(</span>
+<span id="L239"><span class="lineNum">     239</span>              :             id: 'moving_few',</span>
+<span id="L240"><span class="lineNum">     240</span>              :             title: 'Muebles o pocos bultos',</span>
+<span id="L241"><span class="lineNum">     241</span>              :             subtitle: 'Traslado puntual dentro de la ciudad',</span>
+<span id="L242"><span class="lineNum">     242</span>              :             icon: Icons.local_shipping_outlined,</span>
+<span id="L243"><span class="lineNum">     243</span>              :             defaultPriceClp: 35000,</span>
+<span id="L244"><span class="lineNum">     244</span>              :           ),</span>
+<span id="L245"><span class="lineNum">     245</span>              :           WorkerServiceOptionDef(</span>
+<span id="L246"><span class="lineNum">     246</span>              :             id: 'moving_apartment',</span>
+<span id="L247"><span class="lineNum">     247</span>              :             title: 'Departamento',</span>
+<span id="L248"><span class="lineNum">     248</span>              :             subtitle: 'Mudanza estándar con carga y descarga',</span>
+<span id="L249"><span class="lineNum">     249</span>              :             icon: Icons.apartment_outlined,</span>
+<span id="L250"><span class="lineNum">     250</span>              :             defaultPriceClp: 85000,</span>
+<span id="L251"><span class="lineNum">     251</span>              :           ),</span>
+<span id="L252"><span class="lineNum">     252</span>              :           WorkerServiceOptionDef(</span>
+<span id="L253"><span class="lineNum">     253</span>              :             id: 'moving_house',</span>
+<span id="L254"><span class="lineNum">     254</span>              :             title: 'Casa completa',</span>
+<span id="L255"><span class="lineNum">     255</span>              :             subtitle: 'Mudanza grande con embalaje básico',</span>
+<span id="L256"><span class="lineNum">     256</span>              :             icon: Icons.house_outlined,</span>
+<span id="L257"><span class="lineNum">     257</span>              :             defaultPriceClp: 150000,</span>
+<span id="L258"><span class="lineNum">     258</span>              :           ),</span>
+<span id="L259"><span class="lineNum">     259</span>              :         ];</span>
+<span id="L260"><span class="lineNum">     260</span>              :       default:</span>
+<span id="L261"><span class="lineNum">     261</span>              :         return const [</span>
+<span id="L262"><span class="lineNum">     262</span>              :           WorkerServiceOptionDef(</span>
+<span id="L263"><span class="lineNum">     263</span>              :             id: 'service_basic',</span>
+<span id="L264"><span class="lineNum">     264</span>              :             title: 'Trabajo básico',</span>
+<span id="L265"><span class="lineNum">     265</span>              :             subtitle: 'Tarea acotada o de poca duración',</span>
+<span id="L266"><span class="lineNum">     266</span>              :             icon: Icons.handyman_outlined,</span>
+<span id="L267"><span class="lineNum">     267</span>              :             defaultPriceClp: 30000,</span>
+<span id="L268"><span class="lineNum">     268</span>              :           ),</span>
+<span id="L269"><span class="lineNum">     269</span>              :           WorkerServiceOptionDef(</span>
+<span id="L270"><span class="lineNum">     270</span>              :             id: 'service_standard',</span>
+<span id="L271"><span class="lineNum">     271</span>              :             title: 'Trabajo estándar',</span>
+<span id="L272"><span class="lineNum">     272</span>              :             subtitle: 'Servicio de complejidad media',</span>
+<span id="L273"><span class="lineNum">     273</span>              :             icon: Icons.construction_outlined,</span>
+<span id="L274"><span class="lineNum">     274</span>              :             defaultPriceClp: 50000,</span>
+<span id="L275"><span class="lineNum">     275</span>              :           ),</span>
+<span id="L276"><span class="lineNum">     276</span>              :           WorkerServiceOptionDef(</span>
+<span id="L277"><span class="lineNum">     277</span>              :             id: 'service_premium',</span>
+<span id="L278"><span class="lineNum">     278</span>              :             title: 'Trabajo complejo',</span>
+<span id="L279"><span class="lineNum">     279</span>              :             subtitle: 'Proyecto extenso o especializado',</span>
+<span id="L280"><span class="lineNum">     280</span>              :             icon: Icons.star_outline,</span>
+<span id="L281"><span class="lineNum">     281</span>              :             defaultPriceClp: 80000,</span>
+<span id="L282"><span class="lineNum">     282</span>              :           ),</span>
+<span id="L283"><span class="lineNum">     283</span>              :         ];</span>
+<span id="L284"><span class="lineNum">     284</span>              :     }</span>
+<span id="L285"><span class="lineNum">     285</span>              :   }</span>
+<span id="L286"><span class="lineNum">     286</span>              : </span>
+<span id="L287"><span class="lineNum">     287</span> <span class="tlaGNC">           6 :   static Map&lt;String, int&gt; defaultTiersFor(String? category) {</span></span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">           6 :     return {</span></span>
+<span id="L289"><span class="lineNum">     289</span> <span class="tlaGNC">          24 :       for (final o in optionsFor(category)) o.id: o.defaultPriceClp,</span></span>
+<span id="L290"><span class="lineNum">     290</span>              :     };</span>
+<span id="L291"><span class="lineNum">     291</span>              :   }</span>
+<span id="L292"><span class="lineNum">     292</span>              : </span>
+<span id="L293"><span class="lineNum">     293</span> <span class="tlaGNC">           7 :   static int priceFor({</span></span>
+<span id="L294"><span class="lineNum">     294</span>              :     required Map&lt;String, int&gt; workerTiers,</span>
+<span id="L295"><span class="lineNum">     295</span>              :     required WorkerServiceOptionDef option,</span>
+<span id="L296"><span class="lineNum">     296</span>              :   }) =&gt;</span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaGNC">          17 :       workerTiers[option.id] ?? option.defaultPriceClp;</span></span>
+<span id="L298"><span class="lineNum">     298</span>              : </span>
+<span id="L299"><span class="lineNum">     299</span>              :   /// Opciones visibles al cliente (sin la tarifa interna por m²).</span>
+<span id="L300"><span class="lineNum">     300</span> <span class="tlaGNC">           5 :   static List&lt;WorkerServiceOptionDef&gt; catalogOptionsFor(String? category) {</span></span>
+<span id="L301"><span class="lineNum">     301</span> <span class="tlaGNC">           5 :     return optionsFor(category)</span></span>
+<span id="L302"><span class="lineNum">     302</span> <span class="tlaGNC">          20 :         .where((o) =&gt; !_workerOnlyPerSqmTierIds.contains(o.id))</span></span>
+<span id="L303"><span class="lineNum">     303</span> <span class="tlaGNC">           5 :         .toList();</span></span>
+<span id="L304"><span class="lineNum">     304</span>              :   }</span>
+<span id="L305"><span class="lineNum">     305</span>              : </span>
+<span id="L306"><span class="lineNum">     306</span>              :   /// Tarifas que edita el trabajador (incluye cobro por m²).</span>
+<span id="L307"><span class="lineNum">     307</span> <span class="tlaGNC">           5 :   static List&lt;WorkerServiceOptionDef&gt; pricingOptionsFor(String? category) =&gt;</span></span>
+<span id="L308"><span class="lineNum">     308</span> <span class="tlaGNC">           5 :       optionsFor(category);</span></span>
+<span id="L309"><span class="lineNum">     309</span>              : </span>
+<span id="L310"><span class="lineNum">     310</span>              :   static const _workerOnlyPerSqmTierIds = {</span>
+<span id="L311"><span class="lineNum">     311</span>              :     'construction_per_sqm',</span>
+<span id="L312"><span class="lineNum">     312</span>              :     'electrical_per_sqm',</span>
+<span id="L313"><span class="lineNum">     313</span>              :   };</span>
+<span id="L314"><span class="lineNum">     314</span>              : </span>
+<span id="L315"><span class="lineNum">     315</span>              :   static const _largeProjectClientOptionIds = {</span>
+<span id="L316"><span class="lineNum">     316</span>              :     'construction_large_project',</span>
+<span id="L317"><span class="lineNum">     317</span>              :     'electrical_large_project',</span>
+<span id="L318"><span class="lineNum">     318</span>              :   };</span>
+<span id="L319"><span class="lineNum">     319</span>              : </span>
+<span id="L320"><span class="lineNum">     320</span>              :   /// Opción «Proyecto grande» que ve el cliente (usa tarifa per_sqm del trabajador).</span>
+<span id="L321"><span class="lineNum">     321</span> <span class="tlaGNC">           5 :   static WorkerServiceOptionDef? largeProjectClientOption(String? category) {</span></span>
+<span id="L322"><span class="lineNum">     322</span>              :     switch (category) {</span>
+<span id="L323"><span class="lineNum">     323</span> <span class="tlaGNC">           5 :       case ServiceCategories.construction:</span></span>
+<span id="L324"><span class="lineNum">     324</span>              :         return const WorkerServiceOptionDef(</span>
+<span id="L325"><span class="lineNum">     325</span>              :           id: 'construction_large_project',</span>
+<span id="L326"><span class="lineNum">     326</span>              :           title: 'Proyecto grande',</span>
+<span id="L327"><span class="lineNum">     327</span>              :           subtitle: 'Indica los m² a construir; se calcula según la tarifa del maestro',</span>
+<span id="L328"><span class="lineNum">     328</span>              :           icon: Icons.domain_outlined,</span>
+<span id="L329"><span class="lineNum">     329</span>              :           defaultPriceClp: 45000,</span>
+<span id="L330"><span class="lineNum">     330</span>              :           unit: WorkerPriceUnit.perSqm,</span>
+<span id="L331"><span class="lineNum">     331</span>              :         );</span>
+<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">           5 :       case ServiceCategories.electrical:</span></span>
+<span id="L333"><span class="lineNum">     333</span>              :         return const WorkerServiceOptionDef(</span>
+<span id="L334"><span class="lineNum">     334</span>              :           id: 'electrical_large_project',</span>
+<span id="L335"><span class="lineNum">     335</span>              :           title: 'Proyecto grande',</span>
+<span id="L336"><span class="lineNum">     336</span>              :           subtitle: 'Indica los m² del proyecto; se calcula según la tarifa del electricista',</span>
+<span id="L337"><span class="lineNum">     337</span>              :           icon: Icons.domain_outlined,</span>
+<span id="L338"><span class="lineNum">     338</span>              :           defaultPriceClp: 18000,</span>
+<span id="L339"><span class="lineNum">     339</span>              :           unit: WorkerPriceUnit.perSqm,</span>
+<span id="L340"><span class="lineNum">     340</span>              :         );</span>
+<span id="L341"><span class="lineNum">     341</span>              :       default:</span>
+<span id="L342"><span class="lineNum">     342</span>              :         return null;</span>
+<span id="L343"><span class="lineNum">     343</span>              :     }</span>
+<span id="L344"><span class="lineNum">     344</span>              :   }</span>
+<span id="L345"><span class="lineNum">     345</span>              : </span>
+<span id="L346"><span class="lineNum">     346</span> <span class="tlaGNC">           2 :   static String? perSqmTierIdForCategory(String? category) {</span></span>
+<span id="L347"><span class="lineNum">     347</span>              :     switch (category) {</span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">           2 :       case ServiceCategories.construction:</span></span>
+<span id="L349"><span class="lineNum">     349</span>              :         return 'construction_per_sqm';</span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">           2 :       case ServiceCategories.electrical:</span></span>
+<span id="L351"><span class="lineNum">     351</span>              :         return 'electrical_per_sqm';</span>
+<span id="L352"><span class="lineNum">     352</span>              :       default:</span>
+<span id="L353"><span class="lineNum">     353</span>              :         return null;</span>
+<span id="L354"><span class="lineNum">     354</span>              :     }</span>
+<span id="L355"><span class="lineNum">     355</span>              :   }</span>
+<span id="L356"><span class="lineNum">     356</span>              : </span>
+<span id="L357"><span class="lineNum">     357</span>              :   /// Código de la opción «Visita del profesional»: se cobra la tarifa de</span>
+<span id="L358"><span class="lineNum">     358</span>              :   /// visita (`trabajadores.tarifa_visita`), la misma que cobra la web.</span>
+<span id="L359"><span class="lineNum">     359</span>              :   static const visitOptionId = 'visita';</span>
+<span id="L360"><span class="lineNum">     360</span>              : </span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">           4 :   static WorkerServiceOptionDef visitOption() =&gt; const WorkerServiceOptionDef(</span></span>
+<span id="L362"><span class="lineNum">     362</span>              :         id: visitOptionId,</span>
+<span id="L363"><span class="lineNum">     363</span>              :         title: 'Visita del profesional',</span>
+<span id="L364"><span class="lineNum">     364</span>              :         subtitle: 'Diagnóstico y arreglo en terreno con su tarifa de visita',</span>
+<span id="L365"><span class="lineNum">     365</span>              :         icon: Icons.home_repair_service_outlined,</span>
+<span id="L366"><span class="lineNum">     366</span>              :         defaultPriceClp: 0,</span>
+<span id="L367"><span class="lineNum">     367</span>              :       );</span>
+<span id="L368"><span class="lineNum">     368</span>              : </span>
+<span id="L369"><span class="lineNum">     369</span>              :   /// El profesional publicó un precio para [option]: una fila en</span>
+<span id="L370"><span class="lineNum">     370</span>              :   /// `trabajador_precios` (o su tarifa por m² para «Proyecto grande»), un</span>
+<span id="L371"><span class="lineNum">     371</span>              :   /// servicio extra propio o, para la visita, su tarifa de visita.</span>
+<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">           5 :   static bool isPublishedFor(WorkerModel worker, WorkerServiceOptionDef option) {</span></span>
+<span id="L373"><span class="lineNum">     373</span> <span class="tlaGNC">          10 :     if (option.id == visitOptionId) return worker.visitFee &gt; 0;</span></span>
+<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">           5 :     if (option.isCustom) {</span></span>
+<span id="L375"><span class="lineNum">     375</span> <span class="tlaUNC">           0 :       return worker.customServices.any((c) =&gt; c.id == option.id &amp;&amp; c.priceClp &gt; 0);</span></span>
+<span id="L376"><span class="lineNum">     376</span>              :     }</span>
+<span id="L377"><span class="lineNum">     377</span> <span class="tlaGNC">          10 :     if (_largeProjectClientOptionIds.contains(option.id)) {</span></span>
+<span id="L378"><span class="lineNum">     378</span> <span class="tlaUNC">           0 :       final tierId = perSqmTierIdForCategory(worker.serviceCategory);</span></span>
+<span id="L379"><span class="lineNum">     379</span> <span class="tlaUNC">           0 :       return tierId != null &amp;&amp; (worker.pricingTiers[tierId] ?? 0) &gt; 0;</span></span>
+<span id="L380"><span class="lineNum">     380</span>              :     }</span>
+<span id="L381"><span class="lineNum">     381</span> <span class="tlaGNC">          20 :     return (worker.pricingTiers[option.id] ?? 0) &gt; 0;</span></span>
+<span id="L382"><span class="lineNum">     382</span>              :   }</span>
+<span id="L383"><span class="lineNum">     383</span>              : </span>
+<span id="L384"><span class="lineNum">     384</span>              :   /// Opciones que ve el cliente: solo las que el profesional publicó en</span>
+<span id="L385"><span class="lineNum">     385</span>              :   /// `trabajador_precios`. Si no publicó ninguna variante ni servicio extra,</span>
+<span id="L386"><span class="lineNum">     386</span>              :   /// se ofrece la visita con su tarifa de visita.</span>
+<span id="L387"><span class="lineNum">     387</span> <span class="tlaGNC">           5 :   static List&lt;WorkerServiceOptionDef&gt; clientOptionsFor(WorkerModel worker) {</span></span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">           5 :     final items = &lt;WorkerServiceOptionDef&gt;[</span></span>
+<span id="L389"><span class="lineNum">     389</span> <span class="tlaGNC">          10 :       ...catalogOptionsFor(worker.serviceCategory),</span></span>
+<span id="L390"><span class="lineNum">     390</span>              :     ];</span>
+<span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">          10 :     final large = largeProjectClientOption(worker.serviceCategory);</span></span>
+<span id="L392"><span class="lineNum">     392</span> <span class="tlaUNC">           0 :     if (large != null) items.add(large);</span></span>
+<span id="L393"><span class="lineNum">     393</span>              :     final published =</span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaGNC">          20 :         items.where((o) =&gt; isPublishedFor(worker, o)).toList(growable: true);</span></span>
+<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">          13 :     final hasCustom = worker.customServices.any((c) =&gt; c.priceClp &gt; 0);</span></span>
+<span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">          13 :     if (published.isEmpty &amp;&amp; !hasCustom &amp;&amp; worker.visitFee &gt; 0) {</span></span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">           8 :       published.add(visitOption());</span></span>
+<span id="L398"><span class="lineNum">     398</span>              :     }</span>
+<span id="L399"><span class="lineNum">     399</span>              :     return published;</span>
+<span id="L400"><span class="lineNum">     400</span>              :   }</span>
+<span id="L401"><span class="lineNum">     401</span>              : </span>
+<span id="L402"><span class="lineNum">     402</span> <span class="tlaGNC">           5 :   static List&lt;WorkerServiceOptionDef&gt; customOptionsFor(WorkerModel worker) =&gt;</span></span>
+<span id="L403"><span class="lineNum">     403</span> <span class="tlaGNC">          17 :       worker.customServices.map((s) =&gt; s.toOptionDef()).toList();</span></span>
+<span id="L404"><span class="lineNum">     404</span>              : </span>
+<span id="L405"><span class="lineNum">     405</span> <span class="tlaGNC">           4 :   static int priceForWorker({</span></span>
+<span id="L406"><span class="lineNum">     406</span>              :     required WorkerModel worker,</span>
+<span id="L407"><span class="lineNum">     407</span>              :     required WorkerServiceOptionDef option,</span>
+<span id="L408"><span class="lineNum">     408</span>              :   }) {</span>
+<span id="L409"><span class="lineNum">     409</span> <span class="tlaGNC">          14 :     if (option.id == visitOptionId) return worker.visitFee.round();</span></span>
+<span id="L410"><span class="lineNum">     410</span> <span class="tlaGNC">           3 :     if (option.isCustom) {</span></span>
+<span id="L411"><span class="lineNum">     411</span> <span class="tlaUNC">           0 :       for (final custom in worker.customServices) {</span></span>
+<span id="L412"><span class="lineNum">     412</span> <span class="tlaUNC">           0 :         if (custom.id == option.id) return custom.priceClp;</span></span>
+<span id="L413"><span class="lineNum">     413</span>              :       }</span>
+<span id="L414"><span class="lineNum">     414</span> <span class="tlaUNC">           0 :       return option.defaultPriceClp;</span></span>
+<span id="L415"><span class="lineNum">     415</span>              :     }</span>
+<span id="L416"><span class="lineNum">     416</span> <span class="tlaGNC">           6 :     if (_largeProjectClientOptionIds.contains(option.id)) {</span></span>
+<span id="L417"><span class="lineNum">     417</span> <span class="tlaGNC">           2 :       final tierId = perSqmTierIdForCategory(worker.serviceCategory);</span></span>
+<span id="L418"><span class="lineNum">     418</span>              :       final tierDef = tierId != null</span>
+<span id="L419"><span class="lineNum">     419</span> <span class="tlaUNC">           0 :           ? findOption(worker.serviceCategory, tierId)</span></span>
+<span id="L420"><span class="lineNum">     420</span>              :           : null;</span>
+<span id="L421"><span class="lineNum">     421</span>              :       if (tierId != null &amp;&amp; tierDef != null) {</span>
+<span id="L422"><span class="lineNum">     422</span> <span class="tlaUNC">           0 :         return worker.pricingTiers[tierId] ?? tierDef.defaultPriceClp;</span></span>
+<span id="L423"><span class="lineNum">     423</span>              :       }</span>
+<span id="L424"><span class="lineNum">     424</span>              :     }</span>
+<span id="L425"><span class="lineNum">     425</span> <span class="tlaGNC">           6 :     return priceFor(workerTiers: worker.pricingTiers, option: option);</span></span>
+<span id="L426"><span class="lineNum">     426</span>              :   }</span>
+<span id="L427"><span class="lineNum">     427</span>              : </span>
+<span id="L428"><span class="lineNum">     428</span>              :   /// Tarifa unitaria (fija o CLP/m²).</span>
+<span id="L429"><span class="lineNum">     429</span> <span class="tlaGNC">           3 :   static int unitPriceForWorker({</span></span>
+<span id="L430"><span class="lineNum">     430</span>              :     required WorkerModel worker,</span>
+<span id="L431"><span class="lineNum">     431</span>              :     required WorkerServiceOptionDef option,</span>
+<span id="L432"><span class="lineNum">     432</span>              :   }) =&gt;</span>
+<span id="L433"><span class="lineNum">     433</span> <span class="tlaGNC">           3 :       priceForWorker(worker: worker, option: option);</span></span>
+<span id="L434"><span class="lineNum">     434</span>              : </span>
+<span id="L435"><span class="lineNum">     435</span>              :   /// Total a cobrar; para opciones por m² multiplica por [squareMeters].</span>
+<span id="L436"><span class="lineNum">     436</span> <span class="tlaGNC">           2 :   static int totalPriceForWorker({</span></span>
+<span id="L437"><span class="lineNum">     437</span>              :     required WorkerModel worker,</span>
+<span id="L438"><span class="lineNum">     438</span>              :     required WorkerServiceOptionDef option,</span>
+<span id="L439"><span class="lineNum">     439</span>              :     int? squareMeters,</span>
+<span id="L440"><span class="lineNum">     440</span>              :   }) {</span>
+<span id="L441"><span class="lineNum">     441</span> <span class="tlaGNC">           2 :     final unitPrice = unitPriceForWorker(worker: worker, option: option);</span></span>
+<span id="L442"><span class="lineNum">     442</span> <span class="tlaGNC">           2 :     if (requiresSquareMeters(option)) {</span></span>
+<span id="L443"><span class="lineNum">     443</span>              :       final m2 = squareMeters ?? 0;</span>
+<span id="L444"><span class="lineNum">     444</span> <span class="tlaGNC">           1 :       if (m2 &lt;= 0) return unitPrice;</span></span>
+<span id="L445"><span class="lineNum">     445</span> <span class="tlaGNC">           1 :       return unitPrice * m2;</span></span>
+<span id="L446"><span class="lineNum">     446</span>              :     }</span>
+<span id="L447"><span class="lineNum">     447</span>              :     return unitPrice;</span>
+<span id="L448"><span class="lineNum">     448</span>              :   }</span>
+<span id="L449"><span class="lineNum">     449</span>              : </span>
+<span id="L450"><span class="lineNum">     450</span> <span class="tlaGNC">           3 :   static bool requiresSquareMeters(WorkerServiceOptionDef option) =&gt;</span></span>
+<span id="L451"><span class="lineNum">     451</span> <span class="tlaGNC">           6 :       _largeProjectClientOptionIds.contains(option.id);</span></span>
+<span id="L452"><span class="lineNum">     452</span>              : </span>
+<span id="L453"><span class="lineNum">     453</span> <span class="tlaGNC">           4 :   static bool categorySupportsLargeProjects(String? category) =&gt;</span></span>
+<span id="L454"><span class="lineNum">     454</span> <span class="tlaGNC">           4 :       category == ServiceCategories.construction ||</span></span>
+<span id="L455"><span class="lineNum">     455</span> <span class="tlaGNC">           3 :       category == ServiceCategories.electrical;</span></span>
+<span id="L456"><span class="lineNum">     456</span>              : </span>
+<span id="L457"><span class="lineNum">     457</span> <span class="tlaGNC">           1 :   static WorkerServiceOptionDef? findOption(String? category, String optionId) {</span></span>
+<span id="L458"><span class="lineNum">     458</span> <span class="tlaGNC">           2 :     for (final o in optionsFor(category)) {</span></span>
+<span id="L459"><span class="lineNum">     459</span> <span class="tlaGNC">           2 :       if (o.id == optionId) return o;</span></span>
+<span id="L460"><span class="lineNum">     460</span>              :     }</span>
+<span id="L461"><span class="lineNum">     461</span> <span class="tlaGNC">           1 :     if (_largeProjectClientOptionIds.contains(optionId)) {</span></span>
+<span id="L462"><span class="lineNum">     462</span> <span class="tlaUNC">           0 :       return largeProjectClientOption(category);</span></span>
+<span id="L463"><span class="lineNum">     463</span>              :     }</span>
+<span id="L464"><span class="lineNum">     464</span>              :     return null;</span>
+<span id="L465"><span class="lineNum">     465</span>              :   }</span>
+<span id="L466"><span class="lineNum">     466</span>              : </span>
+<span id="L467"><span class="lineNum">     467</span> <span class="tlaGNC">           2 :   static WorkerServiceOptionDef? findOptionForWorker(</span></span>
+<span id="L468"><span class="lineNum">     468</span>              :     WorkerModel worker,</span>
+<span id="L469"><span class="lineNum">     469</span>              :     String optionId,</span>
+<span id="L470"><span class="lineNum">     470</span>              :   ) {</span>
+<span id="L471"><span class="lineNum">     471</span> <span class="tlaGNC">           3 :     if (optionId == visitOptionId) return visitOption();</span></span>
+<span id="L472"><span class="lineNum">     472</span> <span class="tlaGNC">           1 :     if (_largeProjectClientOptionIds.contains(optionId)) {</span></span>
+<span id="L473"><span class="lineNum">     473</span> <span class="tlaUNC">           0 :       return largeProjectClientOption(worker.serviceCategory);</span></span>
+<span id="L474"><span class="lineNum">     474</span>              :     }</span>
+<span id="L475"><span class="lineNum">     475</span> <span class="tlaGNC">           2 :     final catalog = findOption(worker.serviceCategory, optionId);</span></span>
+<span id="L476"><span class="lineNum">     476</span>              :     if (catalog != null) return catalog;</span>
+<span id="L477"><span class="lineNum">     477</span> <span class="tlaGNC">           1 :     for (final custom in worker.customServices) {</span></span>
+<span id="L478"><span class="lineNum">     478</span> <span class="tlaUNC">           0 :       if (custom.id == optionId) return custom.toOptionDef();</span></span>
+<span id="L479"><span class="lineNum">     479</span>              :     }</span>
+<span id="L480"><span class="lineNum">     480</span>              :     return null;</span>
+<span id="L481"><span class="lineNum">     481</span>              :   }</span>
+<span id="L482"><span class="lineNum">     482</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

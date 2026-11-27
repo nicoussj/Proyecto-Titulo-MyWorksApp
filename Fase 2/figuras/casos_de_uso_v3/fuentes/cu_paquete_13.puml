@@ -1,0 +1,20 @@
+@startuml cu_paquete_13
+left to right direction
+title Paquete 13: IA operativa y de control
+actor "Sistema" as Sistema
+actor "Administrador" as Administrador
+rectangle "MyWorksApp" {
+  usecase "CU-66 Moderar mensajes del chat de forma automática\n[Backend]" as CU66
+  usecase "CU-67 Revisar la cola de moderación\n[Escritorio]" as CU67
+  usecase "CU-68 Generar embeddings de perfiles y solicitudes\n[Backend]" as CU68
+  usecase "CU-69 Evaluar reglas de fraude y abrir alertas\n[Backend]" as CU69
+  usecase "CU-70 Revisar las alertas de IA\n[Escritorio]" as CU70
+  usecase "CU-71 Registrar eventos de uso\n[App, escritorio]" as CU71
+}
+Sistema --> CU66
+Administrador --> CU67
+Sistema --> CU68
+Sistema --> CU69
+Administrador --> CU70
+Sistema --> CU71
+@enduml

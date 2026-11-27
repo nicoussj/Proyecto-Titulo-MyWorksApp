@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myworksapp/features/admin/presentation/pages/admin_payouts_page.dart';
 
-import 'support/fake_supabase.dart';
 import 'support/widget_harness.dart';
 
 List<Map<String, dynamic>> _cobros() => [

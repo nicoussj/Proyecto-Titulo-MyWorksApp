@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/widgets/empty_state_widget.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/widgets">lib/core/widgets</a> - empty_state_widget.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">10</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : import 'package:flutter/material.dart';</span>
+<span id="L2"><span class="lineNum">       2</span>              : </span>
+<span id="L3"><span class="lineNum">       3</span>              : import 'design_system/empty_state_widget.dart' as ds;</span>
+<span id="L4"><span class="lineNum">       4</span>              : </span>
+<span id="L5"><span class="lineNum">       5</span>              : export 'design_system/empty_state_widget.dart';</span>
+<span id="L6"><span class="lineNum">       6</span>              : </span>
+<span id="L7"><span class="lineNum">       7</span>              : /// Estados vacíos especializados que reutilizan el widget del design system.</span>
+<span id="L8"><span class="lineNum">       8</span>              : class NoJobsEmptyState extends StatelessWidget {</span>
+<span id="L9"><span class="lineNum">       9</span>              :   final VoidCallback? onCreateJob;</span>
+<span id="L10"><span class="lineNum">      10</span>              : </span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">           1 :   const NoJobsEmptyState({super.key, this.onCreateJob});</span></span>
+<span id="L12"><span class="lineNum">      12</span>              : </span>
+<span id="L13"><span class="lineNum">      13</span> <span class="tlaGNC">           1 :   @override</span></span>
+<span id="L14"><span class="lineNum">      14</span>              :   Widget build(BuildContext context) {</span>
+<span id="L15"><span class="lineNum">      15</span> <span class="tlaGNC">           1 :     return ds.EmptyStateWidget(</span></span>
+<span id="L16"><span class="lineNum">      16</span>              :       icon: Icons.work_outline_rounded,</span>
+<span id="L17"><span class="lineNum">      17</span>              :       title: 'Aún no tienes trabajos',</span>
+<span id="L18"><span class="lineNum">      18</span>              :       message:</span>
+<span id="L19"><span class="lineNum">      19</span>              :           'Crea tu primer trabajo y conecta con trabajadores profesionales en tu área.',</span>
+<span id="L20"><span class="lineNum">      20</span>              :       actionLabel: 'Crear Trabajo',</span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">           1 :       onAction: onCreateJob,</span></span>
+<span id="L22"><span class="lineNum">      22</span>              :     );</span>
+<span id="L23"><span class="lineNum">      23</span>              :   }</span>
+<span id="L24"><span class="lineNum">      24</span>              : }</span>
+<span id="L25"><span class="lineNum">      25</span>              : </span>
+<span id="L26"><span class="lineNum">      26</span>              : class NoWorkersEmptyState extends StatelessWidget {</span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">           1 :   const NoWorkersEmptyState({super.key});</span></span>
+<span id="L28"><span class="lineNum">      28</span>              : </span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">           1 :   @override</span></span>
+<span id="L30"><span class="lineNum">      30</span>              :   Widget build(BuildContext context) {</span>
+<span id="L31"><span class="lineNum">      31</span>              :     return const ds.EmptyStateWidget(</span>
+<span id="L32"><span class="lineNum">      32</span>              :       icon: Icons.person_search_outlined,</span>
+<span id="L33"><span class="lineNum">      33</span>              :       title: 'No hay trabajadores disponibles',</span>
+<span id="L34"><span class="lineNum">      34</span>              :       message:</span>
+<span id="L35"><span class="lineNum">      35</span>              :           'No encontramos trabajadores disponibles en este momento. Intenta más tarde o ajusta tus filtros.',</span>
+<span id="L36"><span class="lineNum">      36</span>              :     );</span>
+<span id="L37"><span class="lineNum">      37</span>              :   }</span>
+<span id="L38"><span class="lineNum">      38</span>              : }</span>
+<span id="L39"><span class="lineNum">      39</span>              : </span>
+<span id="L40"><span class="lineNum">      40</span>              : class NoSearchResultsEmptyState extends StatelessWidget {</span>
+<span id="L41"><span class="lineNum">      41</span>              :   final VoidCallback? onClearFilters;</span>
+<span id="L42"><span class="lineNum">      42</span>              : </span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           1 :   const NoSearchResultsEmptyState({super.key, this.onClearFilters});</span></span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           1 :   @override</span></span>
+<span id="L46"><span class="lineNum">      46</span>              :   Widget build(BuildContext context) {</span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           1 :     return ds.EmptyStateWidget(</span></span>
+<span id="L48"><span class="lineNum">      48</span>              :       icon: Icons.search_off_rounded,</span>
+<span id="L49"><span class="lineNum">      49</span>              :       title: 'No se encontraron resultados',</span>
+<span id="L50"><span class="lineNum">      50</span>              :       message:</span>
+<span id="L51"><span class="lineNum">      51</span>              :           'No hay trabajadores que coincidan con tu búsqueda. Prueba con otros términos.',</span>
+<span id="L52"><span class="lineNum">      52</span>              :       actionLabel: 'Limpiar filtros',</span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           1 :       onAction: onClearFilters,</span></span>
+<span id="L54"><span class="lineNum">      54</span>              :     );</span>
+<span id="L55"><span class="lineNum">      55</span>              :   }</span>
+<span id="L56"><span class="lineNum">      56</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

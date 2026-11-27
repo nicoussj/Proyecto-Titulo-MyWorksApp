@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/domain/charge_mismatch.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/domain">lib/core/domain</a> - charge_mismatch.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">11</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : /// El catálogo redondea la base del profesional. El cobro usa la coordenada</span>
+<span id="L2"><span class="lineNum">       2</span>              : /// real, así que el total de la pantalla no se muestra hasta leer el servidor.</span>
+<span id="L3"><span class="lineNum">       3</span>              : const String chargeNotReadyMessage =</span>
+<span id="L4"><span class="lineNum">       4</span>              :     'No pudimos calcular el total. Reintenta antes de pagar.';</span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           7 : int? payableTotalClp(int? serverTotal) {</span></span>
+<span id="L7"><span class="lineNum">       7</span> <span class="tlaGNC">           4 :   if (serverTotal == null || serverTotal &lt;= 0) return null;</span></span>
+<span id="L8"><span class="lineNum">       8</span>              :   return serverTotal;</span>
+<span id="L9"><span class="lineNum">       9</span>              : }</span>
+<span id="L10"><span class="lineNum">      10</span>              : </span>
+<span id="L11"><span class="lineNum">      11</span>              : /// Lo que se cobra en este toque.</span>
+<span id="L12"><span class="lineNum">      12</span>              : ///</span>
+<span id="L13"><span class="lineNum">      13</span>              : /// [shownClp] es la suma que armó la pantalla (a veces con la base redondeada</span>
+<span id="L14"><span class="lineNum">      14</span>              : /// del mapa). Si el servidor trae otro entero, se cobra ese, sin pedir</span>
+<span id="L15"><span class="lineNum">      15</span>              : /// confirmar otra vez.</span>
+<span id="L16"><span class="lineNum">      16</span> <span class="tlaGNC">           4 : ({int amountClp, bool replacedShownTotal})? chargeForTap({</span></span>
+<span id="L17"><span class="lineNum">      17</span>              :   required int shownClp,</span>
+<span id="L18"><span class="lineNum">      18</span>              :   required int? serverTotalClp,</span>
+<span id="L19"><span class="lineNum">      19</span>              : }) {</span>
+<span id="L20"><span class="lineNum">      20</span> <span class="tlaGNC">           4 :   final amount = payableTotalClp(serverTotalClp);</span></span>
+<span id="L21"><span class="lineNum">      21</span>              :   if (amount == null) return null;</span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">           4 :   return (amountClp: amount, replacedShownTotal: amount != shownClp);</span></span>
+<span id="L23"><span class="lineNum">      23</span>              : }</span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span>              : /// Un rechazo de monto no reescribe el total en pantalla: se vuelve a leer.</span>
+<span id="L26"><span class="lineNum">      26</span> <span class="tlaGNC">           1 : bool paymentMismatchNeedsReload(String message) =&gt;</span></span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">           1 :     expectedChargeFromMismatch(message) != null;</span></span>
+<span id="L28"><span class="lineNum">      28</span>              : </span>
+<span id="L29"><span class="lineNum">      29</span>              : /// El servidor responde «Monto 40220 no coincide con tarifa/cotización 39830»</span>
+<span id="L30"><span class="lineNum">      30</span>              : /// cuando el mapa usa la base redondeada y el cobro usa la ubicación real.</span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">           4 : int? expectedChargeFromMismatch(String message) {</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">           4 :   final match = RegExp(</span></span>
+<span id="L33"><span class="lineNum">      33</span>              :     r'monto\s+(\d+)\s+no coincide con (?:la )?(?:tarifa/cotizaci[oó]n|tarifa|cotizaci[oó]n)(?: esperada)?\s+(\d+)',</span>
+<span id="L34"><span class="lineNum">      34</span>              :     caseSensitive: false,</span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           4 :   ).firstMatch(message);</span></span>
+<span id="L36"><span class="lineNum">      36</span>              :   if (match == null) return null;</span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           4 :   return int.tryParse(match.group(2)!);</span></span>
+<span id="L38"><span class="lineNum">      38</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

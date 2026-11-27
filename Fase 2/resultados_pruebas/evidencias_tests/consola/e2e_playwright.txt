@@ -1,0 +1,19 @@
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - `__dirname` (vite.config.ts:9:42). Use `import.meta.dirname` instead
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+Running 5 tests using 4 workers
+
+  -  1 e2e/consola.spec.ts:35:1 › la consola entra, muestra cada módulo y ejecuta pruebas y respaldo
+  -  2 e2e/real.spec.ts:31:1 › la sesión real con aal2 recorre reseñas, pedidos, disputas y pagos
+(node:613187) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:613188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 e2e/recorrido.spec.ts:5:1 › recorre reseñas, pedidos y disputas (2.6s)
+  ✓  4 e2e/premium.spec.ts:27:3 › cada sección carga, filtra y confirma en tema light (20.0s)
+  ✓  5 e2e/premium.spec.ts:27:3 › cada sección carga, filtra y confirma en tema dark (19.2s)
+
+  2 skipped
+  3 passed (40.9s)
+EXIT 0

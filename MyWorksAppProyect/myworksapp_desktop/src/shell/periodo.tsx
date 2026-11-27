@@ -23,6 +23,7 @@ export function PeriodoProvider({ children }: { children: ReactNode }) {
   return <PeriodoContext.Provider value={value}>{children}</PeriodoContext.Provider>;
 }
 
+// oxlint-disable-next-line react/only-export-components -- el hook vive junto a su proveedor
 export function usePeriodo(): Periodo {
   const value = useContext(PeriodoContext);
   if (!value) return { dias: 7, fijarDias: () => {} };

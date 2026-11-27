@@ -1,0 +1,5 @@
+
+> myworksapp_web@1.0.0 lint
+> oxlint --deny-warnings
+
+EXIT=0

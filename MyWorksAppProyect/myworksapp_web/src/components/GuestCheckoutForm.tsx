@@ -53,6 +53,7 @@ export function GuestCheckoutForm({
     : null;
   const previewRef = useRef(onPreviewAddress);
   const dialogRef = useRef<HTMLDivElement>(null);
+  // oxlint-disable-next-line react/refs -- patron latest-ref: guarda el ultimo valor para callbacks ya registrados
   previewRef.current = onPreviewAddress;
   useDialogA11y(true, onClose, dialogRef);
 

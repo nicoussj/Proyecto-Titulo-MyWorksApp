@@ -1,0 +1,21 @@
+@startuml cu_paquete_03
+left to right direction
+title Paquete 3: Ejecución del servicio
+actor "Profesional" as Profesional
+actor "Cliente" as Cliente
+rectangle "MyWorksApp" {
+  usecase "CU-11 Aceptar o rechazar un pedido\n[App]" as CU11
+  usecase "CU-12 Avisar «voy en camino» y compartir ubicación\n[App]" as CU12
+  usecase "CU-13 Seguir el pedido en vivo\n[Web, app]" as CU13
+  usecase "CU-14 Iniciar el trabajo con PIN\n[App]" as CU14
+  usecase "CU-15 Solicitar y aprobar un cobro adicional (orden de cambio)\n[App]" as CU15
+  usecase "CU-16 Subir evidencia y finalizar el trabajo\n[App]" as CU16
+}
+Profesional --> CU11
+Profesional --> CU12
+Cliente --> CU13
+Profesional --> CU14
+Profesional --> CU15
+Cliente --> CU15
+Profesional --> CU16
+@enduml

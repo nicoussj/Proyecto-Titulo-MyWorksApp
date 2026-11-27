@@ -1,0 +1,387 @@
+running 2 tests from ./_shared/chile_input.test.ts
+teléfono de Chile ...
+  normaliza móvil y rechaza un número corto ... ok (1ms)
+teléfono de Chile ... ok (2ms)
+dirección ...
+  pide calle y un segundo término ... ok (0ms)
+dirección ... ok (427µs)
+running 1 test from ./_shared/email_layout.test.ts
+renderEmail escapa script y rechaza javascript en el boton ... ok (1ms)
+running 2 tests from ./_shared/email_send.test.ts
+sin secretos no llama a Resend ... ok (1ms)
+fetch simulado devuelve el id y no escribe el correo en el log ... ok (6ms)
+running 1 test from ./_shared/fcm.test.ts
+push FCM ...
+  lee la cuenta de servicio solo si trae los 3 campos ... ok (2ms)
+  firma un JWT RS256 verificable con los claims de FCM ... ok (159ms)
+  acepta la clave con \n escapados como viene en el JSON de Google ... ok (262ms)
+  arma el mensaje con canal Android y datos para abrir el trabajo ... ok (1ms)
+  detecta tokens muertos ... ok (1ms)
+push FCM ... ok (432ms)
+running 7 tests from ./_shared/helpers_bordes.test.ts
+respuestas de Transbank ...
+  autorización de Webpay y Oneclick ... ok (0ms)
+  evaluación del commit: reembolsado se rechaza ... ok (0ms)
+respuestas de Transbank ... ok (3ms)
+mensajes de error públicos ...
+  oculta secretos, traduce choques y recorta textos largos ... ok (1ms)
+mensajes de error públicos ... ok (1ms)
+puerta de administración ...
+  is_admin que lanza o rechaza bloquea la mutación ... ok (0ms)
+  metadatos del cliente, motivo y auditoría que nunca relanza ... ok (7ms)
+puerta de administración ... ok (7ms)
+correo ...
+  sin configuración, correo inválido o reservado no envía ... ok (1ms)
+  envía con idempotencia y etiquetas; rechazo, red caída y cuerpo sin id ... ok (2ms)
+  deja la tarea viva con EdgeRuntime y no bloquea sin él ... ok (0ms)
+  enlaces seguros y plantilla con botón, filas y nota ... ok (1ms)
+correo ... ok (4ms)
+push FCM ...
+  pide el token de acceso firmado y maneja rechazos ... ok (79ms)
+  token muerto y URL de envío ... ok (0ms)
+push FCM ... ok (81ms)
+validaciones de entrada y orígenes ...
+  teléfono y dirección de Chile ... ok (1ms)
+  CORS: sin origen, locales inválidos y producción ... ok (0ms)
+  ticket de invitado mal formado o vencido y dominios reservados ... ok (0ms)
+  enlaces de invitación y puente de Transbank ... ok (0ms)
+validaciones de entrada y orígenes ... ok (2ms)
+escrituras que fallan en el backend ...
+  límite de tasa rechaza si la RPC lanza ... ok (0ms)
+  abrir el pedido tras la retención informa los errores ... ok (0ms)
+  activar la inscripción devuelve la fila si la base falla ... ok (0ms)
+escrituras que fallan en el backend ... ok (1ms)
+running 1 test from ./_shared/invite_html.test.ts
+correo de invitación ...
+  escapa un nombre con HTML ... ok (0ms)
+  no acepta un enlace javascript ... ok (0ms)
+  el redirect de la app instalada está permitido y un origen arbitrario no ... ok (0ms)
+  escapeHtml cubre comillas ... ok (0ms)
+correo de invitación ... ok (4ms)
+running 7 tests from ./_shared/modulos_sin_prueba.test.ts
+orden de compra Oneclick ...
+  primera orden, reintento, desborde y orden ajena ... ok (1ms)
+orden de compra Oneclick ... ok (2ms)
+cabeceras CORS y respuestas JSON ...
+  refleja el origen permitido y responde JSON ... ok (9ms)
+cabeceras CORS y respuestas JSON ... ok (8ms)
+defensa del backend ...
+  pausas activas, apagadas o sin migración ... ok (0ms)
+  IP bloqueada, vacía, desconocida o con error ... ok (0ms)
+  disputa abierta, ninguna o error ... ok (1ms)
+defensa del backend ... ok (1ms)
+interruptores y límite de tasa en memoria ...
+  interruptor encendido con 1, true u on ... ok (0ms)
+  IP del cliente desde las cabeceras del borde ... ok (1ms)
+  permite hasta el máximo, reinicia la ventana y falla cerrado sin clave ... ok (32ms)
+interruptores y límite de tasa en memoria ... ok (33ms)
+recargo de traslado ...
+  coordenadas, distancia y redondeo ... ok (0ms)
+  radio, rango y cotización con mínimo y máximo ... ok (71ms)
+recargo de traslado ... ok (71ms)
+tickets firmados y orígenes de retorno ...
+  sin secreto o con secreto corto no firma ... ok (1ms)
+  ticket de handoff válido, alterado, vencido o mal formado ... ok (2ms)
+  ticket de contraseña del invitado ... ok (2ms)
+  URL de retorno de Transbank ... ok (1ms)
+  origen del llamador, respaldo y postMessage ... ok (1ms)
+tickets firmados y orígenes de retorno ... ok (8ms)
+clientes de Supabase ...
+  crea el cliente del usuario y el de servicio sin conectarse ... ok (53ms)
+clientes de Supabase ... ok (53ms)
+running 1 test from ./_shared/oneclick_inscription.test.ts
+tarjeta Oneclick inscrita varias veces ...
+  cierra la inscripción si Transbank ya la tiene lista aunque la vuelta no llegó ... ok (1ms)
+  deja la inscripción pendiente mientras el cliente no termina en Transbank (-96) ... ok (0ms)
+  no rompe si Transbank no responde ... ok (0ms)
+  no vuelve a consultar una tarjeta ya activa ni una rechazada ... ok (1ms)
+  toma los últimos 4 dígitos ... ok (0ms)
+  reconoce la tarjeta que Transbank ya dio de baja ... ok (0ms)
+tarjeta Oneclick inscrita varias veces ... ok (4ms)
+running 1 test from ./_shared/oneclick_return_base.test.ts
+vuelta de Oneclick después del banco ...
+  la app vuelve al sitio https que el WebView sabe seguir ... ok (1ms)
+  la web vuelve al origen que inició la inscripción si está permitido ... ok (0ms)
+  sin origen válido nunca cae en localhost ... ok (0ms)
+  usa WEBPAY_WEB_RETURN_URL solo si es https ... ok (0ms)
+vuelta de Oneclick después del banco ... ok (2ms)
+running 2 tests from ./_shared/open_job_after_hold.test.ts
+holdOptionsForPayment ...
+  incluye el id de la orden de cambio ... ok (3ms)
+  un cobro principal deja changeOrderId en null ... ok (0ms)
+holdOptionsForPayment ... ok (6ms)
+openJobAfterHold ...
+  con ambos ids llama marcar_orden_cambio_pagada y no toca trabajos ... ok (0ms)
+  con solo paymentId pasa el trabajo de esperando_pago a pendiente ... ok (0ms)
+openJobAfterHold ... ok (1ms)
+running 4 tests from ./_shared/pagos_backend.test.ts
+reembolso una sola vez ...
+  pago inexistente, ya reembolsado, liberado o en estado no reembolsable ... ok (2ms)
+  Webpay: reclama, devuelve a la tarjeta y cierra el pedido si no quedan cobros ... ok (7ms)
+  Oneclick con cobros pendientes no cierra el pedido ... ok (0ms)
+  si Transbank falla se libera el reclamo y se relanza ...
+------- post-test output -------
+oneclick refund 400
+----- post-test output end -----
+  si Transbank falla se libera el reclamo y se relanza ... ok (1ms)
+  reclamo perdido: otro proceso ya reembolsó o sigue en curso ... ok (0ms)
+  sin token: producción lo rechaza; integración solo marca el pago ... ok (0ms)
+  reclamo previo pasa directo al registro y falla si la base no responde ... ok (0ms)
+reembolso una sola vez ... ok (13ms)
+correos de pago ...
+  montos, fechas, cuentas demo y enlace de alta ... ok (14ms)
+  pago recibido llega al cliente y al profesional ...
+------- post-test output -------
+email: resend 200
+email: resend 200
+----- post-test output end -----
+  pago recibido llega al cliente y al profesional ... ok (3ms)
+  no escribe a cuentas demo, reservadas, sin correo ni repetidas ...
+------- post-test output -------
+email: resend 200
+----- post-test output end -----
+  no escribe a cuentas demo, reservadas, sin correo ni repetidas ... ok (1ms)
+  alta de invitado, reembolso y liberación ...
+------- post-test output -------
+email: resend 200
+email: resend 200
+email: resend 200
+----- post-test output end -----
+  alta de invitado, reembolso y liberación ... ok (2ms)
+  sin pago, sin enlace, sin cliente o sin profesional no envía ... ok (0ms)
+correos de pago ... ok (21ms)
+cobro con tarjeta inscrita ...
+  pago ya retenido solo abre el pedido ... ok (1ms)
+  orden previa autorizada se registra sin volver a cobrar ... ok (0ms)
+  orden previa rechazada usa una orden nueva y el reclamo listo abre el pedido ... ok (1ms)
+  reclamo con error: cobro en curso u otro ... ok (0ms)
+  Transbank ya autorizó la orden reclamada ... ok (0ms)
+  cobro en curso: ya retenido, carrera autorizada, carrera pendiente y sin orden ... ok (1ms)
+  autoriza, rechaza o falla la autorización ...
+------- post-test output -------
+oneclick authorize 400
+----- post-test output end -----
+  autoriza, rechaza o falla la autorización ... ok (1ms)
+cobro con tarjeta inscrita ... ok (3ms)
+monto esperado del pedido ...
+  usa la RPC cuando responde ... ok (1ms)
+  sin la RPC calcula con cotización, tarifa y traslado ... ok (0ms)
+monto esperado del pedido ... ok (1ms)
+running 1 test from ./_shared/rate_limit_db.test.ts
+rate limit global ...
+  acepta solo cuando la RPC responde true ... ok (0ms)
+  falla cerrado si la RPC no está o la clave viene vacía ... ok (0ms)
+rate limit global ... ok (4ms)
+running 7 tests from ./_shared/reconcile_auth.test.ts
+safeEqual compara exacto ... ok (817µs)
+sin credenciales rechaza y no consulta Vault ... ok (208µs)
+Bearer service role autoriza ... ok (151µs)
+header igual al secreto de entorno autoriza ... ok (86µs)
+sin secreto de entorno valida contra Vault ... ok (166µs)
+secreto de entorno distinto cae a Vault ... ok (150µs)
+error de Vault rechaza ... ok (559µs)
+running 1 test from ./_shared/reconcile_hold.test.ts
+reconciliación de Webpay capturado ...
+  confirma una sola vez mientras la ventana sigue abierta ... ok (2ms)
+  no vuelve a abrir el trabajo si ya salió de esperando pago ... ok (0ms)
+  espera si Transbank aún no confirma y reembolsa al vencer ... ok (0ms)
+reconciliación de Webpay capturado ... ok (5ms)
+running 2 tests from ./_shared/require_admin.test.ts
+is_admin en el servidor ...
+  un JWT aal1 (is_admin false) responde 403 y no cambia pagos ni disputas ...
+------- post-test output -------
+is_admin rechazó la sesión (data=false)
+----- post-test output end -----
+  un JWT aal1 (is_admin false) responde 403 y no cambia pagos ni disputas ... ok (1ms)
+  una cuenta suspendida (is_admin false) responde 403 y no muta ...
+------- post-test output -------
+is_admin rechazó la sesión (data=null)
+----- post-test output end -----
+  una cuenta suspendida (is_admin false) responde 403 y no muta ... ok (0ms)
+  un error de la RPC responde 403 y no muta ...
+------- post-test output -------
+is_admin rechazó la sesión (rpc_error)
+----- post-test output end -----
+  un error de la RPC responde 403 y no muta ... ok (0ms)
+  admin aal2 con cuenta activa (is_admin true) deja ejecutar la mutación ... ok (0ms)
+  solo acepta el booleano true ... ok (0ms)
+  el motivo de una acción de dinero exige al menos 10 caracteres ... ok (0ms)
+  requireAdmin no filtra el detalle al cliente ... ok (0ms)
+is_admin en el servidor ... ok (3ms)
+las funciones de consola no leen perfiles.rol ...
+  webpay-release/index.ts ... ok (1ms)
+  webpay-resolve-dispute/index.ts ... ok (0ms)
+  webpay-refund/index.ts ... ok (0ms)
+  invitar-colaborador/index.ts ... ok (1ms)
+  el reembolso de cancelación usa is_admin para el atajo de admin ... ok (0ms)
+las funciones de consola no leen perfiles.rol ... ok (2ms)
+running 2 tests from ./_shared/safe_error.test.ts
+el índice de un solo cobro se explica en español ... ok (2ms)
+un RAISE de cobro en curso conserva la frase de negocio ... ok (238µs)
+running 6 tests from ./_shared/security_round6.test.ts
+ticket de contraseña del invitado ...
+  solo se firma en el primer paso de pendiente a retenido ... ok (0ms)
+  el ticket de invitado solo sale si este request pasó el pago a retenido ... ok (0ms)
+  en la demo confirma el correo y en producción pide el correo de alta ... ok (0ms)
+  si falla el correo de confirmación la clave queda guardada y se avisa (sin 502) ... ok (0ms)
+  rechaza correos de dominios reservados en el checkout invitado ... ok (0ms)
+  exige jti y rechaza el formato viejo de cuatro partes ... ok (0ms)
+  el nonce se compara por hash, no en claro ... ok (1ms)
+ticket de contraseña del invitado ... ok (4ms)
+Turnstile ...
+  sin secreto falla cerrado, también en integración ... ok (0ms)
+  el flag explícito es el único atajo sin secreto ... ok (0ms)
+  con secreto siempre verifica ... ok (0ms)
+Turnstile ... ok (463µs)
+commit de Webpay ...
+  no reescribe un pago ya retenido ... ok (1ms)
+  un cobro ya capturado no se vuelve a autorizar ... ok (0ms)
+  exige monto y orden iguales antes de retener ... ok (0ms)
+commit de Webpay ... ok (491µs)
+pago abandonado en Webpay ...
+  anula el cobro pendiente si el cliente cancela con TBK_TOKEN ... ok (0ms)
+  marca fallido un rechazo o un monto distinto ... ok (0ms)
+  no toca un pago ya retenido o liberado ... ok (0ms)
+pago abandonado en Webpay ... ok (417µs)
+CORS ...
+  no refleja un origen supabase.co si no está en la lista ... ok (1ms)
+  no acepta Origin: null (iframe sandbox, file://) ... ok (0ms)
+  en integración acepta el vite local y el escritorio ... ok (0ms)
+  en integración acepta el puerto que elige Flutter web ... ok (1ms)
+  en producción no abre localhost salvo allowlist ... ok (0ms)
+CORS ... ok (1ms)
+web pública ...
+  es un origen exacto, sin comodines ... ok (0ms)
+  CORS la acepta en integración y en producción sin secret ... ok (1ms)
+  CORS no abre otros vercel.app ni variantes del nombre ... ok (0ms)
+  CORS mantiene CORS_ALLOWED_ORIGINS y localhost como antes ... ok (0ms)
+  el retorno de Transbank puede volver a la web pública ... ok (0ms)
+web pública ... ok (1ms)
+running 1 test from ./_shared/tbk.config.test.ts
+credenciales Transbank de integración ...
+  usa la llave pública oficial y los códigos de comercio documentados ... ok (1ms)
+  falla si TBK_ENV no está definido ... ok (1ms)
+  respeta secretos explícitos en integración ... ok (0ms)
+  en producción falla si faltan secretos ... ok (0ms)
+  en producción rechaza la llave y los códigos públicos ... ok (1ms)
+  un TBK_ENV distinto de integration o production no usa el fallback ... ok (0ms)
+  producción con secretos reales no sustituye la llave ... ok (0ms)
+credenciales Transbank de integración ... ok (5ms)
+running 2 tests from ./_shared/tbk_http.test.ts
+Webpay Plus por HTTP ...
+  configuración de integración desde el entorno ... ok (1ms)
+  crea, consulta, confirma y reembolsa con las cabeceras del comercio ... ok (7ms)
+  reintenta una vez ante 5xx o error de red y luego falla ... ok (11ms)
+  un rechazo no Error en el último intento usa el mensaje genérico ... ok (3ms)
+  errores del portal en crear, consultar, confirmar y reembolsar ... ok (1ms)
+Webpay Plus por HTTP ... ok (25ms)
+Oneclick Mall por HTTP ...
+  inscribe, confirma, consulta, cobra, quita y reembolsa ... ok (3ms)
+  errores de Oneclick con mensajes para la persona ...
+------- post-test output -------
+oneclick start 200
+oneclick finish 400
+oneclick authorize 422
+oneclick authorize 400
+oneclick delete inscription 400
+oneclick refund 400
+----- post-test output end -----
+  errores de Oneclick con mensajes para la persona ... ok (6ms)
+Oneclick Mall por HTTP ... ok (9ms)
+running 1 test from ./_shared/transbank_form.test.ts
+redirect a Transbank ...
+  agrega token_ws por query ... ok (1ms)
+  redirige a la página puente que hace el POST (no sirve HTML desde Supabase) ... ok (8ms)
+  no arma la puente para un host que no es Transbank ... ok (1ms)
+  usa TBK_TOKEN en la inscripción Oneclick ... ok (0ms)
+  rechaza un host que no es Transbank ... ok (0ms)
+redirect a Transbank ... ok (12ms)
+running 1 test from ./_shared/webpay_return.test.ts
+retorno Webpay ...
+  lee token_ws y TBK_TOKEN de la query o del formulario ... ok (1ms)
+  arma la vuelta con pago, invitado y alta ... ok (1ms)
+  la vuelta de la app pasa a https y conserva pago=ok ... ok (1ms)
+  un http de la web no se reescribe ... ok (0ms)
+  un abandono solo marca pago=fail ... ok (0ms)
+retorno Webpay ... ok (4ms)
+running 19 tests from ./handlers_humo.test.ts
+edge function consola-respaldo: responde a pedidos válidos, rotos y con backend caído ... ok (283ms)
+edge function definir-clave-invitado: responde a pedidos válidos, rotos y con backend caído ... ok (37ms)
+edge function guest-checkout: responde a pedidos válidos, rotos y con backend caído ... ok (115ms)
+edge function invitar-colaborador: responde a pedidos válidos, rotos y con backend caído ... ok (44ms)
+edge function oneclick-charge: responde a pedidos válidos, rotos y con backend caído ... ok (88ms)
+edge function oneclick-handoff: responde a pedidos válidos, rotos y con backend caído ... ok (7ms)
+edge function oneclick-return: responde a pedidos válidos, rotos y con backend caído ... ok (68ms)
+edge function send-push: responde a pedidos válidos, rotos y con backend caído ... ok (11ms)
+edge function soporte-automatico: responde a pedidos válidos, rotos y con backend caído ... ok (116ms)
+edge function webpay-commit: responde a pedidos válidos, rotos y con backend caído ... ok (107ms)
+edge function webpay-create: responde a pedidos válidos, rotos y con backend caído ... ok (105ms)
+edge function webpay-handoff: responde a pedidos válidos, rotos y con backend caído ... ok (7ms)
+edge function webpay-reconcile: responde a pedidos válidos, rotos y con backend caído ... ok (38ms)
+edge function webpay-refund: responde a pedidos válidos, rotos y con backend caído ... ok (45ms)
+edge function webpay-refund-cancellation: responde a pedidos válidos, rotos y con backend caído ... ok (52ms)
+edge function webpay-refund-rejection: responde a pedidos válidos, rotos y con backend caído ... ok (43ms)
+edge function webpay-release: responde a pedidos válidos, rotos y con backend caído ... ok (45ms)
+edge function webpay-resolve-dispute: responde a pedidos válidos, rotos y con backend caído ... ok (63ms)
+edge function webpay-status: responde a pedidos válidos, rotos y con backend caído ... ok (29ms)
+
+ok | 72 passed (147 steps) | 0 failed (4s)
+
+| File                                | Branch % | Function % | Line % |
+| ----------------------------------- | -------- | ---------- | ------ |
+| _shared/abandon_payment.ts          |    100.0 |      100.0 |  100.0 |
+| _shared/buy_order.ts                |    100.0 |      100.0 |  100.0 |
+| _shared/chile_input.ts              |    100.0 |      100.0 |  100.0 |
+| _shared/commit_guard.ts             |     92.9 |      100.0 |  100.0 |
+| _shared/cors.ts                     |    100.0 |      100.0 |  100.0 |
+| _shared/cors_origin.ts              |     98.1 |      100.0 |   98.7 |
+| _shared/defensa.ts                  |    100.0 |      100.0 |  100.0 |
+| _shared/dispute_guard.ts            |    100.0 |      100.0 |  100.0 |
+| _shared/email_layout.ts             |    100.0 |      100.0 |  100.0 |
+| _shared/email_send.ts               |    100.0 |      100.0 |  100.0 |
+| _shared/fcm.ts                      |     90.0 |      100.0 |  100.0 |
+| _shared/guest_ticket.ts             |     94.6 |      100.0 |  100.0 |
+| _shared/invite_html.ts              |     92.3 |      100.0 |  100.0 |
+| _shared/kill_switch.ts              |    100.0 |      100.0 |  100.0 |
+| _shared/oneclick_charge.ts          |     98.1 |      100.0 |  100.0 |
+| _shared/oneclick_inscription.ts     |     96.9 |      100.0 |  100.0 |
+| _shared/oneclick_return_base.ts     |     92.3 |      100.0 |  100.0 |
+| _shared/open_job_after_hold.ts      |     90.9 |      100.0 |  100.0 |
+| _shared/payment_mail.ts             |     99.1 |      100.0 |  100.0 |
+| _shared/rate_limit.ts               |    100.0 |      100.0 |  100.0 |
+| _shared/rate_limit_db.ts            |    100.0 |      100.0 |  100.0 |
+| _shared/reconcile_auth.ts           |    100.0 |      100.0 |  100.0 |
+| _shared/reconcile_hold.ts           |    100.0 |      100.0 |  100.0 |
+| _shared/refund_once.ts              |     95.1 |      100.0 |   98.3 |
+| _shared/require_admin.ts            |    100.0 |      100.0 |  100.0 |
+| _shared/safe_error.ts               |    100.0 |      100.0 |  100.0 |
+| _shared/security.ts                 |    100.0 |      100.0 |  100.0 |
+| _shared/supabase.ts                 |    100.0 |      100.0 |  100.0 |
+| _shared/tbk.ts                      |     98.5 |      100.0 |  100.0 |
+| _shared/transbank_form.ts           |    100.0 |      100.0 |  100.0 |
+| _shared/transport.ts                |    100.0 |      100.0 |  100.0 |
+| _shared/turnstile_gate.ts           |    100.0 |      100.0 |  100.0 |
+| _shared/webpay_return.ts            |    100.0 |      100.0 |  100.0 |
+| consola-respaldo/index.ts           |     83.3 |       44.4 |   52.8 |
+| definir-clave-invitado/index.ts     |     62.1 |       50.0 |   46.6 |
+| guest-checkout/index.ts             |     70.6 |       55.6 |   31.4 |
+| invitar-colaborador/index.ts        |     68.4 |       20.0 |   31.6 |
+| oneclick-charge/index.ts            |     76.2 |       71.4 |   60.5 |
+| oneclick-handoff/index.ts           |     82.4 |      100.0 |   68.4 |
+| oneclick-return/index.ts            |     76.7 |      100.0 |   61.8 |
+| send-push/index.ts                  |     83.3 |      100.0 |   86.5 |
+| soporte-automatico/index.ts         |     79.4 |       66.7 |   75.0 |
+| webpay-commit/index.ts              |     76.3 |      100.0 |   76.5 |
+| webpay-create/index.ts              |     74.0 |      100.0 |   78.0 |
+| webpay-handoff/index.ts             |     86.7 |      100.0 |   49.0 |
+| webpay-reconcile/index.ts           |     73.7 |       66.7 |   49.3 |
+| webpay-refund-cancellation/index.ts |     71.9 |      100.0 |   70.8 |
+| webpay-refund-rejection/index.ts    |     71.1 |      100.0 |   46.7 |
+| webpay-refund/index.ts              |     82.6 |      100.0 |   66.3 |
+| webpay-release/index.ts             |     74.6 |      100.0 |   46.0 |
+| webpay-resolve-dispute/index.ts     |     79.5 |      100.0 |   79.3 |
+| webpay-status/index.ts              |     84.8 |      100.0 |   87.3 |
+| All files                           |     85.7 |       91.0 |   74.8 |
+Lcov coverage report has been generated at file:///tmp/denocov/lcov.info
+HTML coverage report has been generated at file:///tmp/denocov/html/index.html
+EXIT 0
