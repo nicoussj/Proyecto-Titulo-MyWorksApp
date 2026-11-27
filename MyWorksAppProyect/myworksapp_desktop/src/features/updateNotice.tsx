@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { isTauriRuntime } from '../lib/redirect';
 
-/** Avisa si GitHub Releases publicó una versión más nueva. */
+/**
+ * Avisa si GitHub Releases publicó una versión más nueva.
+ * Solo consulta el feed si el build lo habilita (VITE_DESKTOP_UPDATER=1),
+ * así no se pide un latest.json que todavía no está publicado.
+ */
 export function DesktopUpdateNotice() {
   const [version, setVersion] = useState<string | null>(null);
   const [install, setInstall] = useState<(() => Promise<void>) | null>(null);
@@ -9,7 +13,7 @@ export function DesktopUpdateNotice() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isTauriRuntime()) return;
+    if (!isTauriRuntime() || import.meta.env.VITE_DESKTOP_UPDATER !== '1') return;
     let cancelled = false;
     void import('@tauri-apps/plugin-updater').then(async ({ check }) => {
       try {
