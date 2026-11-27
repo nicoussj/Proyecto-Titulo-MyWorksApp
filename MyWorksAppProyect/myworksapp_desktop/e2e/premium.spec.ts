@@ -2,7 +2,7 @@ import { mkdir } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const DIR = '/agent/repos/MyWorksAppProyect/MyWorksAppProyect/docs/pruebas/consola-premium/capturas';
+const DIR = process.env.CAPTURAS_DIR ?? 'test-results/capturas/consola-premium';
 
 const SECCIONES = [
   ['/resumen?captura=local', 'inicio'],
