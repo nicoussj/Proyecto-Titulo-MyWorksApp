@@ -78,8 +78,11 @@ Widget _map() => const MaterialApp(
       ),
     );
 
-Future<void> _settle(WidgetTester tester) async {
-  for (var i = 0; i < 6; i++) {
+/// Deja correr la red simulada. Con [until] sigue esperando (hasta ~6 s
+/// reales) a que aparezca ese widget: en CI el estilo puede tardar más.
+Future<void> _settle(WidgetTester tester, {Finder? until}) async {
+  for (var i = 0; i < 6 || (until != null && i < 60); i++) {
+    if (i >= 6 && until!.evaluate().isNotEmpty) break;
     await tester
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
     await tester.pump(const Duration(milliseconds: 300));
@@ -103,7 +106,7 @@ void main() {
     final net = _net..reset();
     await http.runWithClient(() async {
       await tester.pumpWidget(_map());
-      await _settle(tester);
+      await _settle(tester, until: find.byType(vt.VectorTileLayer));
     }, () => net.client);
     expect(find.byType(vt.VectorTileLayer), findsOneWidget);
     expect(find.text(AppMapTiles.attribution), findsOneWidget);
