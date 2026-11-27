@@ -2,14 +2,14 @@ type Admin = {
   rpc: (
     fn: string,
     args: Record<string, unknown>,
-  ) => Promise<{ error: { message?: string } | null }>;
+  ) => PromiseLike<{ error: { message?: string } | null }>;
   from: (table: string) => {
     update: (values: Record<string, unknown>) => {
       eq: (column: string, value: string) => {
         eq: (
           column: string,
           value: string,
-        ) => Promise<{ error: { message?: string } | null }>;
+        ) => PromiseLike<{ error: { message?: string } | null }>;
       };
     };
   };

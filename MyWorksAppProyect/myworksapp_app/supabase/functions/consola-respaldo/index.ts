@@ -177,11 +177,11 @@ async function gzip(texto: string): Promise<Uint8Array> {
 }
 
 async function gunzip(bytes: Uint8Array): Promise<string> {
-  const flujo = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+  const flujo = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream("gzip"));
   return await new Response(flujo).text();
 }
 
 async function sha256(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const digest = await crypto.subtle.digest("SHA-256", bytes as BufferSource);
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
