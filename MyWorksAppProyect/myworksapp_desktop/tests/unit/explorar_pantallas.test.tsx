@@ -3,15 +3,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { auth, montar, perfil } from './harness';
 import { explorar, llenarCampos } from './explorar';
 
-const cli = vi.hoisted(() => ({ modo: 'ok' as 'ok' | 'error', base: null as null | Record<string, any> }));
+const cli = vi.hoisted(() => ({ modo: 'ok' as 'ok' | 'error' | 'mixto' | 'totp', base: null as null | Record<string, any> }));
 vi.mock('../../src/supabaseClient', async () => {
   const { clienteCaptura } = await import('../../src/captura/cliente');
   cli.base = clienteCaptura() as Record<string, any>;
   const falla = { message: 'falla simulada', code: 'P0001' };
   const proxy = {
     from(tabla: string) {
-      if (cli.modo === 'ok') {
+      if (cli.modo !== 'error') {
         const api = cli.base!.from(tabla);
+        if (cli.modo === 'mixto') {
+          const ko = () => Promise.resolve({ data: null, error: falla });
+          api.update = () => ({ eq: ko, in: ko });
+          api.insert = ko;
+          api.delete = () => ({ eq: ko });
+          api.upsert = ko;
+          return api;
+        }
         const orig = api.update;
         api.update = (...a: unknown[]) => ({ eq: () => Promise.resolve({ data: null, error: null }), ...orig?.(...a) });
         api.insert = () => Promise.resolve({ data: null, error: null });
@@ -23,20 +31,25 @@ vi.mock('../../src/supabaseClient', async () => {
       return chain;
     },
     rpc(nombre: string, args?: Record<string, unknown>) {
-      return cli.modo === 'ok' ? cli.base!.rpc(nombre, args) : Promise.resolve({ data: null, error: falla });
+      if (cli.modo === 'error') return Promise.resolve({ data: null, error: falla });
+      if (cli.modo === 'mixto') {
+        return cli.base!.rpc(nombre, args).then((r: { data: unknown }) =>
+          r.data == null || (Array.isArray(r.data) && r.data.length === 0) ? { data: null, error: falla } : r);
+      }
+      return cli.base!.rpc(nombre, args);
     },
-    functions: { invoke: async () => (cli.modo === 'ok' ? { data: { ok: true }, error: null } : { data: null, error: falla }) },
+    functions: { invoke: async () => (cli.modo === 'ok' || cli.modo === 'totp' ? { data: { ok: true }, error: null } : { data: null, error: falla }) },
     channel: (...a: unknown[]) => cli.base!.channel(...a),
     removeChannel: () => Promise.resolve('ok'),
-    storage: { from: () => ({ createSignedUrl: async () => (cli.modo === 'ok' ? { data: { signedUrl: 'https://example.test/doc.jpg' }, error: null } : { data: null, error: falla }) }) },
+    storage: { from: () => ({ createSignedUrl: async () => (cli.modo !== 'error' ? { data: { signedUrl: 'https://example.test/doc.jpg' }, error: null } : { data: null, error: falla }) }) },
     auth: {
       ...cli.base!.auth,
-      updateUser: async () => (cli.modo === 'ok' ? { data: {}, error: null } : { data: null, error: falla }),
+      updateUser: async () => (cli.modo === 'ok' || cli.modo === 'totp' ? { data: {}, error: null } : { data: null, error: falla }),
       resetPasswordForEmail: async () => ({ data: {}, error: null }),
       mfa: {
         listFactors: async () => ({ data: { totp: [{ id: 'f1', status: 'verified' }] }, error: null }),
         challenge: async () => ({ data: { id: 'c1' }, error: null }),
-        verify: async () => ({ data: {}, error: cli.modo === 'ok' ? null : falla }),
+        verify: async () => ({ data: {}, error: cli.modo === 'ok' || cli.modo === 'totp' ? null : falla }),
         getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null }),
       },
     },
@@ -45,6 +58,7 @@ vi.mock('../../src/supabaseClient', async () => {
 });
 
 import App from '../../src/App';
+import { markTotpVerified } from '../../src/lib/totp';
 import { NAV } from '../../src/shell/nav';
 
 const rutas = [...NAV.map((item) => item.to), '/pedidos/job-1', '/usuarios/u-1', '/profesionales/w-1', '/pagos/p-1', '/cuenta'];
@@ -59,9 +73,10 @@ beforeEach(() => {
   URL.revokeObjectURL = vi.fn();
 });
 
-describe.each(['ok', 'error'] as const)('operador recorre cada pantalla (backend %s)', (modo) => {
+describe.each(['ok', 'error', 'mixto', 'totp'] as const)('operador recorre cada pantalla (backend %s)', (modo) => {
   it.each(rutas)('%s', async (ruta) => {
     cli.modo = modo;
+    if (modo === 'totp') markTotpVerified();
     window.history.pushState({}, '', ruta);
     montar(<App />);
     const pulsados = await explorar(80);
