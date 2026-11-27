@@ -22,4 +22,9 @@ describe('chequeos de la consola', () => {
     const hallazgo = evaluarSecretos({ VITE_SUPABASE_URL: 'http://127.0.0.1:54321', VITE_SUPABASE_ANON_KEY: 'anon' });
     assert.equal(hallazgo.resultado, 'ok');
   });
+
+  it('tolera las banderas booleanas que Vite agrega a import.meta.env', () => {
+    const hallazgo = evaluarSecretos({ DEV: false, PROD: true, SSR: false, MODE: 'production', VITE_SUPABASE_ANON_KEY: 'anon' });
+    assert.equal(hallazgo.resultado, 'ok');
+  });
 });
