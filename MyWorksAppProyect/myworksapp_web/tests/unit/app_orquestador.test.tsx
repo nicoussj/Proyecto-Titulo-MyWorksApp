@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -87,8 +88,10 @@ const snap = (over: Props = {}) => ({
 });
 
 function Probe() {
-  const loc = useLocation();
-  h.path.current = loc.pathname;
+  const { pathname } = useLocation();
+  useEffect(() => {
+    h.path.current = pathname;
+  }, [pathname]);
   return null;
 }
 function mount(path = '/') {
