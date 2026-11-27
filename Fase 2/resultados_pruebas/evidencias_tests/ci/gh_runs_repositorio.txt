@@ -1,0 +1,9 @@
+Ejecuciones de GitHub Actions del repositorio nicoussj/Proyecto-Titulo-MyWorksApp (lectura con gh run list, 27-11-2026).
+Formato: estado | conclusion | titulo | flujo | rama | evento | id | duracion | inicio (UTC)
+completed	success	Supabase Keep-Alive	Supabase Keep-Alive	main	schedule	45893824056	12s	2026-11-26T20:49:36Z
+completed	success	test(app): cobertura 92% y corrección de bugs detectados	Flutter CI	main	push	45860589361	19m41s	2026-11-26T16:38:14Z
+completed	success	test(app): cobertura 92% y corrección de bugs detectados	Gitleaks (Secrets Scan)	main	push	45860589139	19s	2026-11-26T16:38:14Z
+completed	success	test(app): cobertura 92% y corrección de bugs detectados	Web & Desktop CI	main	push	45860589065	5m19s	2026-11-26T16:38:13Z
+
+Rama fix/cero-errores-presentacion: sin ejecuciones. Los flujos solo se disparan con push a main/master/develop
+o con pull request, y en esta rama no se abrió pull request.

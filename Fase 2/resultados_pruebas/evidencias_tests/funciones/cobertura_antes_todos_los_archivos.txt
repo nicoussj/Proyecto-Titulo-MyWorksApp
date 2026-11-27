@@ -1,0 +1,4 @@
+Cobertura de líneas antes, medida sobre los 52 archivos (33 módulos _shared y 19 index.ts):
+819/5375 = 15.2 %
+Solo _shared: 819/2196 = 37.3 %
+Los index.ts no los cargaba ninguna prueba (0 %). Cálculo: % por archivo de cobertura_antes.txt x líneas de lcov_despues.info.

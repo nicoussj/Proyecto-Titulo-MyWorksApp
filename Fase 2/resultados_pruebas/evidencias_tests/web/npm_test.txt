@@ -1,0 +1,41 @@
+
+> myworksapp_web@1.0.0 test
+> node --experimental-strip-types --test src/routing/paths.test.ts src/legal/academicCopy.test.ts src/components/turnstileSitePolicy.test.ts && vitest run
+
+▶ widget de Turnstile
+  ✔ reconoce las claves de prueba de Cloudflare (0.5412ms)
+  ✔ en producción no renderiza una clave de prueba (0.113629ms)
+  ✔ en producción sí renderiza una clave que no es de prueba (0.084239ms)
+  ✔ sin clave no renderiza (0.093987ms)
+  ✔ fuera de producción una clave de prueba se puede mostrar en local (0.08318ms)
+✔ widget de Turnstile (1.843828ms)
+▶ aviso académico
+  ✔ afirma tarjetas de prueba en el ambiente de integración de Transbank (0.55622ms)
+✔ aviso académico (1.227412ms)
+▶ rutas de la web
+  ✔ reconoce las rutas públicas y el 404 (0.548351ms)
+  ✔ saca el id del profesional y del pedido desde la ruta (0.20627ms)
+  ✔ arma una URL de categoría y de pedido (0.17909ms)
+✔ rutas de la web (1.752275ms)
+ℹ tests 9
+ℹ suites 3
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89.235471
+
+ RUN  v5.1.2 myworksapp_web
+
+
+ Test Files  23 passed (23)
+      Tests  229 passed (229)
+   Start at  01:33:02
+   Duration  4.11s (environment 42%, tests 38%, import 10%, setup 7%, transform 3%)
+
+Environment  jsdom was created 23 times · 10.19s total, 42% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+EXIT=0

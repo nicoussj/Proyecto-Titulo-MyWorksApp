@@ -1,0 +1,112 @@
+▶ canAccessDesktopHub
+  ✔ permite administrador, soporte y qa (0.654017ms)
+  ✔ rechaza usuario, trabajador y legacy admin (0.104162ms)
+✔ canAccessDesktopHub (1.767394ms)
+▶ consolePermissions (mínimo privilegio)
+  ✔ solo administrador mueve dinero, ve métricas e invita (0.17732ms)
+  ✔ soporte ve evidencia y deja notas; QA solo lee la cola y seguridad (0.828514ms)
+  ✔ etiqueta legible por rol (0.203706ms)
+✔ consolePermissions (mínimo privilegio) (1.500766ms)
+✔ la bandeja ordena alta antes que baja y filtra prioridad (1.796072ms)
+✔ la procedencia distingue verificada de no verificada y el duplicado (0.264714ms)
+✔ clasifica por estrellas y marca temas (1.922264ms)
+✔ la variación compara contra el período anterior (0.138079ms)
+✔ redacta rut, teléfono y correo (0.599725ms)
+✔ el rango deja el período anterior del mismo largo (0.455278ms)
+✔ la ventana virtual no pinta las 10.000 filas (0.167729ms)
+▶ chequeos de la consola
+  ✔ marca el comodin CORS como aviso (0.68271ms)
+  ✔ detecta un JWT de service role sin copiar el valor (2.03601ms)
+  ✔ acepta el cliente solo con la anon key (0.129384ms)
+✔ chequeos de la consola (4.154855ms)
+✔ asNum ignora valores que no son número (0.819186ms)
+✔ asRows solo conserva objetos (0.832391ms)
+✔ asText muestra un guion cuando falta el dato (0.13469ms)
+▶ parseAuthDeepLink
+  ✔ lee el code de PKCE (1.556622ms)
+  ✔ lee token_hash y type (0.207221ms)
+  ✔ lee el fragmento con los dos tokens (0.205696ms)
+  ✔ ignora basura (0.139312ms)
+✔ parseAuthDeepLink (3.682282ms)
+▶ CSV
+  ✔ escapa comillas, comas y saltos, y neutraliza fórmulas (0.819354ms)
+✔ CSV (1.822922ms)
+▶ mensajes de error
+  ✔ traduce la sesión ausente y otros textos de Auth en inglés (1.32544ms)
+  ✔ conserva un motivo que ya viene en español (0.439474ms)
+  ✔ no muestra un error de red como si el registro no existiera (0.350644ms)
+✔ mensajes de error (3.329355ms)
+▶ estados de disputa en la cola
+  ✔ incluye abierta y los estados que cuenta el resumen (0.121235ms)
+  ✔ la migración usa la cola activa y exige admin para leer ajustes (0.524777ms)
+✔ estados de disputa en la cola (0.974193ms)
+▶ formato de la consola
+  ✔ muestra pesos chilenos (1.105455ms)
+  ✔ indica la zona de Santiago (0.270715ms)
+  ✔ no muestra el valor técnico de un pago (0.116865ms)
+✔ formato de la consola (2.729113ms)
+▶ cierre por inactividad
+  ✔ avisa a los 13 minutos y cierra a los 15 (0.742034ms)
+✔ cierre por inactividad (1.827903ms)
+▶ orden estable de las listas
+  ✔ cada lista tiene una columna de desempate (0.790311ms)
+  ✔ pedidos, errores y catálogo no quedan sin orden (0.838613ms)
+✔ orden estable de las listas (2.717977ms)
+▶ búsqueda y filtros
+  ✔ quita comodines y limita el largo (0.18281ms)
+  ✔ arma un or de ilike y filtra pagos y reembolsos (0.391488ms)
+✔ búsqueda y filtros (0.926554ms)
+▶ exportación por páginas
+  ✔ junta todas las páginas y se detiene en la última corta (0.438627ms)
+  ✔ no pasa de total ni de un tope de páginas (0.809376ms)
+  ✔ devuelve vacío si la primera página no trae filas (0.154735ms)
+✔ exportación por páginas (1.571173ms)
+▶ redirect de autenticación
+  ✔ en el navegador vuelve al origen con la marca de restablecer (0.902665ms)
+  ✔ el esquema de la app instalada es estable (0.111772ms)
+✔ redirect de autenticación (2.065412ms)
+▶ cola de reseñas dudosas
+  ✔ traduce la señal que ya escribió el trigger (0.621816ms)
+  ✔ junta las señales de una misma reseña en una sola acción (0.830916ms)
+✔ cola de reseñas dudosas (2.559406ms)
+▶ QR TOTP de la consola
+  ✔ reconoce un otpauth de TOTP con secreto base32 (0.847731ms)
+  ✔ codifica el # del SVG para que el <img> no corte el data URI (0.262961ms)
+  ✔ genera un PNG escaneable cuyo contenido es el otpauth (104.567729ms)
+✔ QR TOTP de la consola (106.918873ms)
+ℹ tests 46
+ℹ suites 15
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 571.365689
+ℹ start of coverage report
+ℹ -------------------------------------------------------------------------
+ℹ file                   | line % | branch % | funcs % | uncovered lines
+ℹ -------------------------------------------------------------------------
+ℹ src                    |        |          |         | 
+ℹ  authAccess.ts         | 100.00 |    84.62 |  100.00 | 
+ℹ  features              |        |          |         | 
+ℹ   disputas             |        |          |         | 
+ℹ    bandeja.ts          | 100.00 |    74.07 |  100.00 | 
+ℹ   premium              |        |          |         | 
+ℹ    modelo.ts           |  85.09 |    91.30 |   80.00 | 33-37 60-78
+ℹ   seguridad-checks.ts  |  85.00 |    75.00 |  100.00 | 10-15 24-25 42-45
+ℹ   seguridad-model.ts   | 100.00 |   100.00 |  100.00 | 
+ℹ  lib                   |        |          |         | 
+ℹ   authCallback.ts      |  97.59 |    80.00 |   40.00 | 16-17
+ℹ   csv.ts               |  71.43 |    87.50 |   80.00 | 11-16
+ℹ   disputes.ts          | 100.00 |   100.00 |  100.00 | 
+ℹ   errors.ts            |  91.43 |    72.73 |  100.00 | 29 51-55
+ℹ   format.ts            |  88.00 |    72.73 |   57.14 | 77-81 83-87 90-91
+ℹ   idle.ts              | 100.00 |   100.00 |  100.00 | 
+ℹ   lists.ts             |  94.26 |    92.00 |   88.89 | 27-32 54
+ℹ   redirect.ts          | 100.00 |    44.44 |  100.00 | 
+ℹ   senalesResena.ts     | 100.00 |    72.73 |  100.00 | 
+ℹ   totpQr.ts            |  97.73 |    56.25 |  100.00 | 35
+ℹ -------------------------------------------------------------------------
+ℹ all files              |  92.78 |    79.06 |   84.71 | 
+ℹ -------------------------------------------------------------------------
+ℹ end of coverage report

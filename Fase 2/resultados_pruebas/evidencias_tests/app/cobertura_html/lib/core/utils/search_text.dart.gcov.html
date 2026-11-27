@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/utils/search_text.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/utils">lib/core/utils</a> - search_text.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntry">19</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : /// Texto comparable para buscar: minúsculas y sin tildes ni diéresis.</span>
+<span id="L2"><span class="lineNum">       2</span>              : ///</span>
+<span id="L3"><span class="lineNum">       3</span>              : /// «electrico» encuentra «Eléctrico», y «Jardín» encuentra «jardin». Es la misma</span>
+<span id="L4"><span class="lineNum">       4</span>              : /// regla que `foldSearchText` de la web (`myworksapp_web/src/data/searchText.ts`).</span>
+<span id="L5"><span class="lineNum">       5</span> <span class="tlaGNC">           6 : String foldSearchText(String value) {</span></span>
+<span id="L6"><span class="lineNum">       6</span>              :   const from = 'áàâãäåéèêëíìîïóòôõöúùûüñçÿ';</span>
+<span id="L7"><span class="lineNum">       7</span>              :   const to = 'aaaaaaeeeeiiiiooooouuuuncy';</span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaGNC">           6 :   final buffer = StringBuffer();</span></span>
+<span id="L9"><span class="lineNum">       9</span> <span class="tlaGNC">          18 :   for (final rune in value.toLowerCase().runes) {</span></span>
+<span id="L10"><span class="lineNum">      10</span> <span class="tlaGNC">           6 :     final char = String.fromCharCode(rune);</span></span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">           6 :     final index = from.indexOf(char);</span></span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">          15 :     buffer.write(index &lt; 0 ? char : to[index]);</span></span>
+<span id="L13"><span class="lineNum">      13</span>              :   }</span>
+<span id="L14"><span class="lineNum">      14</span> <span class="tlaGNC">           6 :   return buffer.toString();</span></span>
+<span id="L15"><span class="lineNum">      15</span>              : }</span>
+<span id="L16"><span class="lineNum">      16</span>              : </span>
+<span id="L17"><span class="lineNum">      17</span>              : /// True si [haystack] contiene [query], sin distinguir tildes ni mayúsculas.</span>
+<span id="L18"><span class="lineNum">      18</span> <span class="tlaGNC">           5 : bool matchesSearchText(String haystack, String query) {</span></span>
+<span id="L19"><span class="lineNum">      19</span> <span class="tlaGNC">          10 :   final needle = foldSearchText(query).trim();</span></span>
+<span id="L20"><span class="lineNum">      20</span> <span class="tlaGNC">           5 :   if (needle.isEmpty) return true;</span></span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">          10 :   return foldSearchText(haystack).contains(needle);</span></span>
+<span id="L22"><span class="lineNum">      22</span>              : }</span>
+<span id="L23"><span class="lineNum">      23</span>              : </span>
+<span id="L24"><span class="lineNum">      24</span>              : /// Palabras que llevan a cada categoría de servicio. Son las mismas que usa la</span>
+<span id="L25"><span class="lineNum">      25</span>              : /// web (`resolveCategory` en `myworksapp_web/src/data/resolveServiceQuery.ts`),</span>
+<span id="L26"><span class="lineNum">      26</span>              : /// ya sin tildes: «electrico» y «Eléctrico» llevan a «electricidad».</span>
+<span id="L27"><span class="lineNum">      27</span>              : const Map&lt;String, List&lt;String&gt;&gt; serviceQueryKeywords = {</span>
+<span id="L28"><span class="lineNum">      28</span>              :   'plomeria': ['fuga', 'agua', 'lavaplatos', 'llave', 'plomer'],</span>
+<span id="L29"><span class="lineNum">      29</span>              :   'gasfiteria': ['gasfiter'],</span>
+<span id="L30"><span class="lineNum">      30</span>              :   'ensamblaje': ['mueble', 'armar', 'closet', 'rack', 'armado', 'ensamblaje'],</span>
+<span id="L31"><span class="lineNum">      31</span>              :   'limpieza': ['limpieza', 'aseo'],</span>
+<span id="L32"><span class="lineNum">      32</span>              :   'pintura': ['pintura', 'pintor'],</span>
+<span id="L33"><span class="lineNum">      33</span>              :   'jardineria': ['jardin', 'poda'],</span>
+<span id="L34"><span class="lineNum">      34</span>              :   'cerrajeria': ['cerraj', 'chapa'],</span>
+<span id="L35"><span class="lineNum">      35</span>              :   'construccion': ['construc', 'remodel', 'maestro'],</span>
+<span id="L36"><span class="lineNum">      36</span>              :   'soporte_tecnico': ['soporte', 'comput'],</span>
+<span id="L37"><span class="lineNum">      37</span>              :   'mudanza': ['mudanza', 'traslado'],</span>
+<span id="L38"><span class="lineNum">      38</span>              :   'climatizacion': ['climat', 'aire acondicionado', 'calefacc'],</span>
+<span id="L39"><span class="lineNum">      39</span>              :   'electricidad': ['electric', 'electricista'],</span>
+<span id="L40"><span class="lineNum">      40</span>              : };</span>
+<span id="L41"><span class="lineNum">      41</span>              : </span>
+<span id="L42"><span class="lineNum">      42</span>              : /// Categorías a las que apunta lo que escribió la persona, igual que la web.</span>
+<span id="L43"><span class="lineNum">      43</span>              : /// «gas» y «pc» valen solo como palabra completa.</span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           2 : Set&lt;String&gt; serviceCategoriesForQuery(String query) {</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           2 :   final text = foldSearchText(query);</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           4 :   if (text.trim().isEmpty) return const {};</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           4 :   final words = text.split(RegExp(r'\s+'));</span></span>
+<span id="L48"><span class="lineNum">      48</span>              :   final found = &lt;String&gt;{};</span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           4 :   serviceQueryKeywords.forEach((category, stems) {</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           6 :     if (stems.any(text.contains)) found.add(category);</span></span>
+<span id="L51"><span class="lineNum">      51</span>              :   });</span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           3 :   if (words.contains('gas')) found.add('gasfiteria');</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           2 :   if (words.contains('pc')) found.add('soporte_tecnico');</span></span>
+<span id="L54"><span class="lineNum">      54</span>              :   return found;</span>
+<span id="L55"><span class="lineNum">      55</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

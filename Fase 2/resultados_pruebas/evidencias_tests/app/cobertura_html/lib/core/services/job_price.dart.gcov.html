@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/services/job_price.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/services">lib/core/services</a> - job_price.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryMed">83.3&nbsp;%</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">10</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : /// Precio acordado de un trabajo, en CLP, si ya está registrado.</span>
+<span id="L2"><span class="lineNum">       2</span>              : ///</span>
+<span id="L3"><span class="lineNum">       3</span>              : /// Devuelve null cuando no hay un monto positivo. Así el rango de mercado</span>
+<span id="L4"><span class="lineNum">       4</span>              : /// no se calcula con ceros ni con precios inventados, y la tarjeta solo</span>
+<span id="L5"><span class="lineNum">       5</span>              : /// dice «por cotizar» cuando realmente no hay precio.</span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">          38 : double? agreedJobPriceClp({</span></span>
+<span id="L7"><span class="lineNum">       7</span>              :   Map&lt;String, dynamic&gt;? pricingSnapshot,</span>
+<span id="L8"><span class="lineNum">       8</span>              :   Map&lt;String, dynamic&gt;? serviceMetadata,</span>
+<span id="L9"><span class="lineNum">       9</span>              :   num? recordedAmountClp,</span>
+<span id="L10"><span class="lineNum">      10</span>              : }) {</span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">          38 :   final fromSnapshot = _positiveAmount(pricingSnapshot, const [</span></span>
+<span id="L12"><span class="lineNum">      12</span>              :     'total_clp',</span>
+<span id="L13"><span class="lineNum">      13</span>              :     'totalClp',</span>
+<span id="L14"><span class="lineNum">      14</span>              :     'quoted_total_clp',</span>
+<span id="L15"><span class="lineNum">      15</span>              :     'quotedTotalClp',</span>
+<span id="L16"><span class="lineNum">      16</span>              :     'subtotal_clp',</span>
+<span id="L17"><span class="lineNum">      17</span>              :     'subtotalClp',</span>
+<span id="L18"><span class="lineNum">      18</span>              :   ]);</span>
+<span id="L19"><span class="lineNum">      19</span>              :   if (fromSnapshot != null) return fromSnapshot;</span>
+<span id="L20"><span class="lineNum">      20</span>              : </span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">          37 :   final fromMetadata = _positiveAmount(serviceMetadata, const [</span></span>
+<span id="L22"><span class="lineNum">      22</span>              :     'worker_tier_price_clp',</span>
+<span id="L23"><span class="lineNum">      23</span>              :     'total_clp',</span>
+<span id="L24"><span class="lineNum">      24</span>              :     'totalClp',</span>
+<span id="L25"><span class="lineNum">      25</span>              :     'monto',</span>
+<span id="L26"><span class="lineNum">      26</span>              :     'monto_clp',</span>
+<span id="L27"><span class="lineNum">      27</span>              :     'price',</span>
+<span id="L28"><span class="lineNum">      28</span>              :     'estimatedPrice',</span>
+<span id="L29"><span class="lineNum">      29</span>              :   ]);</span>
+<span id="L30"><span class="lineNum">      30</span>              :   if (fromMetadata != null) return fromMetadata;</span>
+<span id="L31"><span class="lineNum">      31</span>              : </span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">          35 :   if (recordedAmountClp != null &amp;&amp; recordedAmountClp &gt; 0) {</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">          35 :     return recordedAmountClp.toDouble();</span></span>
+<span id="L34"><span class="lineNum">      34</span>              :   }</span>
+<span id="L35"><span class="lineNum">      35</span>              :   return null;</span>
+<span id="L36"><span class="lineNum">      36</span>              : }</span>
+<span id="L37"><span class="lineNum">      37</span>              : </span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">          38 : double? _positiveAmount(Map&lt;String, dynamic&gt;? source, List&lt;String&gt; keys) {</span></span>
+<span id="L39"><span class="lineNum">      39</span>              :   if (source == null) return null;</span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">          18 :   for (final key in keys) {</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           9 :     final value = source[key];</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">          15 :     if (value is num &amp;&amp; value &gt; 0) return value.toDouble();</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           8 :     if (value is String) {</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaUNC">           0 :       final parsed = num.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), ''));</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaUNC">           0 :       if (parsed != null &amp;&amp; parsed &gt; 0) return parsed.toDouble();</span></span>
+<span id="L46"><span class="lineNum">      46</span>              :     }</span>
+<span id="L47"><span class="lineNum">      47</span>              :   }</span>
+<span id="L48"><span class="lineNum">      48</span>              :   return null;</span>
+<span id="L49"><span class="lineNum">      49</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

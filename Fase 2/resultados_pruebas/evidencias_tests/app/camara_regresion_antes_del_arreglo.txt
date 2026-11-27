@@ -1,0 +1,7 @@
+Some tests failed.
+si no puede detener la grabación lo informa [E]
+sin cámaras disponibles avisa [E]
+sin micrófono no deja grabar [E]
+sin permiso de cámara muestra el aviso [E]
+video de más de un segundo se devuelve con su duración [E]
+video demasiado corto se descarta con aviso [E]

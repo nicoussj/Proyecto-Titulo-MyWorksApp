@@ -1,0 +1,620 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/database/repositories/worker_repository.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/database/repositories">lib/core/database/repositories</a> - worker_repository.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">242</td>
+            <td class="headerCovTableEntry">242</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : import '../../config/demo_credentials.dart';</span>
+<span id="L2"><span class="lineNum">       2</span>              : import '../../domain/weekly_schedule.dart';</span>
+<span id="L3"><span class="lineNum">       3</span>              : import '../../domain/worker_hours.dart';</span>
+<span id="L4"><span class="lineNum">       4</span>              : import '../../domain/worker_public_stats.dart';</span>
+<span id="L5"><span class="lineNum">       5</span>              : import '../../domain/distance_match.dart';</span>
+<span id="L6"><span class="lineNum">       6</span>              : import '../../domain/transport_surcharge.dart';</span>
+<span id="L7"><span class="lineNum">       7</span>              : import '../../domain/user_location_context.dart';</span>
+<span id="L8"><span class="lineNum">       8</span>              : import '../../domain/worker_service_options_catalog.dart';</span>
+<span id="L9"><span class="lineNum">       9</span>              : import '../../domain/worker_login_item.dart';</span>
+<span id="L10"><span class="lineNum">      10</span>              : import '../../services/worker_reputation_service.dart';</span>
+<span id="L11"><span class="lineNum">      11</span>              : import '../../utils/app_logger.dart';</span>
+<span id="L12"><span class="lineNum">      12</span>              : import '../../utils/worker_zone_matcher.dart';</span>
+<span id="L13"><span class="lineNum">      13</span>              : import '../models/worker_model.dart';</span>
+<span id="L14"><span class="lineNum">      14</span>              : import '../worker_stats_client.dart';</span>
+<span id="L15"><span class="lineNum">      15</span>              : import '../supabase_db.dart';</span>
+<span id="L16"><span class="lineNum">      16</span>              : import 'job_repository.dart';</span>
+<span id="L17"><span class="lineNum">      17</span>              : import 'rating_repository.dart';</span>
+<span id="L18"><span class="lineNum">      18</span>              : import 'worker_schedule_repository.dart';</span>
+<span id="L19"><span class="lineNum">      19</span>              : </span>
+<span id="L20"><span class="lineNum">      20</span>              : class WorkerRepository {</span>
+<span id="L21"><span class="lineNum">      21</span>              :   static const String _table = 'trabajadores';</span>
+<span id="L22"><span class="lineNum">      22</span>              : </span>
+<span id="L23"><span class="lineNum">      23</span>              :   /// Columnas que anon y authenticated pueden leer. La base exacta sale de</span>
+<span id="L24"><span class="lineNum">      24</span>              :   /// `mi_ficha_propia`, solo para el dueño.</span>
+<span id="L25"><span class="lineNum">      25</span>              :   static const String _baseColumns =</span>
+<span id="L26"><span class="lineNum">      26</span>              :       'id_usuario, profesion, descripcion, calificacion, disponible, tarifa_visita, '</span>
+<span id="L27"><span class="lineNum">      27</span>              :       'conteo_rechazos, precios_configurados, zona_trabajo, estado_verificacion, '</span>
+<span id="L28"><span class="lineNum">      28</span>              :       'radio_servicio_km, origen_base, score_listado, radio_urbano_km, '</span>
+<span id="L29"><span class="lineNum">      29</span>              :       'tarifa_fuera_radio_clp, trabajos_completados, es_elite';</span>
+<span id="L30"><span class="lineNum">      30</span>              : </span>
+<span id="L31"><span class="lineNum">      31</span>              :   /// Precios, servicios propios y categoría viven en tablas hijas</span>
+<span id="L32"><span class="lineNum">      32</span>              :   /// (`trabajador_precios`, `trabajador_servicios_extra`, `trabajador_servicios`).</span>
+<span id="L33"><span class="lineNum">      33</span>              :   /// Con [byCategory] el embed de categorías pasa a `!inner` para poder filtrar.</span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">          44 :   static String _selectColumns({bool byCategory = false}) =&gt;</span></span>
+<span id="L35"><span class="lineNum">      35</span>              :       '$_baseColumns, '</span>
+<span id="L36"><span class="lineNum">      36</span>              :       'trabajador_precios(codigo, monto_clp), '</span>
+<span id="L37"><span class="lineNum">      37</span>              :       'trabajador_servicios_extra(id, titulo, subtitulo, monto_clp, unidad), '</span>
+<span id="L38"><span class="lineNum">      38</span>              :       'trabajador_servicios${byCategory ? '!inner' : ''}(categoria_servicio)';</span>
+<span id="L39"><span class="lineNum">      39</span>              : </span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           3 :   Future&lt;void&gt; createWorker(WorkerModel worker) async {</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">          12 :     await supabase.from(_table).upsert(worker.toMap());</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           3 :     await _saveOffer(worker, includeCategory: true);</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           9 :     await WorkerScheduleRepository().ensureDefault(userId: worker.userId);</span></span>
+<span id="L44"><span class="lineNum">      44</span>              :   }</span>
+<span id="L45"><span class="lineNum">      45</span>              : </span>
+<span id="L46"><span class="lineNum">      46</span>              :   /// Guarda precios, servicios propios y categoría en sus tablas. Lo que ya</span>
+<span id="L47"><span class="lineNum">      47</span>              :   /// no está en el modelo se borra, para que la base quede igual a la pantalla.</span>
+<span id="L48"><span class="lineNum">      48</span>              :   /// Cada bloque es opcional: guardar el nombre no debe publicar ni borrar tarifas.</span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           6 :   Future&lt;void&gt; _saveOffer(</span></span>
+<span id="L50"><span class="lineNum">      50</span>              :     WorkerModel worker, {</span>
+<span id="L51"><span class="lineNum">      51</span>              :     bool includeCategory = false,</span>
+<span id="L52"><span class="lineNum">      52</span>              :     bool savePrices = true,</span>
+<span id="L53"><span class="lineNum">      53</span>              :     bool saveExtras = true,</span>
+<span id="L54"><span class="lineNum">      54</span>              :   }) async {</span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           6 :     final userId = worker.userId;</span></span>
+<span id="L56"><span class="lineNum">      56</span>              :     if (savePrices) {</span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">          12 :       if (worker.pricingTiers.isEmpty) {</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">          12 :         await supabase.from('trabajador_precios').delete().eq('id_usuario', userId);</span></span>
+<span id="L59"><span class="lineNum">      59</span>              :       } else {</span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           9 :         await supabase.from('trabajador_precios').upsert(</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           3 :           [</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           6 :             for (final entry in worker.pricingTiers.entries)</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           3 :               {</span></span>
+<span id="L64"><span class="lineNum">      64</span>              :                 'id_usuario': userId,</span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">           3 :                 'codigo': entry.key,</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">           3 :                 'monto_clp': entry.value,</span></span>
+<span id="L67"><span class="lineNum">      67</span>              :               },</span>
+<span id="L68"><span class="lineNum">      68</span>              :           ],</span>
+<span id="L69"><span class="lineNum">      69</span>              :           onConflict: 'id_usuario,codigo',</span>
+<span id="L70"><span class="lineNum">      70</span>              :         );</span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           3 :         await supabase</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           3 :             .from('trabajador_precios')</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           3 :             .delete()</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           3 :             .eq('id_usuario', userId)</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">          15 :             .not('codigo', 'in', '(${worker.pricingTiers.keys.join(',')})');</span></span>
+<span id="L76"><span class="lineNum">      76</span>              :       }</span>
+<span id="L77"><span class="lineNum">      77</span>              :     }</span>
+<span id="L78"><span class="lineNum">      78</span>              : </span>
+<span id="L79"><span class="lineNum">      79</span>              :     if (saveExtras) {</span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">          12 :       if (worker.customServices.isEmpty) {</span></span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">           5 :         await supabase</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">           5 :             .from('trabajador_servicios_extra')</span></span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">           5 :             .delete()</span></span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">           5 :             .eq('id_usuario', userId);</span></span>
+<span id="L85"><span class="lineNum">      85</span>              :       } else {</span>
+<span id="L86"><span class="lineNum">      86</span> <span class="tlaGNC">           3 :         await supabase.from('trabajador_servicios_extra').upsert(</span></span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">           1 :           [</span></span>
+<span id="L88"><span class="lineNum">      88</span> <span class="tlaGNC">           1 :             for (final service in worker.customServices)</span></span>
+<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">           1 :               {</span></span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           1 :                 'id': service.id,</span></span>
+<span id="L91"><span class="lineNum">      91</span>              :                 'id_usuario': userId,</span>
+<span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">           1 :                 'titulo': service.title,</span></span>
+<span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">           1 :                 'subtitulo': service.subtitle,</span></span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">           1 :                 'monto_clp': service.priceClp,</span></span>
+<span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">           2 :                 'unidad': service.unit == WorkerPriceUnit.perSqm ? 'por_m2' : 'fijo',</span></span>
+<span id="L96"><span class="lineNum">      96</span>              :               },</span>
+<span id="L97"><span class="lineNum">      97</span>              :           ],</span>
+<span id="L98"><span class="lineNum">      98</span>              :           onConflict: 'id_usuario,id',</span>
+<span id="L99"><span class="lineNum">      99</span>              :         );</span>
+<span id="L100"><span class="lineNum">     100</span> <span class="tlaGNC">           1 :         await supabase</span></span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">           1 :             .from('trabajador_servicios_extra')</span></span>
+<span id="L102"><span class="lineNum">     102</span> <span class="tlaGNC">           1 :             .delete()</span></span>
+<span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">           1 :             .eq('id_usuario', userId)</span></span>
+<span id="L104"><span class="lineNum">     104</span> <span class="tlaGNC">           1 :             .not('id', 'in',</span></span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">           6 :                 '(${worker.customServices.map((s) =&gt; s.id).join(',')})');</span></span>
+<span id="L106"><span class="lineNum">     106</span>              :       }</span>
+<span id="L107"><span class="lineNum">     107</span>              :     }</span>
+<span id="L108"><span class="lineNum">     108</span>              : </span>
+<span id="L109"><span class="lineNum">     109</span> <span class="tlaGNC">           6 :     if (includeCategory &amp;&amp; worker.serviceCategory != 'general') {</span></span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC">           6 :       await supabase.from('trabajador_servicios').upsert(</span></span>
+<span id="L111"><span class="lineNum">     111</span> <span class="tlaGNC">           2 :         {</span></span>
+<span id="L112"><span class="lineNum">     112</span>              :           'id_trabajador': userId,</span>
+<span id="L113"><span class="lineNum">     113</span> <span class="tlaGNC">           2 :           'categoria_servicio': worker.serviceCategory,</span></span>
+<span id="L114"><span class="lineNum">     114</span>              :         },</span>
+<span id="L115"><span class="lineNum">     115</span>              :         onConflict: 'id_trabajador,categoria_servicio',</span>
+<span id="L116"><span class="lineNum">     116</span>              :       );</span>
+<span id="L117"><span class="lineNum">     117</span>              :     }</span>
+<span id="L118"><span class="lineNum">     118</span>              :   }</span>
+<span id="L119"><span class="lineNum">     119</span>              : </span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">          21 :   Future&lt;Map&lt;String, dynamic&gt;?&gt; _loadWorkerRow(String userId) async {</span></span>
+<span id="L121"><span class="lineNum">     121</span>              :     try {</span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">          21 :       return await supabase</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">          21 :           .from(_table)</span></span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">          42 :           .select(_selectColumns())</span></span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">          21 :           .eq('id_usuario', userId)</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">          21 :           .maybeSingle();</span></span>
+<span id="L127"><span class="lineNum">     127</span>              :     } catch (embedError, embedStack) {</span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">           7 :       AppLogger.e(</span></span>
+<span id="L129"><span class="lineNum">     129</span>              :         'La ficha con precios no cargó; se reintenta sin ellos',</span>
+<span id="L130"><span class="lineNum">     130</span>              :         embedError,</span>
+<span id="L131"><span class="lineNum">     131</span>              :         embedStack,</span>
+<span id="L132"><span class="lineNum">     132</span>              :       );</span>
+<span id="L133"><span class="lineNum">     133</span>              :       // Si el embed de precios o servicios falla (permiso o relación), la</span>
+<span id="L134"><span class="lineNum">     134</span>              :       // ficha igual se abre con las columnas de trabajadores.</span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">           7 :       return await supabase</span></span>
+<span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">           7 :           .from(_table)</span></span>
+<span id="L137"><span class="lineNum">     137</span> <span class="tlaGNC">           7 :           .select(_baseColumns)</span></span>
+<span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">           7 :           .eq('id_usuario', userId)</span></span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">           7 :           .maybeSingle();</span></span>
+<span id="L140"><span class="lineNum">     140</span>              :     }</span>
+<span id="L141"><span class="lineNum">     141</span>              :   }</span>
+<span id="L142"><span class="lineNum">     142</span>              : </span>
+<span id="L143"><span class="lineNum">     143</span> <span class="tlaGNC">          21 :   Future&lt;WorkerModel?&gt; getWorkerByUserId(String userId) async {</span></span>
+<span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">          21 :     final row = await _loadWorkerRow(userId);</span></span>
+<span id="L145"><span class="lineNum">     145</span>              :     if (row == null) return null;</span>
+<span id="L146"><span class="lineNum">     146</span>              :     late WorkerModel worker;</span>
+<span id="L147"><span class="lineNum">     147</span>              :     try {</span>
+<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">          21 :       worker = WorkerModel.fromMap(row);</span></span>
+<span id="L149"><span class="lineNum">     149</span>              :     } catch (e, st) {</span>
+<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">           1 :       AppLogger.e('Ficha con un dato inesperado', e, st);</span></span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">           1 :       final id = row['id_usuario'];</span></span>
+<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           2 :       if (id is! String || id.isEmpty) rethrow;</span></span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           1 :       worker = WorkerModel(userId: id, profession: 'Profesional');</span></span>
+<span id="L154"><span class="lineNum">     154</span>              :     }</span>
+<span id="L155"><span class="lineNum">     155</span> <span class="tlaGNC">         105 :     if (supabase.auth.currentUser?.id == userId) {</span></span>
+<span id="L156"><span class="lineNum">     156</span>              :       Map&lt;String, dynamic&gt;? ficha;</span>
+<span id="L157"><span class="lineNum">     157</span>              :       try {</span>
+<span id="L158"><span class="lineNum">     158</span> <span class="tlaGNC">          33 :         ficha = _firstRow(await supabase.rpc('mi_ficha_propia'));</span></span>
+<span id="L159"><span class="lineNum">     159</span>              :       } catch (_) {</span>
+<span id="L160"><span class="lineNum">     160</span>              :         ficha = null;</span>
+<span id="L161"><span class="lineNum">     161</span>              :       }</span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">          11 :       List&lt;WorkerHourSlot&gt; hours = worker.availableHours;</span></span>
+<span id="L163"><span class="lineNum">     163</span>              :       try {</span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">          11 :         hours = parseWorkerHours(</span></span>
+<span id="L165"><span class="lineNum">     165</span> <span class="tlaGNC">          22 :           await supabase.rpc('horarios_disponibles_propios'),</span></span>
+<span id="L166"><span class="lineNum">     166</span>              :         );</span>
+<span id="L167"><span class="lineNum">     167</span>              :       } catch (_) {}</span>
+<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">          11 :       worker = worker.copyWith(</span></span>
+<span id="L169"><span class="lineNum">     169</span> <span class="tlaGNC">          22 :         baseLatitude: (ficha?['latitud_base'] as num?)?.toDouble(),</span></span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">          22 :         baseLongitude: (ficha?['longitud_base'] as num?)?.toDouble(),</span></span>
+<span id="L171"><span class="lineNum">     171</span>              :         availableHours: hours,</span>
+<span id="L172"><span class="lineNum">     172</span>              :       );</span>
+<span id="L173"><span class="lineNum">     173</span>              :     } else {</span>
+<span id="L174"><span class="lineNum">     174</span>              :       try {</span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">          14 :         final base = _firstRow(</span></span>
+<span id="L176"><span class="lineNum">     176</span> <span class="tlaGNC">          28 :           await supabase.rpc(</span></span>
+<span id="L177"><span class="lineNum">     177</span>              :             'base_publica_profesional',</span>
+<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">          14 :             params: {'p_id': userId},</span></span>
+<span id="L179"><span class="lineNum">     179</span>              :           ),</span>
+<span id="L180"><span class="lineNum">     180</span>              :         );</span>
+<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">          14 :         worker = worker.copyWith(</span></span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">          20 :           baseLatitude: (base?['latitud_base'] as num?)?.toDouble(),</span></span>
+<span id="L183"><span class="lineNum">     183</span> <span class="tlaGNC">          20 :           baseLongitude: (base?['longitud_base'] as num?)?.toDouble(),</span></span>
+<span id="L184"><span class="lineNum">     184</span>              :         );</span>
+<span id="L185"><span class="lineNum">     185</span>              :       } catch (_) {}</span>
+<span id="L186"><span class="lineNum">     186</span>              :     }</span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">          42 :     final overlay = await _overlayStats([worker]);</span></span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">          21 :     return overlay.first;</span></span>
+<span id="L189"><span class="lineNum">     189</span>              :   }</span>
+<span id="L190"><span class="lineNum">     190</span>              : </span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">          21 :   Map&lt;String, dynamic&gt;? _firstRow(dynamic raw) {</span></span>
+<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">          75 :     if (raw is List &amp;&amp; raw.isNotEmpty &amp;&amp; raw.first is Map) {</span></span>
+<span id="L193"><span class="lineNum">     193</span> <span class="tlaGNC">          36 :       return Map&lt;String, dynamic&gt;.from(raw.first as Map);</span></span>
+<span id="L194"><span class="lineNum">     194</span>              :     }</span>
+<span id="L195"><span class="lineNum">     195</span> <span class="tlaGNC">           8 :     if (raw is Map) return Map&lt;String, dynamic&gt;.from(raw);</span></span>
+<span id="L196"><span class="lineNum">     196</span>              :     return null;</span>
+<span id="L197"><span class="lineNum">     197</span>              :   }</span>
+<span id="L198"><span class="lineNum">     198</span>              : </span>
+<span id="L199"><span class="lineNum">     199</span>              :   /// Nota y trabajos reales. Prefiere la RPC canónica; si aún no está</span>
+<span id="L200"><span class="lineNum">     200</span>              :   /// desplegada, calcula lo mismo en el cliente.</span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">           5 :   Future&lt;WorkerPublicStats&gt; getPublicStats(String userId) async {</span></span>
+<span id="L202"><span class="lineNum">     202</span>              :     try {</span>
+<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">           4 :       final row = _firstRow(</span></span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">          15 :         await supabase.rpc('stats_profesional', params: {'p_id': userId}),</span></span>
+<span id="L205"><span class="lineNum">     205</span>              :       );</span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">           4 :       if (row != null) return WorkerPublicStats.fromMap(row);</span></span>
+<span id="L207"><span class="lineNum">     207</span>              :     } catch (_) {}</span>
+<span id="L208"><span class="lineNum">     208</span>              : </span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">           4 :     final ratings = await RatingRepository().getRatingsByWorkerId(userId);</span></span>
+<span id="L210"><span class="lineNum">     210</span> <span class="tlaGNC">           4 :     final counts = await JobRepository().countJobsByWorkerId(userId);</span></span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">           2 :     final average = ratings.isEmpty</span></span>
+<span id="L212"><span class="lineNum">     212</span>              :         ? null</span>
+<span id="L213"><span class="lineNum">     213</span> <span class="tlaGNC">           6 :         : ratings.fold&lt;int&gt;(0, (sum, r) =&gt; sum + r.score) / ratings.length;</span></span>
+<span id="L214"><span class="lineNum">     214</span> <span class="tlaGNC">           2 :     return WorkerPublicStats(</span></span>
+<span id="L215"><span class="lineNum">     215</span>              :       averageRating: average,</span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">           2 :       ratingCount: ratings.length,</span></span>
+<span id="L217"><span class="lineNum">     217</span>              :       completedJobs: counts.completed,</span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">           2 :       isElite: (average ?? 0) &gt;= 4.7 &amp;&amp; counts.completed &gt;= 5,</span></span>
+<span id="L219"><span class="lineNum">     219</span>              :     );</span>
+<span id="L220"><span class="lineNum">     220</span>              :   }</span>
+<span id="L221"><span class="lineNum">     221</span>              : </span>
+<span id="L222"><span class="lineNum">     222</span> <span class="tlaGNC">          22 :   Future&lt;List&lt;WorkerModel&gt;&gt; _overlayStats(List&lt;WorkerModel&gt; workers) {</span></span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">          22 :     return overlayWorkerPublicStats(workers);</span></span>
+<span id="L224"><span class="lineNum">     224</span>              :   }</span>
+<span id="L225"><span class="lineNum">     225</span>              : </span>
+<span id="L226"><span class="lineNum">     226</span>              :   /// Obtiene un trabajador por su ID (alias para getWorkerByUserId)</span>
+<span id="L227"><span class="lineNum">     227</span> <span class="tlaGNC">           4 :   Future&lt;WorkerModel?&gt; getWorkerById(String userId) async {</span></span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">           4 :     return getWorkerByUserId(userId);</span></span>
+<span id="L229"><span class="lineNum">     229</span>              :   }</span>
+<span id="L230"><span class="lineNum">     230</span>              : </span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">          10 :   Future&lt;List&lt;WorkerModel&gt;&gt; getWorkersByServiceCategory(</span></span>
+<span id="L232"><span class="lineNum">     232</span>              :     String category, {</span>
+<span id="L233"><span class="lineNum">     233</span>              :     UserLocationContext? near,</span>
+<span id="L234"><span class="lineNum">     234</span>              :   }) async {</span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">          10 :     final workers = await _fetchCatalog(category: category, near: near);</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">          10 :     return _filterListedWorkers(workers, near: near);</span></span>
+<span id="L237"><span class="lineNum">     237</span>              :   }</span>
+<span id="L238"><span class="lineNum">     238</span>              : </span>
+<span id="L239"><span class="lineNum">     239</span>              :   /// Con GPS se usa la distancia real. Fuera del radio cercano se puede pedir</span>
+<span id="L240"><span class="lineNum">     240</span>              :   /// con extra de traslado; más de 30 km se oculta. Sin GPS se compara la zona.</span>
+<span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">           5 :   static bool _servesLocation(WorkerModel worker, UserLocationContext near) {</span></span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">           5 :     final lat = near.latitude;</span></span>
+<span id="L243"><span class="lineNum">     243</span> <span class="tlaGNC">           5 :     final lng = near.longitude;</span></span>
+<span id="L244"><span class="lineNum">     244</span>              :     if (lat != null &amp;&amp; lng != null) {</span>
+<span id="L245"><span class="lineNum">     245</span> <span class="tlaGNC">           4 :       final match = matchByDistance(</span></span>
+<span id="L246"><span class="lineNum">     246</span> <span class="tlaGNC">           4 :         workerLat: worker.baseLatitude,</span></span>
+<span id="L247"><span class="lineNum">     247</span> <span class="tlaGNC">           4 :         workerLng: worker.baseLongitude,</span></span>
+<span id="L248"><span class="lineNum">     248</span>              :         jobLat: lat,</span>
+<span id="L249"><span class="lineNum">     249</span>              :         jobLng: lng,</span>
+<span id="L250"><span class="lineNum">     250</span> <span class="tlaGNC">           4 :         radiusKm: worker.serviceRadiusKm,</span></span>
+<span id="L251"><span class="lineNum">     251</span>              :       );</span>
+<span id="L252"><span class="lineNum">     252</span> <span class="tlaGNC">           8 :       if (match != null) return withinTravelRange(match.distanceKm);</span></span>
+<span id="L253"><span class="lineNum">     253</span>              :     }</span>
+<span id="L254"><span class="lineNum">     254</span> <span class="tlaGNC">           1 :     final zone = worker.workZone;</span></span>
+<span id="L255"><span class="lineNum">     255</span> <span class="tlaGNC">           1 :     if (zone == null || zone.isEmpty) return true;</span></span>
+<span id="L256"><span class="lineNum">     256</span> <span class="tlaGNC">           1 :     return WorkerZoneMatcher.serves(workZone: zone, userLocation: near);</span></span>
+<span id="L257"><span class="lineNum">     257</span>              :   }</span>
+<span id="L258"><span class="lineNum">     258</span>              : </span>
+<span id="L259"><span class="lineNum">     259</span>              :   /// Solo trabajadores disponibles, en el orden único del catálogo</span>
+<span id="L260"><span class="lineNum">     260</span> <span class="tlaGNC">          11 :   Future&lt;List&lt;WorkerModel&gt;&gt; _filterListedWorkers(</span></span>
+<span id="L261"><span class="lineNum">     261</span>              :     List&lt;WorkerModel&gt; workers, {</span>
+<span id="L262"><span class="lineNum">     262</span>              :     UserLocationContext? near,</span>
+<span id="L263"><span class="lineNum">     263</span>              :   }) async {</span>
+<span id="L264"><span class="lineNum">     264</span> <span class="tlaGNC">          16 :     if (workers.isEmpty) return [];</span></span>
+<span id="L265"><span class="lineNum">     265</span>              : </span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaGNC">          11 :     final jobRepository = JobRepository();</span></span>
+<span id="L267"><span class="lineNum">     267</span> <span class="tlaGNC">          11 :     final busyIds = await jobRepository.getBusyWorkerIds(</span></span>
+<span id="L268"><span class="lineNum">     268</span> <span class="tlaGNC">          44 :       workers.map((w) =&gt; w.userId).toList(),</span></span>
+<span id="L269"><span class="lineNum">     269</span>              :     );</span>
+<span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">          11 :     final listed = &lt;WorkerModel&gt;[];</span></span>
+<span id="L271"><span class="lineNum">     271</span> <span class="tlaGNC">          22 :     for (final worker in workers) {</span></span>
+<span id="L272"><span class="lineNum">     272</span> <span class="tlaGNC">          11 :       if (!worker.isAvailable) continue;</span></span>
+<span id="L273"><span class="lineNum">     273</span> <span class="tlaGNC">          14 :       if (busyIds.contains(worker.userId)) continue;</span></span>
+<span id="L274"><span class="lineNum">     274</span> <span class="tlaGNC">           5 :       if (near != null &amp;&amp; !_servesLocation(worker, near)) continue;</span></span>
+<span id="L275"><span class="lineNum">     275</span> <span class="tlaGNC">           6 :       listed.add(worker);</span></span>
+<span id="L276"><span class="lineNum">     276</span>              :     }</span>
+<span id="L277"><span class="lineNum">     277</span>              : </span>
+<span id="L278"><span class="lineNum">     278</span> <span class="tlaGNC">          22 :     WorkerReputationService.instance.sortForListing(</span></span>
+<span id="L279"><span class="lineNum">     279</span>              :       listed,</span>
+<span id="L280"><span class="lineNum">     280</span> <span class="tlaGNC">           9 :       clientLatitude: near?.latitude,</span></span>
+<span id="L281"><span class="lineNum">     281</span> <span class="tlaGNC">           9 :       clientLongitude: near?.longitude,</span></span>
+<span id="L282"><span class="lineNum">     282</span>              :     );</span>
+<span id="L283"><span class="lineNum">     283</span>              :     return listed;</span>
+<span id="L284"><span class="lineNum">     284</span>              :   }</span>
+<span id="L285"><span class="lineNum">     285</span>              : </span>
+<span id="L286"><span class="lineNum">     286</span> <span class="tlaGNC">           3 :   Future&lt;List&lt;WorkerModel&gt;&gt; getWorkersByProfession(String profession) async {</span></span>
+<span id="L287"><span class="lineNum">     287</span> <span class="tlaGNC">           3 :     final catalog = await _fetchCatalog();</span></span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">           6 :     final needle = profession.trim().toLowerCase();</span></span>
+<span id="L289"><span class="lineNum">     289</span>              :     final workers = catalog</span>
+<span id="L290"><span class="lineNum">     290</span> <span class="tlaGNC">          18 :         .where((worker) =&gt; worker.profession.trim().toLowerCase() == needle)</span></span>
+<span id="L291"><span class="lineNum">     291</span> <span class="tlaGNC">           3 :         .toList();</span></span>
+<span id="L292"><span class="lineNum">     292</span> <span class="tlaGNC">           6 :     WorkerReputationService.instance.sortForListing(workers);</span></span>
+<span id="L293"><span class="lineNum">     293</span>              :     return workers;</span>
+<span id="L294"><span class="lineNum">     294</span>              :   }</span>
+<span id="L295"><span class="lineNum">     295</span>              : </span>
+<span id="L296"><span class="lineNum">     296</span> <span class="tlaGNC">           2 :   Future&lt;List&lt;WorkerModel&gt;&gt; getAllAvailableWorkers() async {</span></span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaGNC">           2 :     final workers = await _fetchCatalog();</span></span>
+<span id="L298"><span class="lineNum">     298</span> <span class="tlaGNC">           4 :     WorkerReputationService.instance.sortForListing(workers);</span></span>
+<span id="L299"><span class="lineNum">     299</span>              :     return workers;</span>
+<span id="L300"><span class="lineNum">     300</span>              :   }</span>
+<span id="L301"><span class="lineNum">     301</span>              : </span>
+<span id="L302"><span class="lineNum">     302</span>              :   /// Lista local de la demo. La RPC ya no es ejecutable por anon.</span>
+<span id="L303"><span class="lineNum">     303</span> <span class="tlaGNC">           2 :   Future&lt;List&lt;WorkerLoginItem&gt;&gt; getWorkersForLogin() async {</span></span>
+<span id="L304"><span class="lineNum">     304</span> <span class="tlaGNC">           2 :     return sortWorkerLoginItems(DemoCredentials.loginWorkers);</span></span>
+<span id="L305"><span class="lineNum">     305</span>              :   }</span>
+<span id="L306"><span class="lineNum">     306</span>              : </span>
+<span id="L307"><span class="lineNum">     307</span> <span class="tlaGNC">           5 :   Future&lt;void&gt; updateWorker(</span></span>
+<span id="L308"><span class="lineNum">     308</span>              :     WorkerModel worker, {</span>
+<span id="L309"><span class="lineNum">     309</span>              :     bool savePrices = true,</span>
+<span id="L310"><span class="lineNum">     310</span>              :     bool saveExtras = true,</span>
+<span id="L311"><span class="lineNum">     311</span>              :   }) async {</span>
+<span id="L312"><span class="lineNum">     312</span> <span class="tlaGNC">           5 :     await supabase</span></span>
+<span id="L313"><span class="lineNum">     313</span> <span class="tlaGNC">           5 :         .from(_table)</span></span>
+<span id="L314"><span class="lineNum">     314</span> <span class="tlaGNC">          10 :         .update(worker.toMap())</span></span>
+<span id="L315"><span class="lineNum">     315</span> <span class="tlaGNC">          10 :         .eq('id_usuario', worker.userId);</span></span>
+<span id="L316"><span class="lineNum">     316</span>              :     if (!savePrices &amp;&amp; !saveExtras) return;</span>
+<span id="L317"><span class="lineNum">     317</span> <span class="tlaGNC">           4 :     await _saveOffer(</span></span>
+<span id="L318"><span class="lineNum">     318</span>              :       worker,</span>
+<span id="L319"><span class="lineNum">     319</span>              :       savePrices: savePrices,</span>
+<span id="L320"><span class="lineNum">     320</span>              :       saveExtras: saveExtras,</span>
+<span id="L321"><span class="lineNum">     321</span>              :     );</span>
+<span id="L322"><span class="lineNum">     322</span>              :   }</span>
+<span id="L323"><span class="lineNum">     323</span>              : </span>
+<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">           3 :   Future&lt;void&gt; updateAvailableHours({</span></span>
+<span id="L325"><span class="lineNum">     325</span>              :     required String userId,</span>
+<span id="L326"><span class="lineNum">     326</span>              :     required List&lt;WorkerHourSlot&gt; hours,</span>
+<span id="L327"><span class="lineNum">     327</span>              :   }) async {</span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">          15 :     if (supabase.auth.currentUser?.id != userId) {</span></span>
+<span id="L329"><span class="lineNum">     329</span> <span class="tlaGNC">           1 :       throw StateError('solo puedes editar tu propia agenda');</span></span>
+<span id="L330"><span class="lineNum">     330</span>              :     }</span>
+<span id="L331"><span class="lineNum">     331</span> <span class="tlaGNC">           2 :     final slots = uniqueWorkerHours(hours)</span></span>
+<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">           6 :         .map((slot) =&gt; slot.toJson())</span></span>
+<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">           2 :         .toList();</span></span>
+<span id="L334"><span class="lineNum">     334</span>              :     // Las horas publicadas viven en `trabajador_horas_publicadas`; la RPC</span>
+<span id="L335"><span class="lineNum">     335</span>              :     // reemplaza las del profesional y deja sus 7 ventanas por día intactas.</span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">           6 :     await supabase.rpc('guardar_horarios_propios', params: {'p_horarios': slots});</span></span>
+<span id="L337"><span class="lineNum">     337</span>              :   }</span>
+<span id="L338"><span class="lineNum">     338</span>              : </span>
+<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">           6 :   Future&lt;List&lt;DateTime&gt;&gt; fetchFreeSlots(String workerId) async {</span></span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">          12 :     final rows = await supabase.rpc(</span></span>
+<span id="L341"><span class="lineNum">     341</span>              :       'horarios_libres_profesional',</span>
+<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">           6 :       params: {'p_id_trabajador': workerId, 'p_dias': 14},</span></span>
+<span id="L343"><span class="lineNum">     343</span>              :     );</span>
+<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">           6 :     if (rows is! List) return const [];</span></span>
+<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">           6 :     final slots = &lt;DateTime&gt;[];</span></span>
+<span id="L346"><span class="lineNum">     346</span>              :     final seen = &lt;String&gt;{};</span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">          12 :     for (final raw in rows) {</span></span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">          12 :       final value = raw is Map ? raw['inicio'] : raw;</span></span>
+<span id="L349"><span class="lineNum">     349</span>              :       if (value == null) continue;</span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">           6 :       final parsed = DateTime.tryParse(value.toString());</span></span>
+<span id="L351"><span class="lineNum">     351</span>              :       if (parsed == null) continue;</span>
+<span id="L352"><span class="lineNum">     352</span> <span class="tlaGNC">           3 :       final utc = parsed.toUtc();</span></span>
+<span id="L353"><span class="lineNum">     353</span> <span class="tlaGNC">           6 :       final key = utc.toIso8601String().substring(0, 16);</span></span>
+<span id="L354"><span class="lineNum">     354</span> <span class="tlaGNC">           3 :       if (!seen.add(key)) continue;</span></span>
+<span id="L355"><span class="lineNum">     355</span> <span class="tlaGNC">           3 :       slots.add(utc);</span></span>
+<span id="L356"><span class="lineNum">     356</span>              :     }</span>
+<span id="L357"><span class="lineNum">     357</span> <span class="tlaGNC">           6 :     slots.sort();</span></span>
+<span id="L358"><span class="lineNum">     358</span>              :     try {</span>
+<span id="L359"><span class="lineNum">     359</span> <span class="tlaGNC">          12 :       final schedule = await WorkerScheduleRepository().load(workerId);</span></span>
+<span id="L360"><span class="lineNum">     360</span> <span class="tlaGNC">           6 :       return slotsInsideSchedule(slots, schedule);</span></span>
+<span id="L361"><span class="lineNum">     361</span>              :     } catch (_) {</span>
+<span id="L362"><span class="lineNum">     362</span>              :       return slots;</span>
+<span id="L363"><span class="lineNum">     363</span>              :     }</span>
+<span id="L364"><span class="lineNum">     364</span>              :   }</span>
+<span id="L365"><span class="lineNum">     365</span>              : </span>
+<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">           5 :   Future&lt;({String status, String? note})?&gt; fetchVerification(</span></span>
+<span id="L367"><span class="lineNum">     367</span>              :     String userId,</span>
+<span id="L368"><span class="lineNum">     368</span>              :   ) async {</span>
+<span id="L369"><span class="lineNum">     369</span>              :     try {</span>
+<span id="L370"><span class="lineNum">     370</span> <span class="tlaGNC">           5 :       final row = await supabase</span></span>
+<span id="L371"><span class="lineNum">     371</span> <span class="tlaGNC">           5 :           .from(_table)</span></span>
+<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">           5 :           .select('estado_verificacion')</span></span>
+<span id="L373"><span class="lineNum">     373</span> <span class="tlaGNC">           5 :           .eq('id_usuario', userId)</span></span>
+<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">           5 :           .maybeSingle();</span></span>
+<span id="L375"><span class="lineNum">     375</span>              :       if (row == null) return null;</span>
+<span id="L376"><span class="lineNum">     376</span>              :       String? rawNote;</span>
+<span id="L377"><span class="lineNum">     377</span> <span class="tlaGNC">          25 :       if (supabase.auth.currentUser?.id == userId) {</span></span>
+<span id="L378"><span class="lineNum">     378</span>              :         rawNote =</span>
+<span id="L379"><span class="lineNum">     379</span> <span class="tlaGNC">           4 :             _firstRow(</span></span>
+<span id="L380"><span class="lineNum">     380</span> <span class="tlaGNC">           8 :                   await supabase.rpc('mi_ficha_propia'),</span></span>
+<span id="L381"><span class="lineNum">     381</span> <span class="tlaGNC">           4 :                 )?['nota_verificacion']</span></span>
+<span id="L382"><span class="lineNum">     382</span>              :                 as String?;</span>
+<span id="L383"><span class="lineNum">     383</span>              :       }</span>
+<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">           3 :       final visibleNote = rawNote?.split('\nDocumento:').first.trim();</span></span>
+<span id="L385"><span class="lineNum">     385</span>              :       return (</span>
+<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">           5 :         status: row['estado_verificacion'] as String? ?? 'pendiente',</span></span>
+<span id="L387"><span class="lineNum">     387</span>              :         note: visibleNote,</span>
+<span id="L388"><span class="lineNum">     388</span>              :       );</span>
+<span id="L389"><span class="lineNum">     389</span>              :     } catch (_) {</span>
+<span id="L390"><span class="lineNum">     390</span>              :       return null;</span>
+<span id="L391"><span class="lineNum">     391</span>              :     }</span>
+<span id="L392"><span class="lineNum">     392</span>              :   }</span>
+<span id="L393"><span class="lineNum">     393</span>              : </span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaGNC">           1 :   Future&lt;void&gt; submitVerificationReview({</span></span>
+<span id="L395"><span class="lineNum">     395</span>              :     required String userId,</span>
+<span id="L396"><span class="lineNum">     396</span>              :     required String note,</span>
+<span id="L397"><span class="lineNum">     397</span>              :   }) async {</span>
+<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">           2 :     await supabase.rpc(</span></span>
+<span id="L399"><span class="lineNum">     399</span>              :       'enviar_verificacion_profesional',</span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">           1 :       params: {'p_nota': note},</span></span>
+<span id="L401"><span class="lineNum">     401</span>              :     );</span>
+<span id="L402"><span class="lineNum">     402</span>              :   }</span>
+<span id="L403"><span class="lineNum">     403</span>              : </span>
+<span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">           3 :   Future&lt;void&gt; updateBaseLocation({</span></span>
+<span id="L405"><span class="lineNum">     405</span>              :     required String userId,</span>
+<span id="L406"><span class="lineNum">     406</span>              :     required double latitude,</span>
+<span id="L407"><span class="lineNum">     407</span>              :     required double longitude,</span>
+<span id="L408"><span class="lineNum">     408</span>              :     required double radiusKm,</span>
+<span id="L409"><span class="lineNum">     409</span>              :   }) async {</span>
+<span id="L410"><span class="lineNum">     410</span> <span class="tlaGNC">           3 :     await supabase</span></span>
+<span id="L411"><span class="lineNum">     411</span> <span class="tlaGNC">           3 :         .from(_table)</span></span>
+<span id="L412"><span class="lineNum">     412</span> <span class="tlaGNC">           6 :         .update({</span></span>
+<span id="L413"><span class="lineNum">     413</span>              :           'latitud_base': latitude,</span>
+<span id="L414"><span class="lineNum">     414</span>              :           'longitud_base': longitude,</span>
+<span id="L415"><span class="lineNum">     415</span>              :           'radio_servicio_km': radiusKm,</span>
+<span id="L416"><span class="lineNum">     416</span>              :           'origen_base': 'mapa',</span>
+<span id="L417"><span class="lineNum">     417</span>              :         })</span>
+<span id="L418"><span class="lineNum">     418</span> <span class="tlaGNC">           3 :         .eq('id_usuario', userId);</span></span>
+<span id="L419"><span class="lineNum">     419</span>              :   }</span>
+<span id="L420"><span class="lineNum">     420</span>              : </span>
+<span id="L421"><span class="lineNum">     421</span> <span class="tlaGNC">           2 :   Future&lt;void&gt; updateUrbanCoverage({</span></span>
+<span id="L422"><span class="lineNum">     422</span>              :     required String userId,</span>
+<span id="L423"><span class="lineNum">     423</span>              :     required double urbanRadiusKm,</span>
+<span id="L424"><span class="lineNum">     424</span>              :     required int outsideFeeClp,</span>
+<span id="L425"><span class="lineNum">     425</span>              :   }) async {</span>
+<span id="L426"><span class="lineNum">     426</span> <span class="tlaGNC">           2 :     await supabase</span></span>
+<span id="L427"><span class="lineNum">     427</span> <span class="tlaGNC">           2 :         .from(_table)</span></span>
+<span id="L428"><span class="lineNum">     428</span> <span class="tlaGNC">           4 :         .update({</span></span>
+<span id="L429"><span class="lineNum">     429</span>              :           'radio_urbano_km': urbanRadiusKm,</span>
+<span id="L430"><span class="lineNum">     430</span>              :           'tarifa_fuera_radio_clp': outsideFeeClp,</span>
+<span id="L431"><span class="lineNum">     431</span>              :         })</span>
+<span id="L432"><span class="lineNum">     432</span> <span class="tlaGNC">           2 :         .eq('id_usuario', userId);</span></span>
+<span id="L433"><span class="lineNum">     433</span>              :   }</span>
+<span id="L434"><span class="lineNum">     434</span>              : </span>
+<span id="L435"><span class="lineNum">     435</span> <span class="tlaGNC">           4 :   Future&lt;void&gt; updateAvailability(String userId, bool isAvailable) async {</span></span>
+<span id="L436"><span class="lineNum">     436</span> <span class="tlaGNC">           4 :     await supabase</span></span>
+<span id="L437"><span class="lineNum">     437</span> <span class="tlaGNC">           4 :         .from(_table)</span></span>
+<span id="L438"><span class="lineNum">     438</span> <span class="tlaGNC">           8 :         .update({'disponible': isAvailable ? 1 : 0})</span></span>
+<span id="L439"><span class="lineNum">     439</span> <span class="tlaGNC">           4 :         .eq('id_usuario', userId);</span></span>
+<span id="L440"><span class="lineNum">     440</span>              :   }</span>
+<span id="L441"><span class="lineNum">     441</span>              : </span>
+<span id="L442"><span class="lineNum">     442</span>              :   /// Disponible para nuevos trabajos: flag activo y sin trabajos en curso.</span>
+<span id="L443"><span class="lineNum">     443</span> <span class="tlaGNC">           6 :   Future&lt;bool&gt; isWorkerAcceptingJobs(String userId) async {</span></span>
+<span id="L444"><span class="lineNum">     444</span> <span class="tlaGNC">           6 :     final worker = await getWorkerByUserId(userId);</span></span>
+<span id="L445"><span class="lineNum">     445</span> <span class="tlaGNC">           6 :     if (worker == null || !worker.isAvailable) return false;</span></span>
+<span id="L446"><span class="lineNum">     446</span> <span class="tlaGNC">           3 :     final jobRepository = JobRepository();</span></span>
+<span id="L447"><span class="lineNum">     447</span> <span class="tlaGNC">           3 :     return !await jobRepository.hasActiveJobs(userId);</span></span>
+<span id="L448"><span class="lineNum">     448</span>              :   }</span>
+<span id="L449"><span class="lineNum">     449</span>              : </span>
+<span id="L450"><span class="lineNum">     450</span>              :   /// Mantiene al trabajador como no disponible mientras tenga trabajos activos.</span>
+<span id="L451"><span class="lineNum">     451</span>              :   /// La base marca esa pausa (`pausa_por_trabajo`) y la levanta sola cuando</span>
+<span id="L452"><span class="lineNum">     452</span>              :   /// termina el último trabajo activo (trigger</span>
+<span id="L453"><span class="lineNum">     453</span>              :   /// `trabajos_restablecer_disponibilidad`), también para cuentas reales.</span>
+<span id="L454"><span class="lineNum">     454</span> <span class="tlaGNC">           5 :   Future&lt;void&gt; enforceUnavailableWhileBusy(String userId) async {</span></span>
+<span id="L455"><span class="lineNum">     455</span> <span class="tlaGNC">           5 :     final jobRepository = JobRepository();</span></span>
+<span id="L456"><span class="lineNum">     456</span> <span class="tlaGNC">           5 :     if (!await jobRepository.hasActiveJobs(userId)) return;</span></span>
+<span id="L457"><span class="lineNum">     457</span>              : </span>
+<span id="L458"><span class="lineNum">     458</span> <span class="tlaGNC">           4 :     final worker = await getWorkerByUserId(userId);</span></span>
+<span id="L459"><span class="lineNum">     459</span> <span class="tlaGNC">           4 :     if (worker != null &amp;&amp; worker.isAvailable) {</span></span>
+<span id="L460"><span class="lineNum">     460</span> <span class="tlaGNC">           2 :       await updateAvailability(userId, false);</span></span>
+<span id="L461"><span class="lineNum">     461</span>              :     }</span>
+<span id="L462"><span class="lineNum">     462</span>              :   }</span>
+<span id="L463"><span class="lineNum">     463</span>              : </span>
+<span id="L464"><span class="lineNum">     464</span>              :   /// Si no está en un trabajo en curso, las cuentas demo vuelven al catálogo</span>
+<span id="L465"><span class="lineNum">     465</span>              :   /// aunque las hayan pausado a mano. Las cuentas reales vuelven solas desde</span>
+<span id="L466"><span class="lineNum">     466</span>              :   /// la base al terminar el trabajo; una pausa voluntaria se respeta.</span>
+<span id="L467"><span class="lineNum">     467</span> <span class="tlaGNC">           5 :   Future&lt;void&gt; syncAvailabilityWithJobs(String userId, {String? email}) async {</span></span>
+<span id="L468"><span class="lineNum">     468</span> <span class="tlaGNC">           5 :     final jobRepository = JobRepository();</span></span>
+<span id="L469"><span class="lineNum">     469</span> <span class="tlaGNC">           5 :     if (await jobRepository.hasActiveJobs(userId)) {</span></span>
+<span id="L470"><span class="lineNum">     470</span> <span class="tlaGNC">           4 :       await enforceUnavailableWhileBusy(userId);</span></span>
+<span id="L471"><span class="lineNum">     471</span>              :       return;</span>
+<span id="L472"><span class="lineNum">     472</span>              :     }</span>
+<span id="L473"><span class="lineNum">     473</span> <span class="tlaGNC">           3 :     if (email == null || !DemoCredentials.isDemoEmail(email)) {</span></span>
+<span id="L474"><span class="lineNum">     474</span>              :       return;</span>
+<span id="L475"><span class="lineNum">     475</span>              :     }</span>
+<span id="L476"><span class="lineNum">     476</span> <span class="tlaGNC">           1 :     final worker = await getWorkerByUserId(userId);</span></span>
+<span id="L477"><span class="lineNum">     477</span> <span class="tlaGNC">           1 :     if (worker != null &amp;&amp; !worker.isAvailable) {</span></span>
+<span id="L478"><span class="lineNum">     478</span> <span class="tlaGNC">           1 :       await updateAvailability(userId, true);</span></span>
+<span id="L479"><span class="lineNum">     479</span>              :     }</span>
+<span id="L480"><span class="lineNum">     480</span>              :   }</span>
+<span id="L481"><span class="lineNum">     481</span>              : </span>
+<span id="L482"><span class="lineNum">     482</span>              :   // Obtener trabajadores disponibles que no tienen trabajos activos</span>
+<span id="L483"><span class="lineNum">     483</span> <span class="tlaGNC">           5 :   Future&lt;List&lt;WorkerModel&gt;&gt; getAvailableWorkersWithoutActiveJobs({</span></span>
+<span id="L484"><span class="lineNum">     484</span>              :     UserLocationContext? near,</span>
+<span id="L485"><span class="lineNum">     485</span>              :   }) async {</span>
+<span id="L486"><span class="lineNum">     486</span> <span class="tlaGNC">           5 :     final allWorkers = await _fetchCatalog(near: near);</span></span>
+<span id="L487"><span class="lineNum">     487</span> <span class="tlaGNC">           5 :     return _filterListedWorkers(allWorkers, near: near);</span></span>
+<span id="L488"><span class="lineNum">     488</span>              :   }</span>
+<span id="L489"><span class="lineNum">     489</span>              : </span>
+<span id="L490"><span class="lineNum">     490</span>              :   /// Misma fuente y mismo orden que la web: RPC pública, no el REST de</span>
+<span id="L491"><span class="lineNum">     491</span>              :   /// `trabajadores`. El orden (cercanía, nota, precio) lo define la RPC.</span>
+<span id="L492"><span class="lineNum">     492</span> <span class="tlaGNC">          12 :   Future&lt;List&lt;WorkerModel&gt;&gt; _fetchCatalog({</span></span>
+<span id="L493"><span class="lineNum">     493</span>              :     String? category,</span>
+<span id="L494"><span class="lineNum">     494</span>              :     UserLocationContext? near,</span>
+<span id="L495"><span class="lineNum">     495</span>              :   }) async {</span>
+<span id="L496"><span class="lineNum">     496</span> <span class="tlaGNC">          10 :     final categoria = category?.trim();</span></span>
+<span id="L497"><span class="lineNum">     497</span>              :     try {</span>
+<span id="L498"><span class="lineNum">     498</span> <span class="tlaGNC">          24 :       final rows = await supabase.rpc(</span></span>
+<span id="L499"><span class="lineNum">     499</span>              :         'listar_profesionales_catalogo',</span>
+<span id="L500"><span class="lineNum">     500</span> <span class="tlaGNC">          12 :         params: {</span></span>
+<span id="L501"><span class="lineNum">     501</span> <span class="tlaGNC">          10 :           'p_categoria': (categoria == null || categoria.isEmpty)</span></span>
+<span id="L502"><span class="lineNum">     502</span>              :               ? null</span>
+<span id="L503"><span class="lineNum">     503</span>              :               : categoria,</span>
+<span id="L504"><span class="lineNum">     504</span> <span class="tlaGNC">           9 :           'p_latitud': near?.latitude,</span></span>
+<span id="L505"><span class="lineNum">     505</span> <span class="tlaGNC">           9 :           'p_longitud': near?.longitude,</span></span>
+<span id="L506"><span class="lineNum">     506</span>              :           'p_limit': 40,</span>
+<span id="L507"><span class="lineNum">     507</span>              :         },</span>
+<span id="L508"><span class="lineNum">     508</span>              :       );</span>
+<span id="L509"><span class="lineNum">     509</span> <span class="tlaGNC">          12 :       if (rows is List) {</span></span>
+<span id="L510"><span class="lineNum">     510</span>              :         // La RPC ya trae la nota, los trabajos y la élite canónicos.</span>
+<span id="L511"><span class="lineNum">     511</span> <span class="tlaGNC">          12 :         return [</span></span>
+<span id="L512"><span class="lineNum">     512</span> <span class="tlaGNC">          12 :           for (final row in rows.whereType&lt;Map&gt;())</span></span>
+<span id="L513"><span class="lineNum">     513</span> <span class="tlaGNC">          24 :             WorkerModel.fromCatalogMap(Map&lt;String, dynamic&gt;.from(row)),</span></span>
+<span id="L514"><span class="lineNum">     514</span>              :         ];</span>
+<span id="L515"><span class="lineNum">     515</span>              :       }</span>
+<span id="L516"><span class="lineNum">     516</span>              :     } catch (_) {</span>
+<span id="L517"><span class="lineNum">     517</span>              :       // Si la RPC no está, un autenticado todavía puede leer el marketplace.</span>
+<span id="L518"><span class="lineNum">     518</span>              :     }</span>
+<span id="L519"><span class="lineNum">     519</span>              :     try {</span>
+<span id="L520"><span class="lineNum">     520</span> <span class="tlaGNC">           3 :       final byCategory = categoria != null &amp;&amp; categoria.isNotEmpty;</span></span>
+<span id="L521"><span class="lineNum">     521</span> <span class="tlaGNC">           4 :       var query = supabase</span></span>
+<span id="L522"><span class="lineNum">     522</span> <span class="tlaGNC">           4 :           .from(_table)</span></span>
+<span id="L523"><span class="lineNum">     523</span> <span class="tlaGNC">           8 :           .select(_selectColumns(byCategory: byCategory))</span></span>
+<span id="L524"><span class="lineNum">     524</span> <span class="tlaGNC">           4 :           .eq('disponible', 1)</span></span>
+<span id="L525"><span class="lineNum">     525</span> <span class="tlaGNC">           4 :           .eq('precios_configurados', 1)</span></span>
+<span id="L526"><span class="lineNum">     526</span> <span class="tlaGNC">           4 :           .eq('estado_verificacion', 'verificado');</span></span>
+<span id="L527"><span class="lineNum">     527</span>              :       if (byCategory) {</span>
+<span id="L528"><span class="lineNum">     528</span> <span class="tlaGNC">           3 :         query = query.eq('trabajador_servicios.categoria_servicio', categoria);</span></span>
+<span id="L529"><span class="lineNum">     529</span>              :       }</span>
+<span id="L530"><span class="lineNum">     530</span> <span class="tlaGNC">           8 :       final rows = await query.order('id_usuario').limit(40);</span></span>
+<span id="L531"><span class="lineNum">     531</span> <span class="tlaGNC">           4 :       return await _overlayStats(</span></span>
+<span id="L532"><span class="lineNum">     532</span> <span class="tlaGNC">          14 :         rows.map&lt;WorkerModel&gt;((row) =&gt; WorkerModel.fromMap(row)).toList(),</span></span>
+<span id="L533"><span class="lineNum">     533</span>              :       );</span>
+<span id="L534"><span class="lineNum">     534</span>              :     } catch (_) {</span>
+<span id="L535"><span class="lineNum">     535</span>              :       return const [];</span>
+<span id="L536"><span class="lineNum">     536</span>              :     }</span>
+<span id="L537"><span class="lineNum">     537</span>              :   }</span>
+<span id="L538"><span class="lineNum">     538</span>              : </span>
+<span id="L539"><span class="lineNum">     539</span>              :   /// Indica si el trabajador tiene trabajos activos (para badge «ocupado»).</span>
+<span id="L540"><span class="lineNum">     540</span> <span class="tlaGNC">           1 :   Future&lt;bool&gt; hasActiveJobs(String userId) async {</span></span>
+<span id="L541"><span class="lineNum">     541</span> <span class="tlaGNC">           1 :     final jobRepository = JobRepository();</span></span>
+<span id="L542"><span class="lineNum">     542</span> <span class="tlaGNC">           1 :     return jobRepository.hasActiveJobs(userId);</span></span>
+<span id="L543"><span class="lineNum">     543</span>              :   }</span>
+<span id="L544"><span class="lineNum">     544</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

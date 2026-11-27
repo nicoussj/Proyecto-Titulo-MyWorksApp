@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - lib/core/config/push_config.dart</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory lib/core/config">lib/core/config</a> - push_config.dart</td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">90.0&nbsp;%</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">9</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-11-27 03:01:45</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">-</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : import 'package:firebase_core/firebase_core.dart';</span>
+<span id="L2"><span class="lineNum">       2</span>              : import 'package:flutter/foundation.dart';</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span>              : /// Push con Firebase Cloud Messaging (gratis). Se activa solo si la build</span>
+<span id="L5"><span class="lineNum">       5</span>              : /// trae los 4 valores de la app Android del proyecto Firebase:</span>
+<span id="L6"><span class="lineNum">       6</span>              : ///</span>
+<span id="L7"><span class="lineNum">       7</span>              : ///   --dart-define=FCM_API_KEY=...</span>
+<span id="L8"><span class="lineNum">       8</span>              : ///   --dart-define=FCM_APP_ID=1:123456789:android:abc...</span>
+<span id="L9"><span class="lineNum">       9</span>              : ///   --dart-define=FCM_SENDER_ID=123456789</span>
+<span id="L10"><span class="lineNum">      10</span>              : ///   --dart-define=FCM_PROJECT_ID=myworksapp</span>
+<span id="L11"><span class="lineNum">      11</span>              : ///</span>
+<span id="L12"><span class="lineNum">      12</span>              : /// No hace falta `google-services.json`: Firebase se inicializa con estas</span>
+<span id="L13"><span class="lineNum">      13</span>              : /// opciones. Son identificadores públicos de la app, no secretos.</span>
+<span id="L14"><span class="lineNum">      14</span>              : class PushConfig {</span>
+<span id="L15"><span class="lineNum">      15</span> <span class="tlaUNC">           0 :   PushConfig._();</span></span>
+<span id="L16"><span class="lineNum">      16</span>              : </span>
+<span id="L17"><span class="lineNum">      17</span>              :   static const String apiKey = String.fromEnvironment('FCM_API_KEY');</span>
+<span id="L18"><span class="lineNum">      18</span>              :   static const String appId = String.fromEnvironment('FCM_APP_ID');</span>
+<span id="L19"><span class="lineNum">      19</span>              :   static const String senderId = String.fromEnvironment('FCM_SENDER_ID');</span>
+<span id="L20"><span class="lineNum">      20</span>              :   static const String projectId = String.fromEnvironment('FCM_PROJECT_ID');</span>
+<span id="L21"><span class="lineNum">      21</span>              : </span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">           9 :   static bool get isConfigured =&gt;</span></span>
+<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC">           9 :       apiKey.isNotEmpty &amp;&amp;</span></span>
+<span id="L24"><span class="lineNum">      24</span> <span class="tlaGNC">           1 :       appId.isNotEmpty &amp;&amp;</span></span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">           1 :       senderId.isNotEmpty &amp;&amp;</span></span>
+<span id="L26"><span class="lineNum">      26</span> <span class="tlaGNC">           1 :       projectId.isNotEmpty;</span></span>
+<span id="L27"><span class="lineNum">      27</span>              : </span>
+<span id="L28"><span class="lineNum">      28</span>              :   /// Por ahora solo Android (iOS necesita además la clave APNs).</span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">           2 :   static bool get isSupportedPlatform =&gt;</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">           4 :       !kIsWeb &amp;&amp; defaultTargetPlatform == TargetPlatform.android;</span></span>
+<span id="L31"><span class="lineNum">      31</span>              : </span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">          17 :   static bool get isEnabled =&gt; isConfigured &amp;&amp; isSupportedPlatform;</span></span>
+<span id="L33"><span class="lineNum">      33</span>              : </span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           2 :   static FirebaseOptions get options =&gt; const FirebaseOptions(</span></span>
+<span id="L35"><span class="lineNum">      35</span>              :         apiKey: apiKey,</span>
+<span id="L36"><span class="lineNum">      36</span>              :         appId: appId,</span>
+<span id="L37"><span class="lineNum">      37</span>              :         messagingSenderId: senderId,</span>
+<span id="L38"><span class="lineNum">      38</span>              :         projectId: projectId,</span>
+<span id="L39"><span class="lineNum">      39</span>              :       );</span>
+<span id="L40"><span class="lineNum">      40</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

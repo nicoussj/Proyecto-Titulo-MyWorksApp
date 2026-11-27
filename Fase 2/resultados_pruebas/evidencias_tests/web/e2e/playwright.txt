@@ -1,0 +1,47 @@
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - `__dirname` (vite.config.ts:29:42). Use `import.meta.dirname` instead
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+Running 29 tests using 4 workers
+
+(node:565728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:565727) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:565735) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:565729) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/academic-notice.spec.ts:44:3 › aviso académico › términos y privacidad repiten el carácter académico (535ms)
+  ✓   3 [chromium] › e2e/academic-notice.spec.ts:25:3 › aviso académico › el footer enlaza al aviso legal y los metadatos no piden noindex (581ms)
+  ✓   2 [chromium] › e2e/academic-notice.spec.ts:9:3 › aviso académico › la franja se puede contraer y el indicador sigue visible (708ms)
+  ✓   4 [chromium] › e2e/academic-notice.spec.ts:63:3 › aviso académico › el registro muestra la línea de demostración junto al botón (837ms)
+  -   8 [chromium] › e2e/desktop-invite-password.spec.ts:9:1 › la invitación de RRHH exige la misma política de contraseña
+  ✓   9 [chromium] › e2e/home.spec.ts:4:3 › Home smoke › muestra hero y buscador de problema (177ms)
+  ✓  10 [chromium] › e2e/home.spec.ts:17:3 › Home smoke › CTA de acceso abre modal de login vacío en prod-like (546ms)
+  ✓  11 [chromium] › e2e/home.spec.ts:39:3 › Checkout Webpay UI › modal de pago no pide número de tarjeta (153ms)
+  ✓  12 [chromium] › e2e/home.spec.ts:48:3 › Checkout Webpay UI › flujo invitado ofrece datos personales sin PAN (148ms)
+  ✓   5 [chromium] › e2e/catalog-order.spec.ts:33:1 › el catálogo web usa por defecto el orden cercanía, nota y precio (2.6s)
+  ✓   7 [chromium] › e2e/demo-catalog.spec.ts:132:1 › oculta un oficio sin profesionales y explica la búsqueda vacía (2.7s)
+  ✓  15 [chromium] › e2e/layout-viewports.spec.ts:159:1 › a 390 la portada muestra Ingresar y Registrarse (230ms)
+  ✓   6 [chromium] › e2e/demo-catalog.spec.ts:29:1 › demo web: catálogo con coordenada real y pedido sin tarjeta en el sitio (3.6s)
+  ✓  14 [chromium] › e2e/layout-viewports.spec.ts:134:1 › Ingresar queda dentro de la ventana a 1280 y a 390 (1.2s)
+  ✓  13 [chromium] › e2e/layout-viewports.spec.ts:117:1 › a 1280 la barra de reserva queda dentro de la ventana (3.0s)
+  ✓  16 [chromium] › e2e/layout-viewports.spec.ts:166:1 › Ver mi pedido rellena el correo del invitado (1.4s)
+  ✓  20 [chromium] › e2e/layout-viewports.spec.ts:366:1 › con el trabajo cerrado se puede volver al inicio desde el seguimiento (1.2s)
+  ✓  18 [chromium] › e2e/layout-viewports.spec.ts:326:1 › el chat del seguimiento no queda bajo el mapa a 390 (2.0s)
+  ✓  17 [chromium] › e2e/layout-viewports.spec.ts:321:1 › el chat del seguimiento no queda bajo el mapa a 1280 (2.4s)
+  ✓  21 [chromium] › e2e/layout-viewports.spec.ts:384:1 › en móvil el inicio del seguimiento cerrado sigue visible (1.2s)
+  ✓  19 [chromium] › e2e/layout-viewports.spec.ts:331:1 › a 390 el formulario de invitado no corta el monto (3.5s)
+  ✓  24 [chromium] › e2e/password-policy.spec.ts:12:1 › el registro web exige 8 caracteres, una letra y un número (1.5s)
+  ✓  26 [chromium] › e2e/profile.spec.ts:5:1 › la ficha pública envía el id de la URL a las RPC (176ms)
+  ✓  25 [chromium] › e2e/password-policy.spec.ts:55:1 › el login reenvía la confirmación si el correo no está confirmado (1.1s)
+  ✓  23 [chromium] › e2e/map-basemap.spec.ts:199:1 › el mapa de búsqueda se ve bien en un teléfono y tampoco pide CARTO (3.1s)
+  ✓  27 [chromium] › e2e/routes.spec.ts:4:3 › rutas › el atrás vuelve a la vista anterior y /xyz es un 404 (573ms)
+  ✓  28 [chromium] › e2e/testing-survey.spec.ts:4:3 › Encuesta de testing (SUS) › el enlace /encuesta abre las 10 afirmaciones SUS (245ms)
+  ✓  22 [chromium] › e2e/map-basemap.spec.ts:172:1 › el mapa de búsqueda usa OpenFreeMap y la leyenda no tapa el recuento (3.5s)
+  ✓  29 [chromium] › e2e/testing-survey.spec.ts:13:3 › Encuesta de testing (SUS) › no envía si faltan afirmaciones por responder (649ms)
+
+  1 skipped
+  28 passed (11.9s)
+EXIT=0
