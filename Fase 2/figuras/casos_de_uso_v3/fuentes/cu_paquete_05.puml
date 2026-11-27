@@ -1,0 +1,20 @@
+@startuml cu_paquete_05
+left to right direction
+title Paquete 5: Comunicación y gestión del profesional
+actor "Cliente" as Cliente
+actor "Profesional" as Profesional
+rectangle "MyWorksApp" {
+  usecase "CU-23 Chatear sobre un trabajo\n[Web, app]" as CU23
+  usecase "CU-24 Recibir y gestionar notificaciones\n[Web, app]" as CU24
+  usecase "CU-25 Completar perfil y solicitar verificación\n[App]" as CU25
+  usecase "CU-26 Configurar tarifas, horario y disponibilidad\n[App]" as CU26
+  usecase "CU-27 Consultar cobros y registrar cuenta bancaria\n[App]" as CU27
+}
+Cliente --> CU23
+Profesional --> CU23
+Cliente --> CU24
+Profesional --> CU24
+Profesional --> CU25
+Profesional --> CU26
+Profesional --> CU27
+@enduml

@@ -1,0 +1,11 @@
+@startuml cu_paquete_11
+left to right direction
+title Paquete 11: IA en la búsqueda
+actor "Visitante" as Visitante
+rectangle "MyWorksApp" {
+  usecase "CU-61 Buscar con lenguaje natural (búsqueda híbrida)\n[Backend (función RPC; ninguna pantalla la llama aún)]" as CU61
+  usecase "CU-62 Ver profesionales parecidos\n[Web, app]" as CU62
+}
+Visitante --> CU61
+Visitante --> CU62
+@enduml

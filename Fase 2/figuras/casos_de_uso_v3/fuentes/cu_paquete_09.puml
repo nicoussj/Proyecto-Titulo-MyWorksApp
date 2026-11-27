@@ -1,0 +1,19 @@
+@startuml cu_paquete_09
+left to right direction
+title Paquete 9: Consola: dinero
+actor "Administrador" as Administrador
+actor "Sistema" as Sistema
+rectangle "MyWorksApp" {
+  usecase "CU-49 Revisar pagos y comisiones\n[Escritorio]" as CU49
+  usecase "CU-50 Conciliar pagos con Transbank\n[Escritorio]" as CU50
+  usecase "CU-51 Registrar liquidaciones al profesional\n[Escritorio]" as CU51
+  usecase "CU-52 Gestionar reembolsos\n[Escritorio]" as CU52
+  usecase "CU-53 Consultar finanzas y exportar\n[Escritorio]" as CU53
+}
+Administrador --> CU49
+Administrador --> CU50
+Sistema --> CU50
+Administrador --> CU51
+Administrador --> CU52
+Administrador --> CU53
+@enduml

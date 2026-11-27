@@ -1,0 +1,24 @@
+@startuml cu_paquete_04
+left to right direction
+title Paquete 4: Cierre, reputación y excepciones
+actor "Cliente" as Cliente
+actor "Profesional" as Profesional
+actor "Administrador" as Administrador
+actor "Sistema" as Sistema
+rectangle "MyWorksApp" {
+  usecase "CU-17 Recibir conforme y liberar el pago\n[Web, app]" as CU17
+  usecase "CU-18 Calificar al profesional\n[Web, app]" as CU18
+  usecase "CU-19 Calificar al cliente\n[App]" as CU19
+  usecase "CU-20 Cancelar una solicitud con reembolso\n[Web, app]" as CU20
+  usecase "CU-21 Abrir disputa y proponer un acuerdo\n[Web, app]" as CU21
+  usecase "CU-22 Resolver una disputa\n[Escritorio, backend]" as CU22
+}
+Cliente --> CU17
+Cliente --> CU18
+Profesional --> CU19
+Cliente --> CU20
+Cliente --> CU21
+Profesional --> CU21
+Administrador --> CU22
+Sistema --> CU22
+@enduml

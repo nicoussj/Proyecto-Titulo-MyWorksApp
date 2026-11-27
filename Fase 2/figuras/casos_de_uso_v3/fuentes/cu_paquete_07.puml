@@ -1,0 +1,23 @@
+@startuml cu_paquete_07
+left to right direction
+title Paquete 7: Cotización, tarjeta, encuesta y direcciones
+actor "Cliente registrado" as Cliente_registrado
+actor "Profesional" as Profesional
+rectangle "MyWorksApp" {
+  usecase "CU-35 Solicitar una cotización abierta\n[App]" as CU35
+  usecase "CU-36 Enviar una propuesta de cotización\n[App]" as CU36
+  usecase "CU-37 Elegir una propuesta y pagarla\n[App]" as CU37
+  usecase "CU-38 Inscribir o cambiar la tarjeta Oneclick\n[Web, app]" as CU38
+  usecase "CU-39 Pagar con la tarjeta inscrita (Oneclick)\n[Web, app]" as CU39
+  usecase "CU-40 Responder la encuesta de satisfacción y SUS\n[Web, app]" as CU40
+  usecase "CU-41 Gestionar direcciones guardadas\n[Web]" as CU41
+}
+Cliente_registrado --> CU35
+Profesional --> CU36
+Cliente_registrado --> CU37
+Cliente_registrado --> CU38
+Cliente_registrado --> CU39
+Cliente_registrado --> CU40
+Profesional --> CU40
+Cliente_registrado --> CU41
+@enduml

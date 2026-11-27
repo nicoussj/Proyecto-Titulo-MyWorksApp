@@ -1,0 +1,14 @@
+@startuml cu_paquete_12
+left to right direction
+title Paquete 12: IA en la solicitud y la verificación
+actor "Cliente registrado" as Cliente_registrado
+actor "Profesional" as Profesional
+rectangle "MyWorksApp" {
+  usecase "CU-63 Describir el problema con el asistente de IA\n[Web]" as CU63
+  usecase "CU-64 Dar el consentimiento para usar IA\n[Web]" as CU64
+  usecase "CU-65 Obtener una sugerencia de validación del documento\n[App]" as CU65
+}
+Cliente_registrado --> CU63
+Cliente_registrado --> CU64
+Profesional --> CU65
+@enduml
