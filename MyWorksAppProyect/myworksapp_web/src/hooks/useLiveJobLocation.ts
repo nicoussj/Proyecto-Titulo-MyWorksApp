@@ -19,6 +19,7 @@ export function useLiveJobLocation(
 
   useEffect(() => {
     if (!jobId) {
+      // oxlint-disable-next-line react/set-state-in-effect -- reinicio intencional del estado al cambiar la entrada del efecto
       setFix(null);
       return;
     }

@@ -125,9 +125,13 @@ export function PremiumSearchMap({
   const selectedIdRef = useRef(selectedWorkerId);
   const clientLocRef = useRef(clientLocation);
   const onPickRef = useRef(onPickClientLocation);
+  // oxlint-disable-next-line react/refs -- patron latest-ref: guarda el ultimo valor para callbacks ya registrados
   onSelectRef.current = onSelectWorker;
+  // oxlint-disable-next-line react/refs -- patron latest-ref: guarda el ultimo valor para callbacks ya registrados
   selectedIdRef.current = selectedWorkerId;
+  // oxlint-disable-next-line react/refs -- patron latest-ref: guarda el ultimo valor para callbacks ya registrados
   clientLocRef.current = clientLocation;
+  // oxlint-disable-next-line react/refs -- patron latest-ref: guarda el ultimo valor para callbacks ya registrados
   onPickRef.current = onPickClientLocation;
 
   useEffect(() => {

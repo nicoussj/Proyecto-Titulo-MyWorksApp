@@ -21,7 +21,7 @@
     input.value = token;
     form.appendChild(input);
     form.submit();
-  } catch (e) {
+  } catch {
     msg.textContent = "No se pudo abrir Transbank. Vuelve a la app e inténtalo de nuevo.";
   }
 })();

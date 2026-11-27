@@ -88,7 +88,9 @@ export function JobEvidencePanel({
   }
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- carga inicial al cambiar jobId
     void load();
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- solo debe recargar al cambiar jobId
   }, [jobId]);
 
   async function onFile(file: File | undefined) {

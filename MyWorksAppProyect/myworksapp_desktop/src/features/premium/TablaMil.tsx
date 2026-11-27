@@ -4,6 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 /** Tabla virtual para comprobar que 10.000 filas no se pintan todas. */
 export function TablaMil({ total = 10_000 }: { total?: number }) {
   const padre = useRef<HTMLDivElement>(null);
+  // oxlint-disable-next-line react/incompatible-library -- tabla de prueba sin memoizacion; el virtualizador maneja su estado
   const virtual = useVirtualizer({
     count: total,
     getScrollElement: () => padre.current,
