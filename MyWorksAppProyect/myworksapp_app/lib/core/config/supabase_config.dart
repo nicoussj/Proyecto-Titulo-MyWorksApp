@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 /// Configuración del backend Supabase.
 ///
 /// Preferir `--dart-define=SUPABASE_URL=...` y
-/// `--dart-define=SUPABASE_ANON_KEY=...` en builds de release.
-/// Los valores por defecto mantienen la demo local funcional.
+/// `--dart-define=SUPABASE_ANON_KEY=...` (o `--dart-define-from-file=dart_defines.json`)
+/// en builds de release. Los valores por defecto mantienen la demo usable.
 ///
 /// NUNCA coloques aquí la `service_role` / secret key.
 class SupabaseConfig {
@@ -24,15 +24,19 @@ class SupabaseConfig {
     defaultValue: 'sb_publishable_WN_cTANRJ4nCuPw_6HWd7w_iDJjRA8O',
   );
 
+  /// true si el build compiló con dart-defines explícitos.
+  static bool get hasDartDefines => _hasUrlDefine && _hasAnonKeyDefine;
+
+  /// Valida URL/key. **No** exige dart-defines: en 1.0.16+18…+20 un release
+  /// sin `--dart-define-from-file` tiraba StateError en [main] *antes* de
+  /// [runApp] y la Activity quedaba en LaunchTheme negro (pantalla negra).
+  ///
+  /// Solo falla si URL o key quedaron vacíos.
   static void validateForCurrentBuild() {
-    if (!kReleaseMode) return;
-    if (!_hasUrlDefine ||
-        !_hasAnonKeyDefine ||
-        url.isEmpty ||
-        publishableKey.isEmpty) {
+    if (url.trim().isEmpty || publishableKey.trim().isEmpty) {
       throw StateError(
-        'Release build requires --dart-define=SUPABASE_URL=... '
-        'and --dart-define=SUPABASE_ANON_KEY=...',
+        'Falta SUPABASE_URL o SUPABASE_ANON_KEY. '
+        'Compila con --dart-define-from-file=dart_defines.json',
       );
     }
   }
