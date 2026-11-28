@@ -9,6 +9,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../../core/database/models/job_photo_model.dart';
 import '../../../../core/database/repositories/job_photo_repository.dart';
+import '../../../../core/database/repositories/job_repository.dart';
 import '../../../../core/database/supabase_db.dart';
 import '../../../../core/design_system/app_spacing.dart';
 import '../../../../core/services/evidence_dhash.dart';
@@ -26,6 +27,9 @@ import '../../../../core/widgets/design_system/empty_state_widget.dart';
 import '../../../../core/widgets/evidence_photo_image.dart';
 import 'evidence_shutter_camera_page.dart';
 
+/// Misma cifra por defecto que `soporte_radio_evidencia_m` en Postgres.
+const double _kRadioEvidenciaMetros = 500;
+
 class JobPhotosPage extends StatefulWidget {
   final String jobId;
   final bool canAddPhotos;
@@ -42,6 +46,7 @@ class JobPhotosPage extends StatefulWidget {
 
 class _JobPhotosPageState extends State<JobPhotosPage> {
   final JobPhotoRepository _photoRepository = JobPhotoRepository();
+  final JobRepository _jobRepository = JobRepository();
   final EvidenceUploader _uploader = EvidenceUploader();
   final ImagePicker _imagePicker = ImagePicker();
   List<JobPhotoModel> _photos = [];
@@ -81,7 +86,11 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     }
   }
 
-  Future<void> _saveEvidence(XFile file, String mime) async {
+  Future<void> _saveEvidence(
+    XFile file,
+    String mime, {
+    _PendingEvidence? retryOf,
+  }) async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
       throw StateError('Inicia sesión para subir evidencia');
@@ -92,42 +101,45 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     if (problem != null) {
       throw StateError(problem);
     }
+    final fileId = retryOf?.fileId ?? const Uuid().v4();
+    final persisted = retryOf?.persisted ?? false;
     setState(() {
       _uploading = true;
-      _uploadFraction = 0;
+      _uploadFraction = persisted ? 1 : 0;
       _uploadError = null;
-      _pendingRetry = _PendingEvidence(file, mime);
+      _pendingRetry = _PendingEvidence(file, mime, fileId: fileId, persisted: persisted);
     });
     try {
-      final fileId = const Uuid().v4();
-      if (mime.startsWith('video/')) {
-        await _uploader.saveFile(
-          jobId: widget.jobId,
-          userId: userId,
-          fileId: fileId,
-          filePath: file.path,
-          byteLength: length,
-          mime: mime,
-          onProgress: (progress) {
-            if (!mounted) return;
-            setState(() => _uploadFraction = progress.fraction);
-          },
-        );
-      } else {
-        final raw = await file.readAsBytes();
-        final webp = await encodeEvidenceWebp(raw);
-        await _uploader.save(
-          jobId: widget.jobId,
-          userId: userId,
-          fileId: fileId,
-          bytes: webp,
-          mime: 'image/webp',
-          imageWebp: webp,
-          onProgress: (progress) {
-            if (!mounted) return;
-            setState(() => _uploadFraction = progress.fraction);
-          },
-        );
+      if (!persisted) {
+        if (mime.startsWith('video/')) {
+          await _uploader.saveFile(
+            jobId: widget.jobId,
+            userId: userId,
+            fileId: fileId,
+            filePath: file.path,
+            byteLength: length,
+            mime: mime,
+            onProgress: (progress) {
+              if (!mounted) return;
+              setState(() => _uploadFraction = progress.fraction);
+            },
+          );
+        } else {
+          final raw = await file.readAsBytes();
+          final webp = await encodeEvidenceWebp(raw);
+          await _uploader.save(
+            jobId: widget.jobId,
+            userId: userId,
+            fileId: fileId,
+            bytes: webp,
+            mime: 'image/webp',
+            imageWebp: webp,
+            onProgress: (progress) {
+              if (!mounted) return;
+              setState(() => _uploadFraction = progress.fraction);
+            },
+          );
+        }
       }
       if (!mounted) return;
       setState(() => _pendingRetry = null);
@@ -140,9 +152,9 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       );
     } catch (e) {
       if (!mounted) return;
-      setState(() => _uploadError = ErrorHandler.getErrorMessage(e));
-      showAppSnackBar(context, ErrorHandler.getErrorMessage(e),
-          type: AppSnackBarType.error);
+      final msg = _mensajeEvidencia(e);
+      setState(() => _uploadError = msg);
+      showAppSnackBar(context, msg, type: AppSnackBarType.error);
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -166,6 +178,67 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
         timeLimit: Duration(seconds: 12),
       ),
     );
+  }
+
+  /// Pre-chequeo local (mismo umbral que el RPC). Evita subir huérfanos a 19 km.
+  Future<void> _assertGpsDentroDeRadio(Position gps) async {
+    final job = await _jobRepository.getJobById(widget.jobId);
+    final jobLat = job?.latitude;
+    final jobLng = job?.longitude;
+    if (jobLat == null || jobLng == null) return;
+    final dist = Geolocator.distanceBetween(
+      gps.latitude,
+      gps.longitude,
+      jobLat,
+      jobLng,
+    );
+    if (dist <= _kRadioEvidenciaMetros) return;
+    final km = (dist / 1000).toStringAsFixed(1);
+    throw StateError(
+      'Estás fuera del radio de evidencia del trabajo ($km km). '
+      'Acércate al lugar del servicio e intenta de nuevo.',
+    );
+  }
+
+  String _mensajeEvidencia(Object error) => ErrorHandler.userMessage(
+        error,
+        fallback: 'No se pudo registrar la evidencia. Intenta de nuevo.',
+      );
+
+  bool _esErrorEvidenciaNoReintentable(Object error) {
+    final raw = error is StateError
+        ? error.message.toLowerCase()
+        : ErrorHandler.userMessageFor(error).toLowerCase();
+    return raw.contains('fuera del radio') ||
+        raw.contains('gps fuera de radio') ||
+        raw.contains('no se pudo verificar la foto') ||
+        raw.contains('el hash no coincide') ||
+        raw.contains('hash perceptual') ||
+        raw.contains('falta la imagen') ||
+        raw.contains('la captura tardó') ||
+        raw.contains('fuera de la ventana') ||
+        raw.contains('no tiene ubicación') ||
+        raw.contains('no tiene coordenadas') ||
+        raw.contains('verificación expiró');
+  }
+
+  Future<void> _descartarHuerfano({
+    required String fileId,
+    required String userId,
+    required String mime,
+  }) async {
+    final path = EvidenceStoragePath.objectPath(
+      jobId: widget.jobId,
+      userId: userId,
+      fileId: fileId,
+      mime: mime,
+    );
+    try {
+      await _photoRepository.deleteJobPhoto(fileId);
+    } catch (_) {}
+    try {
+      await _uploader.removeStored(path);
+    } catch (_) {}
   }
 
   /// Cámara de la app: un toque saca foto; mantener presionado graba video.
@@ -193,15 +266,16 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(context, ErrorHandler.getErrorMessage(e),
+      showAppSnackBar(context, _mensajeEvidencia(e),
           type: AppSnackBarType.error);
     }
   }
 
   Future<void> _registrarVideoCaptura(
     EvidenceCapture capture,
-    String tipo,
-  ) async {
+    String tipo, {
+    _PendingEvidence? retryOf,
+  }) async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
       throw StateError('Inicia sesión para subir evidencia');
@@ -209,7 +283,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     final file = capture.file;
     final mime = _mimeFor(file, video: true);
     final length = await file.length();
-    final duration = capture.duration ?? Duration.zero;
+    final duration = capture.duration ?? retryOf?.duration ?? Duration.zero;
     final limite = EvidenceVideoLimits.validate(
       byteLength: length,
       duration: duration,
@@ -219,9 +293,12 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       throw StateError(limite);
     }
     final gps = await _gpsDeLaCaptura();
-    final nonce = await supabase.rpc('pedir_nonce_evidencia', params: {
-      'p_id_trabajo': widget.jobId,
-    });
+    await _assertGpsDentroDeRadio(gps);
+    final fileId = retryOf?.fileId ?? const Uuid().v4();
+    final nonce = retryOf?.nonce ??
+        await supabase.rpc('pedir_nonce_evidencia', params: {
+          'p_id_trabajo': widget.jobId,
+        });
     final hash = await sha256OfBytesStream(file.openRead());
     final procedencia = EvidenceVideoProvenance.validate(
       nonce: '$nonce',
@@ -235,9 +312,10 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
     if (procedencia != null) {
       throw StateError(procedencia);
     }
+    var persisted = retryOf?.persisted ?? false;
     setState(() {
       _uploading = true;
-      _uploadFraction = 0;
+      _uploadFraction = persisted ? 0.8 : 0;
       _uploadError = null;
       _pendingRetry = _PendingEvidence(
         file,
@@ -245,23 +323,34 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
         tipo: tipo,
         verifiedVideo: true,
         duration: duration,
+        fileId: fileId,
+        nonce: '$nonce',
+        persisted: persisted,
       );
     });
-    final fileId = const Uuid().v4();
     try {
-      await _uploader.saveFile(
-        jobId: widget.jobId,
-        userId: userId,
-        fileId: fileId,
-        filePath: file.path,
-        byteLength: length,
-        mime: mime,
-        onProgress: (progress) {
-          if (!mounted) return;
-          setState(() => _uploadFraction = progress.fraction);
-        },
-      );
-      final duracionSeg = duration.inSeconds.clamp(1, EvidenceVideoLimits.maxDurationSecondsGrace);
+      if (!persisted) {
+        await _uploader.saveFile(
+          jobId: widget.jobId,
+          userId: userId,
+          fileId: fileId,
+          filePath: file.path,
+          byteLength: length,
+          mime: mime,
+          onProgress: (progress) {
+            if (!mounted) return;
+            setState(() => _uploadFraction = progress.fraction);
+          },
+        );
+        persisted = true;
+        if (mounted) {
+          setState(() {
+            _pendingRetry = _pendingRetry?.copyWith(persisted: true);
+          });
+        }
+      }
+      final duracionSeg =
+          duration.inSeconds.clamp(1, EvidenceVideoLimits.maxDurationSecondsGrace);
       final registro = await supabase.rpc(
         'registrar_evidencia_video_captura',
         params: {
@@ -292,50 +381,92 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
             : AppSnackBarType.error,
       );
     } catch (e) {
+      final noReintentable = _esErrorEvidenciaNoReintentable(e);
+      if (persisted && noReintentable) {
+        await _descartarHuerfano(fileId: fileId, userId: userId, mime: mime);
+        persisted = false;
+      }
       if (!mounted) return;
-      setState(() => _uploadError = ErrorHandler.getErrorMessage(e));
-      showAppSnackBar(context, ErrorHandler.getErrorMessage(e),
-          type: AppSnackBarType.error);
+      final msg = _mensajeEvidencia(e);
+      setState(() {
+        _uploadError = msg;
+        _pendingRetry = noReintentable
+            ? null
+            : _PendingEvidence(
+                file,
+                mime,
+                tipo: tipo,
+                verifiedVideo: true,
+                duration: duration,
+                fileId: fileId,
+                nonce: '$nonce',
+                persisted: persisted,
+              );
+      });
+      showAppSnackBar(context, msg, type: AppSnackBarType.error);
+      await _loadPhotos();
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
   }
 
-  Future<void> _registrarCaptura(XFile file, String tipo) async {
+  Future<void> _registrarCaptura(
+    XFile file,
+    String tipo, {
+    _PendingEvidence? retryOf,
+  }) async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
       throw StateError('Inicia sesión para subir evidencia');
     }
     final original = await file.readAsBytes();
     final gps = await _gpsDeLaCaptura();
-    final nonce = await supabase.rpc('pedir_nonce_evidencia', params: {
-      'p_id_trabajo': widget.jobId,
-    });
+    await _assertGpsDentroDeRadio(gps);
+    final fileId = retryOf?.fileId ?? const Uuid().v4();
+    final nonce = retryOf?.nonce ??
+        await supabase.rpc('pedir_nonce_evidencia', params: {
+          'p_id_trabajo': widget.jobId,
+        });
     final webp = await encodeEvidenceWebp(original);
     final hashOriginal = sha256Hex(original);
     final hashWebp = sha256Hex(webp);
     final luma = await luma9x8(original);
     final perceptual = dhashDesdeLuma(luma);
+    var persisted = retryOf?.persisted ?? false;
     setState(() {
       _uploading = true;
-      _uploadFraction = 0;
+      _uploadFraction = persisted ? 0.8 : 0;
       _uploadError = null;
-      _pendingRetry = _PendingEvidence(file, 'image/webp', tipo: tipo);
-    });
-    final fileId = const Uuid().v4();
-    try {
-      await _uploader.save(
-        jobId: widget.jobId,
-        userId: userId,
+      _pendingRetry = _PendingEvidence(
+        file,
+        'image/webp',
+        tipo: tipo,
         fileId: fileId,
-        bytes: webp,
-        mime: 'image/webp',
-        imageWebp: webp,
-        onProgress: (progress) {
-          if (!mounted) return;
-          setState(() => _uploadFraction = progress.fraction);
-        },
+        nonce: '$nonce',
+        persisted: persisted,
       );
+    });
+    try {
+      if (!persisted) {
+        await _uploader.save(
+          jobId: widget.jobId,
+          userId: userId,
+          fileId: fileId,
+          bytes: webp,
+          mime: 'image/webp',
+          imageWebp: webp,
+          onProgress: (progress) {
+            if (!mounted) return;
+            setState(() => _uploadFraction = progress.fraction);
+          },
+        );
+        persisted = true;
+        if (mounted) {
+          setState(() {
+            _pendingRetry = _pendingRetry?.copyWith(persisted: true);
+          });
+        }
+      }
       final registro = await supabase.rpc('registrar_evidencia_captura', params: {
         'p_id_foto': fileId,
         'p_id_trabajo': widget.jobId,
@@ -364,10 +495,33 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
             : AppSnackBarType.error,
       );
     } catch (e) {
+      final noReintentable = _esErrorEvidenciaNoReintentable(e);
+      // Negocio (GPS/hash): borra huérfano. Red/RPC transitorio: conserva fila y reusa fileId.
+      if (persisted && noReintentable) {
+        await _descartarHuerfano(
+          fileId: fileId,
+          userId: userId,
+          mime: 'image/webp',
+        );
+        persisted = false;
+      }
       if (!mounted) return;
-      setState(() => _uploadError = ErrorHandler.getErrorMessage(e));
-      showAppSnackBar(context, ErrorHandler.getErrorMessage(e),
-          type: AppSnackBarType.error);
+      final msg = _mensajeEvidencia(e);
+      setState(() {
+        _uploadError = msg;
+        _pendingRetry = noReintentable
+            ? null
+            : _PendingEvidence(
+                file,
+                'image/webp',
+                tipo: tipo,
+                fileId: fileId,
+                nonce: '$nonce',
+                persisted: persisted,
+              );
+      });
+      showAppSnackBar(context, msg, type: AppSnackBarType.error);
+      await _loadPhotos();
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
@@ -395,7 +549,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       await _saveEvidence(image, _mimeFor(image, video: false));
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(context, ErrorHandler.getErrorMessage(e),
+      showAppSnackBar(context, _mensajeEvidencia(e),
           type: AppSnackBarType.error);
     }
   }
@@ -410,7 +564,7 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
       await _saveEvidence(video, _mimeFor(video, video: true));
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(context, ErrorHandler.getErrorMessage(e),
+      showAppSnackBar(context, _mensajeEvidencia(e),
           type: AppSnackBarType.error);
     }
   }
@@ -563,16 +717,19 @@ class _JobPhotosPageState extends State<JobPhotosPage> {
                                               duration: pending.duration,
                                             ),
                                             pending.tipo!,
+                                            retryOf: pending,
                                           );
                                         } else if (pending.tipo != null) {
                                           _registrarCaptura(
                                             pending.file,
                                             pending.tipo!,
+                                            retryOf: pending,
                                           );
                                         } else {
                                           _saveEvidence(
                                             pending.file,
                                             pending.mime,
+                                            retryOf: pending,
                                           );
                                         }
                                       },
@@ -702,12 +859,37 @@ class _PendingEvidence {
     this.tipo,
     this.verifiedVideo = false,
     this.duration,
+    this.fileId,
+    this.nonce,
+    this.persisted = false,
   });
   final XFile file;
   final String mime;
   final String? tipo;
   final bool verifiedVideo;
   final Duration? duration;
+  /// Mismo id en Reintentar → no crea otra fila/objeto.
+  final String? fileId;
+  final String? nonce;
+  /// true si Storage+INSERT ya corrieron; el reintento solo reintenta la RPC.
+  final bool persisted;
+
+  _PendingEvidence copyWith({
+    bool? persisted,
+    String? fileId,
+    String? nonce,
+  }) {
+    return _PendingEvidence(
+      file,
+      mime,
+      tipo: tipo,
+      verifiedVideo: verifiedVideo,
+      duration: duration,
+      fileId: fileId ?? this.fileId,
+      nonce: nonce ?? this.nonce,
+      persisted: persisted ?? this.persisted,
+    );
+  }
 }
 
 class _EvidenceThumb extends StatelessWidget {

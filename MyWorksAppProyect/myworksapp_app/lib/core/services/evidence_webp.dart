@@ -30,6 +30,9 @@ Future<Uint8List> encodeEvidenceWebp(Uint8List source) async {
 
 Future<Uint8List?> _tryEncode(Uint8List source, int quality) async {
   try {
+    // autoCorrectionAngle: aplica la rotación EXIF del JPEG de cámara antes
+    // de tirar los metadatos (keepExif: false). Sin esto el WebP queda
+    // "acostado" aunque el teléfono estuviera en vertical.
     final compressed = await FlutterImageCompress.compressWithList(
       source,
       minWidth: 1280,
@@ -37,6 +40,7 @@ Future<Uint8List?> _tryEncode(Uint8List source, int quality) async {
       quality: quality,
       format: CompressFormat.webp,
       keepExif: false,
+      autoCorrectionAngle: true,
     );
     final out = Uint8List.fromList(compressed);
     if (isWebpBytes(out)) return out;
