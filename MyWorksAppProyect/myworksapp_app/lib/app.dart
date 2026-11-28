@@ -94,16 +94,28 @@ class _MyWorksAppState extends ConsumerState<MyWorksApp> {
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
+      // Fondo navy (no negro puro del LaunchTheme night) + spinner visible
+      // para no confundir un hang de init con "pantalla negra".
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
         locale: AppLocale.primary,
         supportedLocales: AppLocale.supported,
         localizationsDelegates: AppLocale.delegates,
         home: Scaffold(
-          backgroundColor: AppColors.backgroundDark,
+          backgroundColor: AppColors.brandNavy,
           body: Center(
-            child: CircularProgressIndicator(
-              color: AppColors.brandOrange,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  color: AppColors.brandOrange,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Cargando My Works App…',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
             ),
           ),
         ),

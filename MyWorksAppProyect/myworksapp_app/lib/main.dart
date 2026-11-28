@@ -20,6 +20,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (AppPlatform.isMobileNative) {
+    // Orientaciones de toda la app. Las pantallas (p. ej. cámara de evidencia)
+    // no deben llamar setPreferredOrientations: mutar la Activity ahí dejó
+    // pantallas negras al arrancar en 1.0.16+18.
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
