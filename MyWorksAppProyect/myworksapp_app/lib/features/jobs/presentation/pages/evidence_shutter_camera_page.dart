@@ -22,6 +22,11 @@ class EvidenceCapture {
 }
 
 /// Vista previa con disparador: toque = foto, mantener = video (hasta 30 s).
+///
+/// Orientación: solo [CameraController.lockCaptureOrientation] (buffer de
+/// captura). No usa [SystemChrome.setPreferredOrientations] — eso muta la
+/// Activity global y en algunos dispositivos dejó la app en pantalla negra
+/// tras instalar 1.0.16+18.
 class EvidenceShutterCameraPage extends StatefulWidget {
   const EvidenceShutterCameraPage({super.key});
 
@@ -43,10 +48,6 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
   @override
   void initState() {
     super.initState();
-    // La evidencia se toma en vertical: bloquea la Activity y el buffer de captura.
-    unawaited(SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-    ]));
     _abrirCamara();
   }
 
@@ -55,14 +56,8 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
     _ticker?.cancel();
     final controller = _controller;
     _controller = null;
-    unawaited(controller?.dispose() ?? Future<void>.value());
-    // Restaura las orientaciones que usa el resto de la app (main.dart).
-    unawaited(SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]));
+    // dispose() del plugin es async; no bloqueamos el State.dispose.
+    controller?.dispose();
     super.dispose();
   }
 
@@ -93,8 +88,12 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
       await controller.initialize();
-      // Portrait fijo: preview y JPEG siguen la orientación del teléfono en vertical.
-      await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      // Solo el buffer de captura (no SystemChrome / Activity).
+      try {
+        await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      } catch (_) {
+        // Algunos dispositivos no soportan lock; el preview sigue usable.
+      }
       if (!mounted) {
         await controller.dispose();
         return;
@@ -214,17 +213,12 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
           fit: StackFit.expand,
           children: [
             if (controller != null && controller.value.isInitialized)
-              // CameraPreview ya rota según lockCaptureOrientation / deviceOrientation.
-              // Aspect ratio invertido cuando el buffer del sensor es landscape pero
-              // la captura está bloqueada en portrait (caso típico Android).
-              Positioned.fill(
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: controller.value.previewSize?.height ?? 720,
-                    height: controller.value.previewSize?.width ?? 1280,
-                    child: CameraPreview(controller),
-                  ),
+              // Preview estándar del plugin (AspectRatio). Con lockCaptureOrientation
+              // el buffer queda en portrait sin mutar SystemChrome.
+              Center(
+                child: AspectRatio(
+                  aspectRatio: controller.value.aspectRatio,
+                  child: CameraPreview(controller),
                 ),
               )
             else if (_error == null)
