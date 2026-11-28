@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myworksapp/features/jobs/presentation/pages/evidence_shutter_camera_page.dart';
 import 'package:myworksapp/features/jobs/presentation/widgets/evidence_shutter_button.dart';
@@ -113,6 +114,21 @@ class _FakeCamera extends CameraPlatform with MockPlatformInterfaceMixin {
 
   @override
   Future<void> dispose(int cameraId) async => disposed++;
+
+  DeviceOrientation? lockedOrientation;
+
+  @override
+  Future<void> lockCaptureOrientation(
+    int cameraId,
+    DeviceOrientation orientation,
+  ) async {
+    lockedOrientation = orientation;
+  }
+
+  @override
+  Future<void> unlockCaptureOrientation(int cameraId) async {
+    lockedOrientation = null;
+  }
 }
 
 // Las fakes son privadas del archivo; las variables solo se usan aquí.
@@ -201,6 +217,11 @@ void main() {
     ];
     await _open(tester);
     expect(camera.createdWith, 'solo-frontal');
+  });
+
+  testWidgets('bloquea la captura en portrait al abrir', (tester) async {
+    await _open(tester);
+    expect(camera.lockedOrientation, DeviceOrientation.portraitUp);
   });
 
   testWidgets('toque toma una foto y la devuelve', (tester) async {

@@ -79,6 +79,25 @@ void main() {
       );
     });
 
+    test('gps fuera de radio se explica en español claro', () {
+      const e = PostgrestException(
+        message: 'gps fuera de radio',
+        code: 'P0001',
+      );
+      final text = ErrorHandler.userMessageFor(e);
+      expect(text, contains('fuera del radio de evidencia'));
+      expect(ErrorHandler.getErrorMessage(e), contains('fuera del radio'));
+    });
+
+    test('StateError de radio pre-chequeado no se vuelve genérico', () {
+      final e = StateError(
+        'Estás fuera del radio de evidencia del trabajo (19.2 km). '
+        'Acércate al lugar del servicio e intenta de nuevo.',
+      );
+      expect(ErrorHandler.userMessageFor(e), contains('19.2 km'));
+      expect(ErrorHandler.getErrorMessage(e), contains('fuera del radio'));
+    });
+
     test('un P0001 con pinta técnica no se muestra', () {
       const e = PostgrestException(
         message: 'function public.foo() does not exist',

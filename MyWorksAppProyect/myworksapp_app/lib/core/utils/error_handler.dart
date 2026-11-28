@@ -68,6 +68,18 @@ class ErrorHandler {
       );
     }
 
+    final evidencia = _friendlyEvidenceRaise(errorString);
+    if (evidencia != null) {
+      return AppError.validation(evidencia);
+    }
+
+    if (error is StateError) {
+      final msg = _stateErrorUserText(error);
+      if (msg != null) {
+        return AppError.validation(msg);
+      }
+    }
+
     if (errorString.contains('socket') ||
         errorString.contains('clientexception') ||
         errorString.contains('failed host lookup') ||
@@ -154,6 +166,8 @@ class ErrorHandler {
     if (error is AppAuthException) return error.userMessage;
     if (error is PostgrestException) {
       final message = error.message.trim();
+      final evidence = _friendlyEvidenceRaise(message.toLowerCase());
+      if (evidence != null) return evidence;
       if (error.code == 'P0001' && _looksLikeUserText(message)) return message;
       final mapped = handle(error);
       if (mapped.type == ErrorType.validation ||
@@ -166,11 +180,56 @@ class ErrorHandler {
     if (error is AuthException) {
       return 'No pudimos validar tu sesión. Vuelve a iniciar sesión.';
     }
+    if (error is StateError) {
+      final msg = _stateErrorUserText(error);
+      if (msg != null) return msg;
+    }
     final mapped = handle(error);
     if (mapped.type == ErrorType.unknown || mapped.type == ErrorType.database) {
       return fallback;
     }
     return mapped.message;
+  }
+
+  /// StateError con frase de producto (p. ej. radio GPS); ignora basura corta.
+  static String? _stateErrorUserText(StateError error) {
+    var msg = error.message.trim();
+    const prefix = 'bad state:';
+    if (msg.toLowerCase().startsWith(prefix)) {
+      msg = msg.substring(prefix.length).trim();
+    }
+    final evidence = _friendlyEvidenceRaise(msg.toLowerCase());
+    if (evidence != null) return evidence;
+    if (msg.length < 20 || !msg.contains(' ')) return null;
+    if (!_looksLikeUserText(msg)) return null;
+    return msg;
+  }
+
+  /// Mensajes RAISE de `registrar_evidencia_*` → texto claro en la app.
+  static String? _friendlyEvidenceRaise(String lowerMessage) {
+    if (lowerMessage.contains('gps fuera de radio')) {
+      return 'Estás fuera del radio de evidencia del trabajo. '
+          'Acércate al lugar del servicio e intenta de nuevo.';
+    }
+    if (lowerMessage.contains('el hash no coincide') ||
+        lowerMessage.contains('hash perceptual no coincide') ||
+        lowerMessage.contains('falta la imagen para verificar')) {
+      return 'No se pudo verificar la foto. Tómala de nuevo con la cámara de la app.';
+    }
+    if (lowerMessage.contains('la captura está fuera de la ventana')) {
+      return 'La captura tardó demasiado. Toma la foto de nuevo.';
+    }
+    if (lowerMessage.contains('el trabajo no tiene coordenadas')) {
+      return 'Este trabajo no tiene ubicación. No se puede verificar la evidencia.';
+    }
+    if (lowerMessage.contains('nonce') &&
+        (lowerMessage.contains('inválido') ||
+            lowerMessage.contains('invalido') ||
+            lowerMessage.contains('usado') ||
+            lowerMessage.contains('expir'))) {
+      return 'La verificación expiró. Toma la foto de nuevo.';
+    }
+    return null;
   }
 
   /// Un mensaje de RAISE EXCEPTION escrito para personas: corto y sin

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/services/evidence_video_limits.dart';
@@ -42,6 +43,10 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
   @override
   void initState() {
     super.initState();
+    // La evidencia se toma en vertical: bloquea la Activity y el buffer de captura.
+    unawaited(SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+    ]));
     _abrirCamara();
   }
 
@@ -50,7 +55,14 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
     _ticker?.cancel();
     final controller = _controller;
     _controller = null;
-    controller?.dispose();
+    unawaited(controller?.dispose() ?? Future<void>.value());
+    // Restaura las orientaciones que usa el resto de la app (main.dart).
+    unawaited(SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]));
     super.dispose();
   }
 
@@ -81,6 +93,8 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
       await controller.initialize();
+      // Portrait fijo: preview y JPEG siguen la orientación del teléfono en vertical.
+      await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
       if (!mounted) {
         await controller.dispose();
         return;
@@ -200,10 +214,17 @@ class _EvidenceShutterCameraPageState extends State<EvidenceShutterCameraPage> {
           fit: StackFit.expand,
           children: [
             if (controller != null && controller.value.isInitialized)
-              Center(
-                child: AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: CameraPreview(controller),
+              // CameraPreview ya rota según lockCaptureOrientation / deviceOrientation.
+              // Aspect ratio invertido cuando el buffer del sensor es landscape pero
+              // la captura está bloqueada en portrait (caso típico Android).
+              Positioned.fill(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: controller.value.previewSize?.height ?? 720,
+                    height: controller.value.previewSize?.width ?? 1280,
+                    child: CameraPreview(controller),
+                  ),
                 ),
               )
             else if (_error == null)
